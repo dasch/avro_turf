@@ -1,6 +1,6 @@
 # AvroTurf
 
-TODO: Write a gem description
+AvroTurf is a library that makes it easier to encode and decode data using the [Apache Avro](http://avro.apache.org/) serialization format.
 
 ## Installation
 
@@ -20,12 +20,14 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+# Schemas will be looked up from the specified directory.
+avro = AvroTurf.new(schemas_path: "app/schemas/")
 
-## Contributing
+# Decode some data using a named schema. The schema file should exist in the
+# schemas directory with the file name `<name>.avsc`.
+avro.decode(encoded_data, schema_name: "person")
 
-1. Fork it ( https://github.com/[my-github-username]/avro_turf/fork )
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
+# Encode some data using the named schema.
+avro.encode({ "name" => "Jane", "age" => 28 }, schema_name: "person")
+```
