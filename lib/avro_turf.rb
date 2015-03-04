@@ -6,6 +6,12 @@ class AvroTurf
     @schemas_path = schemas_path
   end
 
+  # Encodes data to Avro using the specified schema.
+  #
+  # data        - The data that should be encoded.
+  # schema_name - The name of a schema in the `schemas_path`.
+  #
+  # Returns a String containing the encoded data.
   def encode(data, schema_name:)
     schema = resolve_schema(schema_name)
     writer = Avro::IO::DatumWriter.new(schema)
