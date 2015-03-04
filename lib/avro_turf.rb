@@ -18,9 +18,16 @@ class AvroTurf
     io.string
   end
 
-  def decode(encoded_data, schema_name:)
+  # Decodes Avro data.
+  #
+  # encoded_data - A String containing Avro-encoded data.
+  # schema_name  - The String name of the schema that should be used to read
+  #                the data. If nil, the writer schema will be used.
+  #
+  # Returns whatever is encoded in the data.
+  def decode(encoded_data, schema_name: nil)
     io = StringIO.new(encoded_data)
-    schema = resolve_schema(schema_name)
+    schema = schema_name && resolve_schema(schema_name)
     reader = Avro::IO::DatumReader.new(nil, schema)
     dr = Avro::DataFile::Reader.new(io, reader)
     dr.first

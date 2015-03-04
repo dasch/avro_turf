@@ -110,4 +110,19 @@ describe AvroTurf do
 
     expect(avro.decode(encoded_data, schema_name: "person")).to eq(data)
   end
+
+  it "allows decoding without specifying a reader schema" do
+    File.open("spec/schemas/message.avsc", "w") do |f|
+      f.write <<-AVSC
+        {
+          "name": "message",
+          "type": "string"
+        }
+      AVSC
+    end
+
+    encoded_data = avro.encode("hello, world", schema_name: "message")
+
+    expect(avro.decode(encoded_data)).to eq "hello, world"
+  end
 end
