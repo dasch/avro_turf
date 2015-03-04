@@ -28,8 +28,27 @@ class AvroTurf
 
   private
 
-  def resolve_schema(schema_name)
+  # Resolves and returns a schema.
+  #
+  # schema_name - The String name of the schema to resolve.
+  # names       - A Hash mapping schema names to Avro::Schema instances. Used
+  #               when referencing custom types.
+  #
+  # Returns an Avro::Schema.
+  def resolve_schema(schema_name, names = {})
     schema_path = File.join(@schemas_path, schema_name + ".avsc")
-    Avro::Schema.parse(File.read(schema_path))
+    Avro::Schema.real_parse(JSON.parse(File.read(schema_path)), names)
+  rescue ::Avro::SchemaParseError => e
+    # This is a hack in order to figure out exactly which type was missing. The
+    # Avro gem ought to provide this data directly.
+    if e.to_s =~ /"(\w+)" is not a schema we know about/
+      resolve_schema($1, names)
+
+      # Re-resolve the original schema now that the dependency has been resolved.
+      names.delete(schema_name)
+      resolve_schema(schema_name, names)
+    else
+      raise
+    end
   end
 end
