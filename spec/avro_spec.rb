@@ -40,8 +40,6 @@ describe AvroTurf do
       }
     AVSC
 
-    FileUtils.mkdir_p("spec/schemas")
-
     File.open("spec/schemas/person.avsc", "w") do |f|
       f.write(schema)
     end
