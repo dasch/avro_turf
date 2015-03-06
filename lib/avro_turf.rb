@@ -6,7 +6,7 @@ class AvroTurf
   class SchemaError < Error; end
 
   def initialize(schemas_path:)
-    @schemas_path = schemas_path
+    @schemas_path = schemas_path or raise "Please specify a schema path"
   end
 
   # Encodes data to Avro using the specified schema.
