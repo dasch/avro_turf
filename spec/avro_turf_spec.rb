@@ -1,5 +1,7 @@
 describe AvroTurf do
-  let(:avro) { AvroTurf.new(schemas_path: "spec/schemas/") }
+  let(:log) { StringIO.new }
+  let(:logger) { Logger.new(log) }
+  let(:avro) { AvroTurf.new(schemas_path: "spec/schemas/", logger: logger) }
 
   before do
     FileUtils.mkdir_p("spec/schemas")
@@ -69,9 +71,80 @@ describe AvroTurf do
       AVSC
 
       encoded_data = avro.encode({ "x" => 42, "y" => 13 }, schema_name: "point")
-      reader_avro = AvroTurf.new(schemas_path: "spec/schemas/reader")
+      reader_avro = AvroTurf.new(schemas_path: "spec/schemas/reader", logger: logger)
 
       expect(reader_avro.decode(encoded_data, schema_name: "point")).to eq({ "x" => 42 })
+    end
+
+    it "automatically uses a local reader schema if the writer schema has a name" do
+      FileUtils.mkdir_p("spec/schemas/writer")
+      FileUtils.mkdir_p("spec/schemas/reader")
+
+      define_schema "writer/person.avsc", <<-AVSC
+        {
+          "name": "person",
+          "type": "record",
+          "fields": [
+            {
+              "type": "string",
+              "name": "full_name"
+            },
+            {
+              "type": "long",
+              "name": "age"
+            }
+          ]
+        }
+      AVSC
+
+      define_schema "reader/person.avsc", <<-AVSC
+        {
+          "name": "person",
+          "type": "record",
+          "fields": [
+            {
+              "type": "string",
+              "name": "full_name"
+            }
+          ]
+        }
+      AVSC
+
+      data = {
+        "full_name" => "John Doe",
+        "age" => 42
+      }
+
+      writer_avro = AvroTurf.new(schemas_path: "spec/schemas/writer", logger: logger)
+      reader_avro = AvroTurf.new(schemas_path: "spec/schemas/reader", logger: logger)
+
+      encoded_data = writer_avro.encode(data, schema_name: "person")
+
+      # The reader ignores the `age` field.
+      expect(reader_avro.decode(encoded_data)).to eq({ "full_name" => "John Doe" })
+    end
+
+    it "logs a warning when decoding using the writer's schema" do
+      define_schema "message.avsc", <<-AVSC
+        {
+          "name": "message",
+          "type": "record",
+          "fields": [
+            { "name": "message", "type": "string" }
+          ]
+        }
+      AVSC
+
+      encoded_data = avro.encode({ "message" => "hello, world" }, schema_name: "message")
+
+      # Use a different schemas path when reading schemas. Otherwise, the writer's schema
+      # will be available when decoding.
+      FileUtils.mkdir_p("spec/schemas/reader")
+      reader_avro = AvroTurf.new(schemas_path: "spec/schemas/reader", logger: logger)
+
+      reader_avro.decode(encoded_data)
+
+      expect(log.string).to include "Could not find schema `message' locally; using writer's schema instead"
     end
   end
 

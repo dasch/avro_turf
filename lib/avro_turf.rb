@@ -1,5 +1,6 @@
 require 'avro_turf/version'
 require 'avro'
+require 'logger'
 require 'json'
 require 'avro_turf/schema_store'
 
@@ -8,9 +9,10 @@ class AvroTurf
   class SchemaError < Error; end
   class SchemaNotFoundError < Error; end
 
-  def initialize(schemas_path:, namespace: nil)
+  def initialize(schemas_path:, namespace: nil, logger: nil)
     @namespace = namespace
     @schema_store = SchemaStore.new(path: schemas_path)
+    @logger = logger || Logger.new($stderr)
   end
 
   # Encodes data to Avro using the specified schema.
@@ -69,6 +71,31 @@ class AvroTurf
     schema = schema_name && @schema_store.find(schema_name, namespace)
     reader = Avro::IO::DatumReader.new(nil, schema)
     dr = Avro::DataFile::Reader.new(stream, reader)
+
+    # If no reader schema is specified, we'll try to find one matching the name
+    # of the writer's schema.
+    if schema_name.nil?
+      schema = load_readers_schema(reader.writers_schema)
+      reader.readers_schema = schema if schema
+    end
+
     dr.first
+  end
+
+  private
+
+  # Returns the reader schema matching the writer's schema if one is locally
+  # available, or nil if there's no matching reader schema.
+  def load_readers_schema(writers_schema)
+    return nil unless writers_schema.respond_to?(:fullname)
+
+    schema_name = writers_schema.fullname
+
+    begin
+      @schema_store.find(schema_name)
+    rescue SchemaNotFoundError
+      @logger.warn "Could not find schema `#{schema_name}' locally; using writer's schema instead"
+      nil
+    end
   end
 end
