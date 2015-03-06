@@ -10,7 +10,7 @@ describe AvroTurf do
   end
 
   it "encodes and decodes data using a named schema" do
-    schema = <<-AVSC
+    define_schema "person.avsc", <<-AVSC
       {
         "name": "person",
         "type": "record",
@@ -40,10 +40,6 @@ describe AvroTurf do
       }
     AVSC
 
-    File.open("spec/schemas/person.avsc", "w") do |f|
-      f.write(schema)
-    end
-
     data = {
       "full_name" => "John Doe",
       "address" => {
@@ -58,43 +54,39 @@ describe AvroTurf do
   end
 
   it "resolves named types" do
-    File.open("spec/schemas/person.avsc", "w") do |f|
-      f.write <<-AVSC
-        {
-          "name": "person",
-          "type": "record",
-          "fields": [
-            {
-              "type": "string",
-              "name": "full_name"
-            },
-            {
-              "name": "address",
-              "type": "address"
-            }
-          ]
-        }
-      AVSC
-    end
+    define_schema "person.avsc", <<-AVSC
+      {
+        "name": "person",
+        "type": "record",
+        "fields": [
+          {
+            "type": "string",
+            "name": "full_name"
+          },
+          {
+            "name": "address",
+            "type": "address"
+          }
+        ]
+      }
+    AVSC
 
-    File.open("spec/schemas/address.avsc", "w") do |f|
-      f.write <<-AVSC
-        {
-          "type": "record",
-          "name": "address",
-          "fields": [
-            {
-              "type": "string",
-              "name": "street"
-            },
-            {
-              "type": "string",
-              "name": "city"
-            }
-          ]
-        }
-      AVSC
-    end
+    define_schema "address.avsc", <<-AVSC
+      {
+        "type": "record",
+        "name": "address",
+        "fields": [
+          {
+            "type": "string",
+            "name": "street"
+          },
+          {
+            "type": "string",
+            "name": "city"
+          }
+        ]
+      }
+    AVSC
 
     data = {
       "full_name" => "John Doe",
@@ -110,14 +102,12 @@ describe AvroTurf do
   end
 
   it "allows decoding without specifying a reader schema" do
-    File.open("spec/schemas/message.avsc", "w") do |f|
-      f.write <<-AVSC
-        {
-          "name": "message",
-          "type": "string"
-        }
-      AVSC
-    end
+    define_schema "message.avsc", <<-AVSC
+      {
+        "name": "message",
+        "type": "string"
+      }
+    AVSC
 
     encoded_data = avro.encode("hello, world", schema_name: "message")
 
@@ -127,45 +117,41 @@ describe AvroTurf do
   it "allows using namespaces in schemas" do
     FileUtils.mkdir_p("spec/schemas/test/people")
 
-    File.open("spec/schemas/test/people/person.avsc", "w") do |f|
-      f.write <<-AVSC
-        {
-          "name": "person",
-          "namespace": "test.people",
-          "type": "record",
-          "fields": [
-            {
-              "type": "string",
-              "name": "full_name"
-            },
-            {
-              "name": "address",
-              "type": "test.people.address"
-            }
-          ]
-        }
-      AVSC
-    end
+    define_schema "test/people/person.avsc", <<-AVSC
+      {
+        "name": "person",
+        "namespace": "test.people",
+        "type": "record",
+        "fields": [
+          {
+            "type": "string",
+            "name": "full_name"
+          },
+          {
+            "name": "address",
+            "type": "test.people.address"
+          }
+        ]
+      }
+    AVSC
 
-    File.open("spec/schemas/test/people/address.avsc", "w") do |f|
-      f.write <<-AVSC
-        {
-          "name": "address",
-          "namespace": "test.people",
-          "type": "record",
-          "fields": [
-            {
-              "type": "string",
-              "name": "street"
-            },
-            {
-              "type": "string",
-              "name": "city"
-            }
-          ]
-        }
-      AVSC
-    end
+    define_schema "test/people/address.avsc", <<-AVSC
+      {
+        "name": "address",
+        "namespace": "test.people",
+        "type": "record",
+        "fields": [
+          {
+            "type": "string",
+            "name": "street"
+          },
+          {
+            "type": "string",
+            "name": "city"
+          }
+        ]
+      }
+    AVSC
 
     data = {
       "full_name" => "John Doe",
@@ -183,26 +169,30 @@ describe AvroTurf do
   it "raises AvroTurf::SchemaError if the schema's namespace doesn't match the file location" do
     FileUtils.mkdir_p("spec/schemas/test/people")
 
-    File.open("spec/schemas/test/people/person.avsc", "w") do |f|
-      f.write <<-AVSC
-        {
-          "name": "person",
-          "namespace": "yoyoyo.nanana",
-          "type": "record",
-          "fields": [
-            {
-              "type": "string",
-              "name": "full_name"
-            }
-          ]
-        }
-      AVSC
-    end
+    define_schema "test/people/person.avsc", <<-AVSC
+      {
+        "name": "person",
+        "namespace": "yoyoyo.nanana",
+        "type": "record",
+        "fields": [
+          {
+            "type": "string",
+            "name": "full_name"
+          }
+        ]
+      }
+    AVSC
 
     data = { "full_name" => "John Doe" }
 
     expect {
       avro.encode(data, schema_name: "test.people.person")
     }.to raise_error(AvroTurf::SchemaError, "expected schema `spec/schemas/test/people/person.avsc' to define type `test.people.person'")
+  end
+
+  def define_schema(path, content)
+    File.open(File.join("spec/schemas", path), "w") do |f|
+      f.write(content)
+    end
   end
 end
