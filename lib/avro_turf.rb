@@ -1,5 +1,6 @@
 require 'avro_turf/version'
 require 'avro'
+require 'json'
 
 class AvroTurf
   class Error < StandardError; end
