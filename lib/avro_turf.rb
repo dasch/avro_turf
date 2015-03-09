@@ -52,6 +52,8 @@ class AvroTurf
   #
   # Returns an Avro::Schema.
   def resolve_schema(fullname)
+    fullname = fullname.to_s
+
     return @schemas[fullname] if @schemas.key?(fullname)
 
     *namespace, schema_name = fullname.split(".")
