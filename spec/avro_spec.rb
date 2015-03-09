@@ -190,6 +190,35 @@ describe AvroTurf do
     }.to raise_error(AvroTurf::SchemaError, "expected schema `spec/schemas/test/people/person.avsc' to define type `test.people.person'")
   end
 
+  it "caches schemas in memory" do
+    define_schema "person.avsc", <<-AVSC
+      {
+        "name": "person",
+        "type": "record",
+        "fields": [
+          {
+            "type": "string",
+            "name": "full_name"
+          }
+        ]
+      }
+    AVSC
+
+    data = {
+      "full_name" => "John Doe"
+    }
+
+    # Warm the schema cache.
+    avro.encode(data, schema_name: "person")
+
+    # Force a failure if the schema file is read again.
+    FileUtils.rm("spec/schemas/person.avsc")
+
+    encoded_data = avro.encode(data, schema_name: "person")
+
+    expect(avro.decode(encoded_data, schema_name: "person")).to eq(data)
+  end
+
   def define_schema(path, content)
     File.open(File.join("spec/schemas", path), "w") do |f|
       f.write(content)

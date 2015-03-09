@@ -8,6 +8,7 @@ class AvroTurf
 
   def initialize(schemas_path:)
     @schemas_path = schemas_path or raise "Please specify a schema path"
+    @schemas = Hash.new
   end
 
   # Encodes data to Avro using the specified schema.
@@ -48,15 +49,15 @@ class AvroTurf
   # Resolves and returns a schema.
   #
   # schema_name - The String name of the schema to resolve.
-  # names       - A Hash mapping schema names to Avro::Schema instances. Used
-  #               when referencing custom types.
   #
   # Returns an Avro::Schema.
-  def resolve_schema(fullname, names = {})
+  def resolve_schema(fullname)
+    return @schemas[fullname] if @schemas.key?(fullname)
+
     *namespace, schema_name = fullname.split(".")
     schema_path = File.join(@schemas_path, *namespace, schema_name + ".avsc")
     schema_json = JSON.parse(File.read(schema_path))
-    schema = Avro::Schema.real_parse(schema_json, names)
+    schema = Avro::Schema.real_parse(schema_json, @schemas)
 
     if schema.respond_to?(:fullname) && schema.fullname != fullname
       raise SchemaError, "expected schema `#{schema_path}' to define type `#{fullname}'"
@@ -67,11 +68,11 @@ class AvroTurf
     # This is a hack in order to figure out exactly which type was missing. The
     # Avro gem ought to provide this data directly.
     if e.to_s =~ /"([\w\.]+)" is not a schema we know about/
-      resolve_schema($1, names)
+      resolve_schema($1)
 
       # Re-resolve the original schema now that the dependency has been resolved.
-      names.delete(fullname)
-      resolve_schema(fullname, names)
+      @schemas.delete(fullname)
+      resolve_schema(fullname)
     else
       raise
     end
