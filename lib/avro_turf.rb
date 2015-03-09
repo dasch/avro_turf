@@ -6,9 +6,10 @@ class AvroTurf
   class Error < StandardError; end
   class SchemaError < Error; end
 
-  def initialize(schemas_path:)
+  def initialize(schemas_path:, namespace: nil)
     @schemas_path = schemas_path or raise "Please specify a schema path"
     @schemas = Hash.new
+    @namespace = namespace
   end
 
   # Encodes data to Avro using the specified schema.
@@ -17,7 +18,7 @@ class AvroTurf
   # schema_name - The name of a schema in the `schemas_path`.
   #
   # Returns a String containing the encoded data.
-  def encode(data, schema_name:, namespace: nil)
+  def encode(data, schema_name:, namespace: @namespace)
     schema = resolve_schema(schema_name, namespace)
     writer = Avro::IO::DatumWriter.new(schema)
 
@@ -36,7 +37,7 @@ class AvroTurf
   #                the data. If nil, the writer schema will be used.
   #
   # Returns whatever is encoded in the data.
-  def decode(encoded_data, schema_name: nil, namespace: nil)
+  def decode(encoded_data, schema_name: nil, namespace: @namespace)
     io = StringIO.new(encoded_data)
     schema = schema_name && resolve_schema(schema_name, namespace)
     reader = Avro::IO::DatumReader.new(nil, schema)
