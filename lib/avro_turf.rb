@@ -17,8 +17,8 @@ class AvroTurf
   # schema_name - The name of a schema in the `schemas_path`.
   #
   # Returns a String containing the encoded data.
-  def encode(data, schema_name:)
-    schema = resolve_schema(schema_name)
+  def encode(data, schema_name:, namespace: nil)
+    schema = resolve_schema(schema_name, namespace)
     writer = Avro::IO::DatumWriter.new(schema)
 
     io = StringIO.new
@@ -36,9 +36,9 @@ class AvroTurf
   #                the data. If nil, the writer schema will be used.
   #
   # Returns whatever is encoded in the data.
-  def decode(encoded_data, schema_name: nil)
+  def decode(encoded_data, schema_name: nil, namespace: nil)
     io = StringIO.new(encoded_data)
-    schema = schema_name && resolve_schema(schema_name)
+    schema = schema_name && resolve_schema(schema_name, namespace)
     reader = Avro::IO::DatumReader.new(nil, schema)
     dr = Avro::DataFile::Reader.new(io, reader)
     dr.first
@@ -51,8 +51,8 @@ class AvroTurf
   # schema_name - The String name of the schema to resolve.
   #
   # Returns an Avro::Schema.
-  def resolve_schema(fullname)
-    fullname = fullname.to_s
+  def resolve_schema(name, namespace = nil)
+    fullname = Avro::Name.make_fullname(name, namespace)
 
     return @schemas[fullname] if @schemas.key?(fullname)
 

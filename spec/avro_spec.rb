@@ -161,9 +161,9 @@ describe AvroTurf do
       }
     }
 
-    encoded_data = avro.encode(data, schema_name: "test.people.person")
+    encoded_data = avro.encode(data, schema_name: "person", namespace: "test.people")
 
-    expect(avro.decode(encoded_data, schema_name: "test.people.person")).to eq(data)
+    expect(avro.decode(encoded_data, schema_name: "person", namespace: "test.people")).to eq(data)
   end
 
   it "raises AvroTurf::SchemaError if the schema's namespace doesn't match the file location" do
