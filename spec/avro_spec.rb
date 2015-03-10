@@ -5,60 +5,93 @@ describe AvroTurf do
     FileUtils.mkdir_p("spec/schemas")
   end
 
-  it "encodes and decodes data using a named schema" do
-    define_schema "person.avsc", <<-AVSC
-      {
-        "name": "person",
-        "type": "record",
-        "fields": [
-          {
-            "type": "string",
-            "name": "full_name"
-          },
-          {
-            "name": "address",
-            "type": {
-              "type": "record",
-              "name": "address",
-              "fields": [
-                {
-                  "type": "string",
-                  "name": "street"
-                },
-                {
-                  "type": "string",
-                  "name": "city"
-                }
-              ]
+  describe "#encode" do
+    it "encodes data with Avro" do
+      define_schema "person.avsc", <<-AVSC
+        {
+          "name": "person",
+          "type": "record",
+          "fields": [
+            {
+              "type": "string",
+              "name": "full_name"
             }
-          }
-        ]
+          ]
+        }
+      AVSC
+
+      data = {
+        "full_name" => "John Doe"
       }
-    AVSC
 
-    data = {
-      "full_name" => "John Doe",
-      "address" => {
-        "street" => "Market st. 989",
-        "city" => "San Francisco"
-      }
-    }
+      encoded_data = avro.encode(data, schema_name: "person")
 
-    encoded_data = avro.encode(data, schema_name: "person")
-
-    expect(avro.decode(encoded_data, schema_name: "person")).to eq(data)
+      expect(avro.decode(encoded_data)).to eq(data)
+    end
   end
 
-  it "allows decoding without specifying a reader schema" do
-    define_schema "message.avsc", <<-AVSC
-      {
-        "name": "message",
-        "type": "string"
-      }
-    AVSC
+  describe "#decode" do
+    it "decodes Avro data using the inlined writer's schema" do
+      define_schema "message.avsc", <<-AVSC
+        {
+          "name": "message",
+          "type": "string"
+        }
+      AVSC
 
-    encoded_data = avro.encode("hello, world", schema_name: "message")
+      encoded_data = avro.encode("hello, world", schema_name: "message")
 
-    expect(avro.decode(encoded_data)).to eq "hello, world"
+      expect(avro.decode(encoded_data)).to eq "hello, world"
+    end
+
+    it "decodes Avro data using a specified reader's schema" do
+      FileUtils.mkdir_p("spec/schemas/reader")
+
+      define_schema "point.avsc", <<-AVSC
+        {
+          "name": "point",
+          "type": "record",
+          "fields": [
+            { "name": "x", "type": "long" },
+            { "name": "y", "type": "long" }
+          ]
+        }
+      AVSC
+
+      define_schema "reader/point.avsc", <<-AVSC
+        {
+          "name": "point",
+          "type": "record",
+          "fields": [
+            { "name": "x", "type": "long" }
+          ]
+        }
+      AVSC
+
+      encoded_data = avro.encode({ "x" => 42, "y" => 13 }, schema_name: "point")
+      reader_avro = AvroTurf.new(schemas_path: "spec/schemas/reader")
+
+      expect(reader_avro.decode(encoded_data, schema_name: "point")).to eq({ "x" => 42 })
+    end
+  end
+
+  describe "#encode_to_stream" do
+    before do
+      FileUtils.mkdir_p("spec/schemas")
+
+      define_schema "message.avsc", <<-AVSC
+        {
+          "name": "message",
+          "type": "string"
+        }
+      AVSC
+    end
+
+    it "writes encoded data to an existing stream" do
+      stream = StringIO.new
+      avro.encode_to_stream("hello", stream: stream, schema_name: "message")
+
+      expect(avro.decode(stream.string)).to eq "hello"
+    end
   end
 end
