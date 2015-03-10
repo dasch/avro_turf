@@ -76,18 +76,14 @@ describe AvroTurf do
   end
 
   describe "#encode_to_stream" do
-    before do
-      FileUtils.mkdir_p("spec/schemas")
-
+    it "writes encoded data to an existing stream" do
       define_schema "message.avsc", <<-AVSC
         {
           "name": "message",
           "type": "string"
         }
       AVSC
-    end
 
-    it "writes encoded data to an existing stream" do
       stream = StringIO.new
       avro.encode_to_stream("hello", stream: stream, schema_name: "message")
 
