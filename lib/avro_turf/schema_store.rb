@@ -1,0 +1,42 @@
+class AvroTurf::SchemaStore
+  def initialize(path:)
+    @path = path or raise "Please specify a schema path"
+    @schemas = Hash.new
+  end
+
+  # Resolves and returns a schema.
+  #
+  # schema_name - The String name of the schema to resolve.
+  #
+  # Returns an Avro::Schema.
+  def find(name, namespace = nil)
+    fullname = Avro::Name.make_fullname(name, namespace)
+
+    return @schemas[fullname] if @schemas.key?(fullname)
+
+    *namespace, schema_name = fullname.split(".")
+    schema_path = File.join(@path, *namespace, schema_name + ".avsc")
+    schema_json = JSON.parse(File.read(schema_path))
+    schema = Avro::Schema.real_parse(schema_json, @schemas)
+
+    if schema.respond_to?(:fullname) && schema.fullname != fullname
+      raise AvroTurf::SchemaError, "expected schema `#{schema_path}' to define type `#{fullname}'"
+    end
+
+    schema
+  rescue ::Avro::SchemaParseError => e
+    # This is a hack in order to figure out exactly which type was missing. The
+    # Avro gem ought to provide this data directly.
+    if e.to_s =~ /"([\w\.]+)" is not a schema we know about/
+      find($1)
+
+      # Re-resolve the original schema now that the dependency has been resolved.
+      @schemas.delete(fullname)
+      find(fullname)
+    else
+      raise
+    end
+  rescue Errno::ENOENT
+    raise AvroTurf::SchemaNotFoundError, "could not find Avro schema at `#{schema_path}'"
+  end
+end

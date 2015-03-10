@@ -1,6 +1,7 @@
 require 'avro_turf/version'
 require 'avro'
 require 'json'
+require 'avro_turf/schema_store'
 
 class AvroTurf
   class Error < StandardError; end
@@ -8,9 +9,8 @@ class AvroTurf
   class SchemaNotFoundError < Error; end
 
   def initialize(schemas_path:, namespace: nil)
-    @schemas_path = schemas_path or raise "Please specify a schema path"
-    @schemas = Hash.new
     @namespace = namespace
+    @schema_store = SchemaStore.new(path: schemas_path)
   end
 
   # Encodes data to Avro using the specified schema.
@@ -36,7 +36,7 @@ class AvroTurf
   #
   # Returns nothing.
   def encode_to_stream(data, schema_name:, stream:, namespace: @namespace)
-    schema = resolve_schema(schema_name, namespace)
+    schema = @schema_store.find(schema_name, namespace)
     writer = Avro::IO::DatumWriter.new(schema)
 
     dw = Avro::DataFile::Writer.new(stream, writer, schema)
@@ -53,47 +53,9 @@ class AvroTurf
   # Returns whatever is encoded in the data.
   def decode(encoded_data, schema_name: nil, namespace: @namespace)
     io = StringIO.new(encoded_data)
-    schema = schema_name && resolve_schema(schema_name, namespace)
+    schema = schema_name && @schema_store.find(schema_name, namespace)
     reader = Avro::IO::DatumReader.new(nil, schema)
     dr = Avro::DataFile::Reader.new(io, reader)
     dr.first
-  end
-
-  private
-
-  # Resolves and returns a schema.
-  #
-  # schema_name - The String name of the schema to resolve.
-  #
-  # Returns an Avro::Schema.
-  def resolve_schema(name, namespace = nil)
-    fullname = Avro::Name.make_fullname(name, namespace)
-
-    return @schemas[fullname] if @schemas.key?(fullname)
-
-    *namespace, schema_name = fullname.split(".")
-    schema_path = File.join(@schemas_path, *namespace, schema_name + ".avsc")
-    schema_json = JSON.parse(File.read(schema_path))
-    schema = Avro::Schema.real_parse(schema_json, @schemas)
-
-    if schema.respond_to?(:fullname) && schema.fullname != fullname
-      raise SchemaError, "expected schema `#{schema_path}' to define type `#{fullname}'"
-    end
-
-    schema
-  rescue ::Avro::SchemaParseError => e
-    # This is a hack in order to figure out exactly which type was missing. The
-    # Avro gem ought to provide this data directly.
-    if e.to_s =~ /"([\w\.]+)" is not a schema we know about/
-      resolve_schema($1)
-
-      # Re-resolve the original schema now that the dependency has been resolved.
-      @schemas.delete(fullname)
-      resolve_schema(fullname)
-    else
-      raise
-    end
-  rescue Errno::ENOENT
-    raise SchemaNotFoundError, "could not find Avro schema at `#{schema_path}'"
   end
 end
