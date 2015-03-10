@@ -20,15 +20,28 @@ class AvroTurf
   #
   # Returns a String containing the encoded data.
   def encode(data, schema_name:, namespace: @namespace)
+    stream = StringIO.new
+
+    encode_to_stream(data, stream: stream, schema_name: schema_name, namespace: namespace)
+
+    stream.string
+  end
+
+  # Encodes data to Avro using the specified schema and writes it to the
+  # specified stream.
+  #
+  # data        - The data that should be encoded.
+  # schema_name - The name of a schema in the `schemas_path`.
+  # stream      - An IO object that the encoded data should be written to (optional).
+  #
+  # Returns nothing.
+  def encode_to_stream(data, schema_name:, stream:, namespace: @namespace)
     schema = resolve_schema(schema_name, namespace)
     writer = Avro::IO::DatumWriter.new(schema)
 
-    io = StringIO.new
-    dw = Avro::DataFile::Writer.new(io, writer, schema)
+    dw = Avro::DataFile::Writer.new(stream, writer, schema)
     dw << data
     dw.close
-
-    io.string
   end
 
   # Decodes Avro data.

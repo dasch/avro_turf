@@ -1,8 +1,4 @@
-require 'fakefs/spec_helpers'
-
 describe AvroTurf do
-  include FakeFS::SpecHelpers
-
   let(:avro) { AvroTurf.new(schemas_path: "spec/schemas/") }
 
   before do
@@ -223,11 +219,5 @@ describe AvroTurf do
     encoded_data = avro.encode(data, schema_name: "person")
 
     expect(avro.decode(encoded_data, schema_name: "person")).to eq(data)
-  end
-
-  def define_schema(path, content)
-    File.open(File.join("spec/schemas", path), "w") do |f|
-      f.write(content)
-    end
   end
 end
