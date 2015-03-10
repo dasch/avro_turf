@@ -90,4 +90,20 @@ describe AvroTurf do
       expect(avro.decode(stream.string)).to eq "hello"
     end
   end
+
+  describe "#decode_stream" do
+    it "decodes Avro data from a stream" do
+      define_schema "message.avsc", <<-AVSC
+        {
+          "name": "message",
+          "type": "string"
+        }
+      AVSC
+
+      encoded_data = avro.encode("hello", schema_name: "message")
+      stream = StringIO.new(encoded_data)
+
+      expect(avro.decode_stream(stream)).to eq "hello"
+    end
+  end
 end
