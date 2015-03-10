@@ -166,6 +166,12 @@ describe AvroTurf do
     expect(avro.decode(encoded_data, schema_name: "person", namespace: "test.people")).to eq(data)
   end
 
+  it "raises AvroTurf::SchemaNotFoundError if there's no schema file matching the name" do
+    expect {
+      avro.encode("yo", schema_name: "not_there")
+    }.to raise_error(AvroTurf::SchemaNotFoundError, "could not find Avro schema at `spec/schemas/not_there.avsc'")
+  end
+
   it "raises AvroTurf::SchemaError if the schema's namespace doesn't match the file location" do
     FileUtils.mkdir_p("spec/schemas/test/people")
 

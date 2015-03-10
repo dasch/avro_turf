@@ -5,6 +5,7 @@ require 'json'
 class AvroTurf
   class Error < StandardError; end
   class SchemaError < Error; end
+  class SchemaNotFoundError < Error; end
 
   def initialize(schemas_path:, namespace: nil)
     @schemas_path = schemas_path or raise "Please specify a schema path"
@@ -79,5 +80,7 @@ class AvroTurf
     else
       raise
     end
+  rescue Errno::ENOENT
+    raise SchemaNotFoundError, "could not find Avro schema at `#{schema_path}'"
   end
 end
