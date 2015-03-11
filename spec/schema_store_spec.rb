@@ -143,6 +143,37 @@ describe AvroTurf::SchemaStore do
       }.to raise_error(AvroTurf::SchemaError, "expected schema `spec/schemas/test/people/person.avsc' to define type `test.people.person'")
     end
 
+    it "handles circular dependencies" do
+      define_schema "a.avsc", <<-AVSC
+        {
+          "name": "a",
+          "type": "record",
+          "fields": [
+            {
+              "type": "b",
+              "name": "b"
+            }
+          ]
+        }
+      AVSC
+
+      define_schema "b.avsc", <<-AVSC
+        {
+          "name": "b",
+          "type": "record",
+          "fields": [
+            {
+              "type": "a",
+              "name": "a"
+            }
+          ]
+        }
+      AVSC
+
+      schema = store.find("a")
+      expect(schema.fullname).to eq "a"
+    end
+
     it "caches schemas in memory" do
       define_schema "person.avsc", <<-AVSC
         {
