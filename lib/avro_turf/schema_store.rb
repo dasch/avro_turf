@@ -39,4 +39,20 @@ class AvroTurf::SchemaStore
   rescue Errno::ENOENT
     raise AvroTurf::SchemaNotFoundError, "could not find Avro schema at `#{schema_path}'"
   end
+
+  # Loads all schema definition files in the `schemas_dir`.
+  def load_schemas!
+    pattern = [@path, "**", "*.avsc"].join("/")
+
+    Dir.glob(pattern) do |schema_path|
+      # Remove the path prefix.
+      schema_path.sub!(/^\/#{@path}\//, "")
+
+      # Replace `/` with `.` and chop off the file extension.
+      schema_name = File.basename(schema_path.tr("/", "."), ".avsc")
+
+      # Load and cache the schema.
+      find(schema_name)
+    end
+  end
 end

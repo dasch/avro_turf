@@ -71,4 +71,9 @@ class AvroTurf
     dr = Avro::DataFile::Reader.new(stream, reader)
     dr.first
   end
+
+  # Loads all schema definition files in the `schemas_dir`.
+  def load_schemas!
+    @schema_store.load_schemas!
+  end
 end
