@@ -8,6 +8,8 @@ class AvroTurf
   class SchemaError < Error; end
   class SchemaNotFoundError < Error; end
 
+  DEFAULT_CODEC = :deflate
+
   def initialize(schemas_path:, namespace: nil)
     @namespace = namespace
     @schema_store = SchemaStore.new(path: schemas_path)
@@ -39,7 +41,7 @@ class AvroTurf
     schema = @schema_store.find(schema_name, namespace)
     writer = Avro::IO::DatumWriter.new(schema)
 
-    dw = Avro::DataFile::Writer.new(stream, writer, schema)
+    dw = Avro::DataFile::Writer.new(stream, writer, schema, DEFAULT_CODEC)
     dw << data
     dw.close
   end
