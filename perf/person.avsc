@@ -1,0 +1,14 @@
+{
+  "name": "person",
+  "type": "record",
+  "fields": [
+    {
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "name": "address",
+      "type": "address"
+    }
+  ]
+}

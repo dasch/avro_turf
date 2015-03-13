@@ -1,0 +1,14 @@
+{
+  "name": "address",
+  "type": "record",
+  "fields": [
+    {
+      "name": "street",
+      "type": "string"
+    },
+    {
+      "name": "city",
+      "type": "string"
+    }
+  ]
+}
