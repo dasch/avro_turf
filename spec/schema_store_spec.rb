@@ -198,4 +198,56 @@ describe AvroTurf::SchemaStore do
       expect(schema.fullname).to eq "person"
     end
   end
+
+  describe "#load_schemas!" do
+    it "loads schemas defined in the `schemas_path` directory" do
+      define_schema "person.avsc", <<-AVSC
+        {
+          "name": "person",
+          "type": "record",
+          "fields": [
+            {
+              "type": "string",
+              "name": "full_name"
+            }
+          ]
+        }
+      AVSC
+
+      # Warm the schema cache.
+      store.load_schemas!
+
+      # Force a failure if the schema file is read again.
+      FileUtils.rm("spec/schemas/person.avsc")
+
+      schema = store.find("person")
+      expect(schema.fullname).to eq "person"
+    end
+
+    it "recursively finds schema definitions in subdirectories" do
+      FileUtils.mkdir_p("spec/schemas/foo/bar")
+
+      define_schema "foo/bar/person.avsc", <<-AVSC
+        {
+          "name": "foo.bar.person",
+          "type": "record",
+          "fields": [
+            {
+              "type": "string",
+              "name": "full_name"
+            }
+          ]
+        }
+      AVSC
+
+      # Warm the schema cache.
+      store.load_schemas!
+
+      # Force a failure if the schema file is read again.
+      FileUtils.rm("spec/schemas/foo/bar/person.avsc")
+
+      schema = store.find("foo.bar.person")
+      expect(schema.fullname).to eq "foo.bar.person"
+    end
+  end
 end
