@@ -6,7 +6,7 @@ describe AvroTurf do
   end
 
   describe "#encode" do
-    it "encodes data with Avro" do
+    before do
       define_schema "person.avsc", <<-AVSC
         {
           "name": "person",
@@ -19,7 +19,9 @@ describe AvroTurf do
           ]
         }
       AVSC
+    end
 
+    it "encodes data with Avro" do
       data = {
         "full_name" => "John Doe"
       }
@@ -27,6 +29,20 @@ describe AvroTurf do
       encoded_data = avro.encode(data, schema_name: "person")
 
       expect(avro.decode(encoded_data)).to eq(data)
+    end
+
+    it "allows specifying a codec that should be used to compress messages" do
+      compressed_avro = AvroTurf.new(schemas_path: "spec/schemas/", codec: "deflate")
+
+      data = {
+        "full_name" => "John Doe" * 100
+      }
+
+      uncompressed_data = avro.encode(data, schema_name: "person")
+      compressed_data = compressed_avro.encode(data, schema_name: "person")
+
+      expect(compressed_data.bytesize).to be < uncompressed_data.bytesize
+      expect(compressed_avro.decode(compressed_data)).to eq(data)
     end
   end
 
