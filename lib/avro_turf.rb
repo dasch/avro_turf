@@ -2,6 +2,7 @@ require 'avro_turf/version'
 require 'avro'
 require 'json'
 require 'avro_turf/schema_store'
+require 'avro_turf/core_ext'
 
 class AvroTurf
   class Error < StandardError; end
@@ -48,7 +49,7 @@ class AvroTurf
     writer = Avro::IO::DatumWriter.new(schema)
 
     dw = Avro::DataFile::Writer.new(stream, writer, schema, @codec)
-    dw << data
+    dw << data.as_avro
     dw.close
   end
 
