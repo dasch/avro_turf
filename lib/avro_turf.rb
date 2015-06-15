@@ -49,7 +49,7 @@ class AvroTurf
     writer = Avro::IO::DatumWriter.new(schema)
 
     dw = Avro::DataFile::Writer.new(stream, writer, schema, @codec)
-    dw << data
+    dw << data.as_avro
     dw.close
   end
 
