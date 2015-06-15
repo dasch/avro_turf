@@ -2,6 +2,7 @@ require 'avro_turf/version'
 require 'avro'
 require 'json'
 require 'avro_turf/schema_store'
+require 'avro_turf/core_ext'
 
 class AvroTurf
   class Error < StandardError; end

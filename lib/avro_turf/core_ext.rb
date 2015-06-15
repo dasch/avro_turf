@@ -1,0 +1,7 @@
+require 'avro_turf/core_ext/string'
+require 'avro_turf/core_ext/numeric'
+require 'avro_turf/core_ext/enumerable'
+require 'avro_turf/core_ext/hash'
+require 'avro_turf/core_ext/time'
+require 'avro_turf/core_ext/date'
+require 'avro_turf/core_ext/symbol'
