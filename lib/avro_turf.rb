@@ -8,6 +8,13 @@ class AvroTurf
   class SchemaError < Error; end
   class SchemaNotFoundError < Error; end
 
+  # Create a new AvroTurf instance with the specified configuration.
+  #
+  # schemas_path - The String path to the root directory containing Avro schemas.
+  # namespace    - The String namespace that should be used to qualify schema names (optional).
+  # codec        - The String name of a codec that should be used to compress messages (optional).
+  #
+  # Currently, the only valid codec name is `deflate`.
   def initialize(schemas_path:, namespace: nil, codec: nil)
     @namespace = namespace
     @schema_store = SchemaStore.new(path: schemas_path)
@@ -34,9 +41,6 @@ class AvroTurf
   # data        - The data that should be encoded.
   # schema_name - The name of a schema in the `schemas_path`.
   # stream      - An IO object that the encoded data should be written to (optional).
-  # codec       - The String name of a codec that should be used to compress messages (optional).
-  #
-  # Currently, the only valid codec name is `deflate`.
   #
   # Returns nothing.
   def encode_to_stream(data, schema_name:, stream:, namespace: @namespace)
