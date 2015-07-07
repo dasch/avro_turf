@@ -9,17 +9,17 @@ class AvroTurf
   class SchemaError < Error; end
   class SchemaNotFoundError < Error; end
 
+  META_SCHEMA = Avro::Schema.parse('{"type": "map", "values": "bytes"}')
+  META_WRITER = Avro::IO::DatumWriter.new(META_SCHEMA)
+  META_READER = Avro::IO::DatumReader.new(META_SCHEMA)
+
   # Create a new AvroTurf instance with the specified configuration.
   #
   # schemas_path - The String path to the root directory containing Avro schemas.
   # namespace    - The String namespace that should be used to qualify schema names (optional).
-  # codec        - The String name of a codec that should be used to compress messages (optional).
-  #
-  # Currently, the only valid codec name is `deflate`.
-  def initialize(schemas_path:, namespace: nil, codec: nil)
+  def initialize(schemas_path:, namespace: nil)
     @namespace = namespace
     @schema_store = SchemaStore.new(path: schemas_path)
-    @codec = codec
   end
 
   # Encodes data to Avro using the specified schema.
@@ -46,11 +46,16 @@ class AvroTurf
   # Returns nothing.
   def encode_to_stream(data, schema_name:, stream:, namespace: @namespace)
     schema = @schema_store.find(schema_name, namespace)
-    writer = Avro::IO::DatumWriter.new(schema)
+    encoder = Avro::IO::BinaryEncoder.new(stream)
 
-    dw = Avro::DataFile::Writer.new(stream, writer, schema, @codec)
-    dw << data.as_avro
-    dw.close
+    meta = {
+      'avro.schema' => schema.to_s
+    }
+
+    META_WRITER.write(meta, encoder)
+
+    writer = Avro::IO::DatumWriter.new(schema)
+    writer.write(data, encoder)
   end
 
   # Decodes Avro data.
@@ -76,9 +81,11 @@ class AvroTurf
   # Returns whatever is encoded in the stream.
   def decode_stream(stream, schema_name: nil, namespace: @namespace)
     schema = schema_name && @schema_store.find(schema_name, namespace)
-    reader = Avro::IO::DatumReader.new(nil, schema)
-    dr = Avro::DataFile::Reader.new(stream, reader)
-    dr.first
+    decoder = Avro::IO::BinaryDecoder.new(stream)
+    meta = META_READER.read(decoder)
+    writer_schema = Avro::Schema.parse(meta.fetch("avro.schema"))
+    reader = Avro::IO::DatumReader.new(writer_schema, schema)
+    reader.read(decoder)
   end
 
   # Loads all schema definition files in the `schemas_dir`.
