@@ -1,5 +1,5 @@
 class AvroTurf::SchemaStore
-  def initialize(path:)
+  def initialize(path: nil)
     @path = path or raise "Please specify a schema path"
     @schemas = Hash.new
   end

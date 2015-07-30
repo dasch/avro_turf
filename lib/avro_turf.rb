@@ -16,7 +16,7 @@ class AvroTurf
   # codec        - The String name of a codec that should be used to compress messages (optional).
   #
   # Currently, the only valid codec name is `deflate`.
-  def initialize(schemas_path:, namespace: nil, codec: nil)
+  def initialize(schemas_path: nil, namespace: nil, codec: nil)
     @namespace = namespace
     @schema_store = SchemaStore.new(path: schemas_path)
     @codec = codec
@@ -28,7 +28,7 @@ class AvroTurf
   # schema_name - The name of a schema in the `schemas_path`.
   #
   # Returns a String containing the encoded data.
-  def encode(data, schema_name:, namespace: @namespace)
+  def encode(data, schema_name: nil, namespace: @namespace)
     stream = StringIO.new
 
     encode_to_stream(data, stream: stream, schema_name: schema_name, namespace: namespace)
@@ -44,7 +44,7 @@ class AvroTurf
   # stream      - An IO object that the encoded data should be written to (optional).
   #
   # Returns nothing.
-  def encode_to_stream(data, schema_name:, stream:, namespace: @namespace)
+  def encode_to_stream(data, schema_name: nil, stream: nil, namespace: @namespace)
     schema = @schema_store.find(schema_name, namespace)
     writer = Avro::IO::DatumWriter.new(schema)
 
