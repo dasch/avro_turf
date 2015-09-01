@@ -3,6 +3,7 @@ require 'avro'
 require 'json'
 require 'avro_turf/schema_store'
 require 'avro_turf/core_ext'
+require 'avro_turf/model'
 
 class AvroTurf
   class Error < StandardError; end
@@ -77,14 +78,22 @@ class AvroTurf
   #
   # Returns whatever is encoded in the stream.
   def decode_stream(stream, schema_name: nil, namespace: @namespace)
-    schema = schema_name && @schema_store.find(schema_name, namespace)
+    schema = schema_name && find_schema(schema_name, namespace)
     reader = Avro::IO::DatumReader.new(nil, schema)
     dr = Avro::DataFile::Reader.new(stream, reader)
     dr.first
   end
 
+  def find_schema(schema_name, namespace = nil)
+    @schema_store.find(schema_name, namespace)
+  end
+
   # Loads all schema definition files in the `schemas_dir`.
   def load_schemas!
     @schema_store.load_schemas!
+  end
+
+  def build_model(**options)
+    AvroTurf::Model.build(self, **options)
   end
 end
