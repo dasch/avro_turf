@@ -118,4 +118,37 @@ describe AvroTurf::Model, ".build" do
     expect(list.value).to eq 1
     expect(list.next.value).to eq 2
   end
+
+  it "allows encoding a model instance" do
+    define_schema "person.avsc", <<-AVSC
+      {
+        "name": "person",
+        "type": "record",
+        "fields": [
+          {
+            "name": "address",
+            "type": {
+              "type": "record",
+              "name": "address",
+              "fields": [
+                {
+                  "name": "street",
+                  "type": "string"
+                },
+                {
+                  "name": "city",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    AVSC
+
+    klass = AvroTurf::Model.build(avro, schema_name: "person")
+    person = klass.new(address: { street: "Snaregade 12", city: "Copenhagen" })
+
+    expect(klass.decode(person.encode)).to eq person
+  end
 end
