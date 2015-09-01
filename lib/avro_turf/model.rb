@@ -2,7 +2,7 @@ class AvroTurf
   class Model
 
     class << self
-      attr_reader :schema
+      attr_reader :schema, :avro
 
       def build(avro: nil, schema_name: nil, schema: nil, **options)
         avro ||= AvroTurf.new(**options)
@@ -12,32 +12,7 @@ class AvroTurf
           @avro = avro
           @schema = schema
 
-          schema.fields.each do |field|
-            type = field.type
-
-            attr_accessor field.name
-
-            case type.type_sym
-            when :enum
-              type.symbols.each do |symbol|
-                const_set(symbol.upcase, symbol)
-              end
-            when :record
-              klass = build(avro: avro, schema: type)
-
-              # hello_world -> HelloWorld
-              klass_name = type.name.
-                split("_").
-                map {|word| word[0] = word[0].upcase; word }.
-                join
-
-              const_set(klass_name, klass)
-
-              define_method("#{field.name}=") do |value|
-                instance_variable_set("@#{field.name}", klass.new(value))
-              end
-            end
-          end
+          define_methods_from_schema!
         end
       end
 
@@ -47,6 +22,37 @@ class AvroTurf
 
       def decode(data)
         new(@avro.decode(data, schema_name: @schema.name))
+      end
+
+      private
+
+      def define_methods_from_schema!
+        schema.fields.each do |field|
+          type = field.type
+
+          attr_accessor field.name
+
+          case type.type_sym
+          when :enum
+            type.symbols.each do |symbol|
+              const_set(symbol.upcase, symbol)
+            end
+          when :record
+            klass = build(avro: avro, schema: type)
+
+            # hello_world -> HelloWorld
+            klass_name = type.name.
+              split("_").
+              map {|word| word[0] = word[0].upcase; word }.
+              join
+
+            const_set(klass_name, klass)
+
+            define_method("#{field.name}=") do |value|
+              instance_variable_set("@#{field.name}", klass.new(value))
+            end
+          end
+        end
       end
     end
 
