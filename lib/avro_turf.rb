@@ -94,6 +94,6 @@ class AvroTurf
   end
 
   def build_model(**options)
-    AvroTurf::Model.build(self, **options)
+    AvroTurf::Model.build(avro: self, **options)
   end
 end
