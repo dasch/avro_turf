@@ -4,7 +4,8 @@ class AvroTurf
     class << self
       attr_reader :schema
 
-      def build(avro, schema_name: nil, schema: nil)
+      def build(avro: nil, schema_name: nil, schema: nil, **options)
+        avro ||= AvroTurf.new(**options)
         schema ||= avro.find_schema(schema_name)
 
         Class.new(self) do
@@ -22,7 +23,7 @@ class AvroTurf
                 const_set(symbol.upcase, symbol)
               end
             when :record
-              klass = build(avro, schema: type)
+              klass = build(avro: avro, schema: type)
 
               # hello_world -> HelloWorld
               klass_name = type.name.

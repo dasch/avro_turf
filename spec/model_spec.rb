@@ -19,7 +19,7 @@ describe AvroTurf::Model, ".build" do
       }
     AVSC
 
-    klass = AvroTurf::Model.build(avro, schema_name: "person")
+    klass = AvroTurf::Model.build(avro: avro, schema_name: "person")
     person = klass.new(name: "Jane")
 
     expect(person.name).to eq "Jane"
@@ -47,7 +47,7 @@ describe AvroTurf::Model, ".build" do
       }
     AVSC
 
-    klass = AvroTurf::Model.build(avro, schema_name: "card")
+    klass = AvroTurf::Model.build(avro: avro, schema_name: "card")
 
     expect(klass::DIAMONDS).to eq "diamonds"
 
@@ -83,7 +83,7 @@ describe AvroTurf::Model, ".build" do
       }
     AVSC
 
-    klass = AvroTurf::Model.build(avro, schema_name: "person")
+    klass = AvroTurf::Model.build(avro: avro, schema_name: "person")
 
     expect(klass::Address).not_to be_nil
 
@@ -111,7 +111,7 @@ describe AvroTurf::Model, ".build" do
       }
     AVSC
 
-    klass = AvroTurf::Model.build(avro, schema_name: "cons")
+    klass = AvroTurf::Model.build(avro: avro, schema_name: "cons")
 
     list = klass.new(value: 1, next: klass.new(value: 2))
 
@@ -146,7 +146,7 @@ describe AvroTurf::Model, ".build" do
       }
     AVSC
 
-    klass = AvroTurf::Model.build(avro, schema_name: "person")
+    klass = AvroTurf::Model.build(avro: avro, schema_name: "person")
     person = klass.new(address: { street: "Snaregade 12", city: "Copenhagen" })
 
     expect(klass.decode(person.encode)).to eq person
