@@ -4,7 +4,7 @@ class AvroTurf
     class << self
       attr_reader :schema, :avro
 
-      def build(avro: nil, schema_name: nil, schema: nil, **options)
+      def build(avro: nil, schema_name: nil, schema: nil, **options, &block)
         avro ||= AvroTurf.new(**options)
         schema ||= avro.find_schema(schema_name)
 
@@ -13,6 +13,8 @@ class AvroTurf
           @schema = schema
 
           define_methods_from_schema!
+
+          class_eval(&block) unless block.nil?
         end
       end
 

@@ -151,4 +151,29 @@ describe AvroTurf::Model, ".build" do
 
     expect(klass.decode(person.encode)).to eq person
   end
+
+  it "allows adding custom methods to the class" do
+    define_schema "person.avsc", <<-AVSC
+      {
+        "name": "person",
+        "type": "record",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          }
+        ]
+      }
+    AVSC
+
+    klass = AvroTurf::Model.build(avro: avro, schema_name: "person") do
+      def first_name
+        name.split(" ").first
+      end
+    end
+
+    person = klass.new(name: "Jane Doe")
+
+    expect(person.first_name).to eq "Jane"
+  end
 end
