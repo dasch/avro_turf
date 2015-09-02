@@ -92,8 +92,4 @@ class AvroTurf
   def load_schemas!
     @schema_store.load_schemas!
   end
-
-  def build_model(**options)
-    AvroTurf::Model.build(avro: self, **options)
-  end
 end
