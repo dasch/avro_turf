@@ -81,8 +81,10 @@ In the example above, the `person` schema references the `address` schema, even 
 // person_list.avsc
 {
   "name": "person_list",
-  "type": "array",
-  "items": "person"
+  "type": {
+    "type": "array",
+    "items": "person"
+  }
 }
 ```
 
