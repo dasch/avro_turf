@@ -142,5 +142,20 @@ describe AvroTurf do
       datum = 42
       expect(avro.valid?(datum, schema_name: "message")).to eq false
     end
+
+    it "handles symbol keys in hashes" do
+      define_schema "postcard.avsc", <<-AVSC
+        {
+          "name": "postcard",
+          "type": "record",
+          "fields": [
+            { "name": "message", "type": "string" }
+          ]
+        }
+      AVSC
+
+      datum = { message: "hello" }
+      expect(avro.valid?(datum, schema_name: "postcard")).to eq true
+    end
   end
 end

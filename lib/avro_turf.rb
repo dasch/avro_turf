@@ -94,7 +94,7 @@ class AvroTurf
   def valid?(data, schema_name: nil, namespace: @namespace)
     schema = schema_name && @schema_store.find(schema_name, namespace)
 
-    Avro::Schema.validate(schema, data)
+    Avro::Schema.validate(schema, data.as_avro)
   end
 
   # Loads all schema definition files in the `schemas_dir`.
