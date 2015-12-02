@@ -122,4 +122,25 @@ describe AvroTurf do
       expect(avro.decode_stream(stream)).to eq "hello"
     end
   end
+
+  describe "#valid?" do
+    before do
+      define_schema "message.avsc", <<-AVSC
+        {
+          "name": "message",
+          "type": "string"
+        }
+      AVSC
+    end
+
+    it "returns true if the datum matches the schema" do
+      datum = "hello"
+      expect(avro.valid?(datum, schema_name: "message")).to eq true
+    end
+
+    it "returns false if the datum does not match the schema" do
+      datum = 42
+      expect(avro.valid?(datum, schema_name: "message")).to eq false
+    end
+  end
 end
