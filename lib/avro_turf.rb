@@ -83,6 +83,20 @@ class AvroTurf
     dr.first
   end
 
+  # Validates data against an Avro schema.
+  #
+  # data        - The data that should be validated.
+  # schema    - The String name of the schema that should be used to validate
+  #             the data.
+  # namespace - The namespace of the Avro schema (optional).
+  #
+  # Returns true if the data is valid, false otherwise.
+  def valid?(data, schema_name: nil, namespace: @namespace)
+    schema = schema_name && @schema_store.find(schema_name, namespace)
+
+    Avro::Schema.validate(schema, data)
+  end
+
   # Loads all schema definition files in the `schemas_dir`.
   def load_schemas!
     @schema_store.load_schemas!
