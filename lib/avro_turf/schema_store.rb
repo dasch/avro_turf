@@ -36,7 +36,7 @@ class AvroTurf::SchemaStore
     else
       raise
     end
-  rescue Errno::ENOENT
+  rescue Errno::ENOENT, Errno::ENAMETOOLONG
     raise AvroTurf::SchemaNotFoundError, "could not find Avro schema at `#{schema_path}'"
   end
 
