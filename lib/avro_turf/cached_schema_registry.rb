@@ -1,7 +1,10 @@
+require 'avro_turf/schema_registry'
+
 # Caches registrations and lookups to the schema registry in memory.
-class AvroTurf::CachedSchemaRegistry
+class AvroTurf::CachedSchemaRegistry < DelegateClass(AvroTurf::SchemaRegistry)
+
   def initialize(upstream)
-    @upstream = upstream
+    @upstream = super(upstream)
     @schemas_by_id = {}
     @ids_by_schema = {}
   end
