@@ -3,10 +3,17 @@ require 'sinatra/base'
 class FakeSchemaRegistryServer < Sinatra::Base
   SCHEMAS = []
 
+  helpers do
+    def validate_schema(schema)
+      Avro::Schema.parse(schema)
+    end
+  end
+
   post "/subjects/:subject/versions" do
     request.body.rewind
     schema = JSON.parse(request.body.read).fetch("schema")
 
+    validate_schema(schema)
     SCHEMAS << schema
     schema_id = SCHEMAS.size - 1
 

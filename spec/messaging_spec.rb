@@ -2,6 +2,11 @@ require 'webmock/rspec'
 require 'avro_turf/messaging'
 require_relative 'fake_schema_registry_server'
 
+# active_support/core_ext is required only to defensively test
+# against how it interferes with JSON encoding
+require 'active_support'
+require 'active_support/core_ext'
+
 describe AvroTurf::Messaging do
   let(:registry_url) { "http://registry.example.com" }
   let(:logger) { Logger.new(StringIO.new) }

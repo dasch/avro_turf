@@ -44,7 +44,7 @@ class AvroTurf
 
       # Schemas are registered under the full name of the top level Avro record
       # type.
-      schema_id = @registry.register(schema.fullname, schema)
+      schema_id = @registry.register(schema.fullname, schema.to_s)
 
       stream = StringIO.new
       writer = Avro::IO::DatumWriter.new(schema)
