@@ -28,6 +28,16 @@ shared_examples_for "a schema registry client" do
     end
   end
 
+  describe "#fetch" do
+    context "when the schema does not exist" do
+      it "raises an error" do
+        expect do
+          registry.fetch(-1)
+        end.to raise_error(Excon::Errors::NotFound)
+      end
+    end
+  end
+
   describe "#subjects" do
     it "lists the subjects in the registry" do
       subjects = Array.new(2) { |n| "subject#{n}" }
@@ -44,6 +54,16 @@ shared_examples_for "a schema registry client" do
       end
       expect(registry.subject_versions(subject_name))
         .to be_json_eql((1..2).to_a.to_json)
+    end
+
+    context "when the subject does not exist" do
+      let(:subject_name) { 'missing' }
+
+      it "raises an error" do
+        expect do
+          registry.subject_versions(subject_name).inspect
+        end.to raise_error(Excon::Errors::NotFound)
+      end
     end
   end
 
@@ -79,6 +99,22 @@ shared_examples_for "a schema registry client" do
       it "returns the latest version" do
         expect(registry.subject_version(subject_name))
           .to eq(JSON.parse(expected))
+      end
+    end
+
+    context "when the subject does not exist" do
+      it "raises an error" do
+        expect do
+          registry.subject_version('missing')
+        end.to raise_error(Excon::Errors::NotFound)
+      end
+    end
+
+    context "when the version does not exist" do
+      it "raises an error" do
+        expect do
+          registry.subject_version(subject_name, 3)
+        end.to raise_error(Excon::Errors::NotFound)
       end
     end
   end
