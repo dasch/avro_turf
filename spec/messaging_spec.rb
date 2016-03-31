@@ -56,18 +56,16 @@ describe AvroTurf::Messaging do
         # Simulate the presence of active_support/core_ext by monkey patching
         # the schema store to monkey patch #to_json on the returned schema.
         schema_store = messaging.instance_variable_get(:@schema_store)
-        class << schema_store
-          def find(*_args)
-            super.extend(Module.new do
-              # Replace to_json on the returned schema with an implementation
-              # that returns something similar to active_support/core_ext/json
-              def to_json(*args)
-                instance_variables.each_with_object(Hash.new) do |ivar, result|
-                  result[ivar.to_s.sub('@','')] = instance_variable_get(ivar)
-                end.to_json(*args)
-              end
-            end)
-          end
+        def schema_store.find(*)
+          super.extend(Module.new do
+            # Replace to_json on the returned schema with an implementation
+            # that returns something similar to active_support/core_ext/json
+            def to_json(*args)
+              instance_variables.each_with_object(Hash.new) do |ivar, result|
+                result[ivar.to_s.sub('@','')] = instance_variable_get(ivar)
+              end.to_json(*args)
+            end
+          end)
         end
       end
     end
