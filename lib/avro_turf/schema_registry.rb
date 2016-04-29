@@ -62,7 +62,8 @@ class AvroTurf::SchemaRegistry
   end
 
   def request(path, **options)
-    response = @connection.request(path: path, expects: 200, **options)
+    options = { expects: 200 }.merge!(options)
+    response = @connection.request(path: path, **options)
     JSON.parse(response.body)
   end
 end
