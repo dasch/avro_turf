@@ -1,7 +1,10 @@
 require 'bundler/setup'
 require 'logger'
+require 'json_spec'
 require 'fakefs/spec_helpers'
 require 'avro_turf'
+
+Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 
 module Helpers
   def define_schema(path, content)
