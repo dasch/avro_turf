@@ -46,7 +46,7 @@ class AvroTurf::SchemaStore
 
     Dir.glob(pattern) do |schema_path|
       # Remove the path prefix.
-      schema_path.sub!(/^\/#{@path}\//, "")
+      schema_path.sub!(/^\/?#{@path}\//, "")
 
       # Replace `/` with `.` and chop off the file extension.
       schema_name = File.basename(schema_path.tr("/", "."), ".avsc")
