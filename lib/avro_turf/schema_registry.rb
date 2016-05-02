@@ -18,7 +18,7 @@ class AvroTurf::SchemaRegistry
 
   def register(subject, schema)
     data = post("/subjects/#{subject}/versions", body: {
-      schema: schema
+      schema: schema.to_s
     }.to_json)
 
     id = data.fetch("id")
@@ -47,7 +47,7 @@ class AvroTurf::SchemaRegistry
   def check(subject, schema)
     data = post("/subjects/#{subject}",
                 expects: [200, 404],
-                body: { schema: schema }.to_json)
+                body: { schema: schema.to_s }.to_json)
     data unless data.has_key?("error_code")
   end
 
