@@ -1,6 +1,6 @@
 require 'webmock/rspec'
 require 'avro_turf/messaging'
-require_relative 'fake_schema_registry_server'
+require 'avro_turf/test/fake_schema_registry_server'
 
 describe AvroTurf::Messaging do
   let(:registry_url) { "http://registry.example.com" }
