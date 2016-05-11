@@ -38,16 +38,41 @@ describe AvroTurf::Messaging do
     AVSC
   end
 
-  it "encodes and decodes messages" do
-    message = { "full_name" => "John Doe" }
-    data = avro.encode(message, schema_name: "person")
-    expect(avro.decode(data)).to eq message
+  shared_examples_for "encoding and decoding" do
+    it "encodes and decodes messages" do
+      message = { "full_name" => "John Doe" }
+      data = avro.encode(message, schema_name: "person")
+      expect(avro.decode(data)).to eq message
+    end
+
+    it "allows specifying a reader's schema" do
+      message = { "full_name" => "John Doe" }
+      data = avro.encode(message, schema_name: "person")
+      expect(avro.decode(data, schema_name: "person")).to eq message
+    end
   end
 
-  it "allows specifying a reader's schema" do
-    message = { "full_name" => "John Doe" }
-    data = avro.encode(message, schema_name: "person")
-    expect(avro.decode(data, schema_name: "person")).to eq message
+  it_behaves_like "encoding and decoding"
+
+  context "with a provided registry" do
+    let(:registry) { AvroTurf::SchemaRegistry.new(registry_url, logger: logger) }
+
+    let(:avro) do
+      AvroTurf::Messaging.new(
+        registry: registry,
+        schemas_path: "spec/schemas",
+        logger: logger
+      )
+    end
+
+    it_behaves_like "encoding and decoding"
+
+    it "uses the provided schema store" do
+      allow(registry).to receive(:register).and_call_original
+      message = { "full_name" => "John Doe" }
+      avro.encode(message, schema_name: "person")
+      expect(registry).to have_received(:register)
+    end
   end
 
   context "when active_support/core_ext is present" do
