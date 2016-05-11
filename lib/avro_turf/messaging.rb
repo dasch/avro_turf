@@ -19,15 +19,17 @@ class AvroTurf
 
     # Instantiate a new Messaging instance with the given configuration.
     #
+    # registry     - A schema registry object that responds to all methods in the
+    #                AvroTurf::SchemaRegistry interface.
     # registry_url - The String URL of the schema registry that should be used.
     # schemas_path - The String file system path where local schemas are stored.
     # namespace    - The String default schema namespace.
     # logger       - The Logger that should be used to log information (optional).
-    def initialize(registry_url: nil, schemas_path: nil, namespace: nil, logger: nil)
+    def initialize(registry: nil, registry_url: nil, schemas_path: nil, namespace: nil, logger: nil)
       @logger = logger || Logger.new($stderr)
       @namespace = namespace
       @schema_store = SchemaStore.new(path: schemas_path || DEFAULT_SCHEMAS_PATH)
-      @registry = CachedSchemaRegistry.new(SchemaRegistry.new(registry_url, logger: @logger))
+      @registry = registry || CachedSchemaRegistry.new(SchemaRegistry.new(registry_url, logger: @logger))
     end
 
     # Encodes a message using the specified schema.
