@@ -55,4 +55,8 @@ class AvroTurf::SchemaStore
       find(schema_name)
     end
   end
+
+  def store!(full_name, schema)
+    @schemas[full_name] = schema
+  end
 end
