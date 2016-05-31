@@ -1,6 +1,6 @@
 require 'webmock/rspec'
 require 'avro_turf/cached_schema_registry'
-require_relative 'fake_schema_registry_server'
+require 'avro_turf/test/fake_schema_registry_server'
 
 describe AvroTurf::CachedSchemaRegistry do
   let(:upstream) { instance_double(AvroTurf::SchemaRegistry) }

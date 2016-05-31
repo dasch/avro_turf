@@ -116,3 +116,26 @@ data = avro.encode({ "title" => "hello, world" }, schema_name: "greeting")
 # instances of the same schema id will be served by the cache.
 avro.decode(data) #=> { "title" => "hello, world" }
 ```
+
+### Testing Support
+
+AvroTurf includes a `FakeSchemaRegistryServer` that can be used in tests. The
+fake schema registry server depends on Sinatra but it is _not_ listed as a runtime
+dependency for AvroTurf. Sinatra must be added to your Gemfile or gemspec in order
+to use the fake server.
+
+Example using RSpec:
+
+```ruby
+require 'avro_turf/test/fake_schema_registry_server'
+require 'webmock/rspec'
+
+# within an example
+let(:registry_url) { "http://registry.example.com" }
+before do
+  stub_request(:any, /^#{registry_url}/).to_rack(FakeSchemaRegistryServer)
+  FakeSchemaRegistryServer.clear
+end
+
+# Messaging objects created with the same registry_url will now use the fake server.
+```
