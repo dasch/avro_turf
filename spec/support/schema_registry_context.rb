@@ -26,6 +26,26 @@ shared_examples_for "a schema registry client" do
 
       expect(fetched_schema).to eq(schema)
     end
+
+    context "with an Avro::Schema" do
+      let(:avro_schema) { Avro::Schema.parse(schema) }
+
+      it "allows registration using an Avro::Schema" do
+        id = registry.register(subject_name, avro_schema)
+        expect(registry.fetch(id)).to eq(avro_schema.to_s)
+      end
+
+      context "with ActiveSupport present" do
+        before do
+          break_to_json(avro_schema)
+        end
+
+        it "allows registering an Avro schema" do
+          id = registry.register(subject_name, avro_schema)
+          expect(registry.fetch(id)).to eq(avro_schema.to_s)
+        end
+      end
+    end
   end
 
   describe "#fetch" do
@@ -133,12 +153,38 @@ shared_examples_for "a schema registry client" do
       it "returns the schema details" do
         expect(registry.check(subject_name, schema)).to eq(JSON.parse(expected))
       end
+
+      context "with an Avro::Schema" do
+        let(:avro_schema) { Avro::Schema.parse(schema) }
+
+        it "supports a check using an Avro schema" do
+          expect(registry.check(subject_name, avro_schema)).to eq(JSON.parse(expected))
+        end
+
+        context "with ActiveSupport present" do
+          before { break_to_json(avro_schema) }
+
+          it "supports a check using an Avro schema" do
+            expect(registry.check(subject_name, avro_schema)).to eq(JSON.parse(expected))
+          end
+        end
+      end
     end
 
     context "when the schema is not registered" do
       it "returns nil" do
         expect(registry.check("missing", schema)).to be_nil
       end
+    end
+  end
+
+  # Monkey patch an Avro::Schema to simulate the presence of
+  # active_support/core_ext.
+  def break_to_json(avro_schema)
+    def avro_schema.to_json(*args)
+      instance_variables.each_with_object(Hash.new) do |ivar, result|
+        result[ivar.to_s.sub('@', '')] = instance_variable_get(ivar)
+      end.to_json(*args)
     end
   end
 end
