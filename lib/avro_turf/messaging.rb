@@ -28,6 +28,7 @@ class AvroTurf
       @namespace = namespace
       @schema_store = SchemaStore.new(path: schemas_path || DEFAULT_SCHEMAS_PATH)
       @registry = CachedSchemaRegistry.new(SchemaRegistry.new(registry_url, logger: @logger))
+      @schemas_by_id = {}
     end
 
     # Encodes a message using the specified schema.
@@ -85,8 +86,10 @@ class AvroTurf
       # The schema id is a 4-byte big-endian integer.
       schema_id = decoder.read(4).unpack("N").first
 
-      writers_schema_json = @registry.fetch(schema_id)
-      writers_schema = Avro::Schema.parse(writers_schema_json)
+      writers_schema = @schemas_by_id.fetch(schema_id) do
+        schema_json = @registry.fetch(schema_id)
+        @schemas_by_id[schema_id] = Avro::Schema.parse(schema_json)
+      end
 
       reader = Avro::IO::DatumReader.new(writers_schema, readers_schema)
       reader.read(decoder)
