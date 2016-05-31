@@ -101,9 +101,13 @@ The Messaging API will automatically register schemas used for encoding data, an
 
 **NOTE:** The Messaging format is _not_ compatible with the Avro data file API.
 
+The Messaging API is not included by default, so you must require 'avro_turf/messaging' explicitly if you want to use it.
+
 Using the Messaging API is simple once you have set up a Schema Registry service:
 
 ```ruby
+require 'avro_turf/messaging'
+
 # You need to pass the URL of your Schema Registry.
 avro = AvroTurf::Messaging.new(registry_url: "http://my-registry:8081/")
 
