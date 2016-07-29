@@ -51,6 +51,16 @@ class AvroTurf::SchemaRegistry
     data unless data.has_key?("error_code")
   end
 
+  # Check if a schema is compatible with the stored version.
+  # Returns true if compatible, false otherwise
+  # http://docs.confluent.io/2.0.0/schema-registry/docs/api.html#compatibility
+  def compatible?(subject, schema, version = 'latest')
+    data = post("/compatibility/subjects/#{subject}/versions/#{version}",
+                expects: [200, 404],
+                body: { schema: schema.to_s }.to_json)
+    data.fetch('is_compatible', false) unless data.has_key?('error_code')
+  end
+
   private
 
   def get(path, **options)
