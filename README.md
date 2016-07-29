@@ -121,6 +121,35 @@ data = avro.encode({ "title" => "hello, world" }, schema_name: "greeting")
 avro.decode(data) #=> { "title" => "hello, world" }
 ```
 
+In addition to encoding and decoding data, you can check whether a schema is compatible
+with a subject in the registry using the [Compatibility API](http://docs.confluent.io/2.0.0/schema-registry/docs/api.html#compatibility)
+
+```ruby
+require 'avro_turf/messaging'
+
+schema = <<-JSON
+{
+  "name": "person",
+  "type": "record",
+  "fields": [
+    {
+      "name": "full_name",
+      "type": "string"
+    },
+    {
+      "name": "address",
+      "type": "address"
+    }
+  ]
+}
+JSON
+
+avro = AvroTurf::Messaging.new(registry_url: "http://my-registry:8081/")
+
+# Returns true if the schema is compatible, false otherwise.
+avro.compatible?("person", schema)
+```
+
 ### Testing Support
 
 AvroTurf includes a `FakeSchemaRegistryServer` that can be used in tests. The
