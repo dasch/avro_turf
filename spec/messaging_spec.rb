@@ -79,7 +79,14 @@ describe AvroTurf::Messaging do
       allow(registry).to receive(:register).and_call_original
       message = { "full_name" => "John Doe" }
       avro.encode(message, schema_name: "person")
-      expect(registry).to have_received(:register)
+      expect(registry).to have_received(:register).with("person", anything)
+    end
+
+    it "allows specifying a schema registry subject" do
+      allow(registry).to receive(:register).and_call_original
+      message = { "full_name" => "John Doe" }
+      avro.encode(message, schema_name: "person", subject: "people")
+      expect(registry).to have_received(:register).with("people", anything)
     end
   end
 
