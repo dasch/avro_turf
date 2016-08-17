@@ -43,12 +43,12 @@ class AvroTurf
     # namespace   - The namespace of the schema (optional).
     #
     # Returns the encoded data as a String.
-    def encode(message, schema_name: nil, namespace: @namespace)
+    def encode(message, schema_name: nil, namespace: @namespace, subject: nil)
       schema = @schema_store.find(schema_name, namespace)
 
       # Schemas are registered under the full name of the top level Avro record
-      # type.
-      schema_id = @registry.register(schema.fullname, schema)
+      # type, or `subject` if it's provided.
+      schema_id = @registry.register(subject || schema.fullname, schema)
 
       stream = StringIO.new
       writer = Avro::IO::DatumWriter.new(schema)
