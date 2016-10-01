@@ -34,8 +34,19 @@ class AvroTurf
         end
       end
     end
+
+    module DatumReader
+      def read_default_value(field_schema, default_value)
+        if default_value == :no_default
+          raise Avro::AvroError, "Missing data for #{field_schema} with no default"
+        end
+
+        super
+      end
+    end
   end
 end
 
 Avro::Schema::RecordSchema.send(:prepend, AvroTurf::AvroGemPatch::RecordSchema)
 Avro::Schema::Field.send(:prepend, AvroTurf::AvroGemPatch::Field)
+Avro::IO::DatumReader.send(:prepend, AvroTurf::AvroGemPatch::DatumReader)
