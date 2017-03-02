@@ -52,8 +52,11 @@ class AvroTurf::SchemaRegistry
   end
 
   # Check if a schema is compatible with the stored version.
-  # Returns true if compatible, false otherwise
-  # http://docs.confluent.io/2.0.0/schema-registry/docs/api.html#compatibility
+  # Returns:
+  # - true if compatible
+  # - nil if the subject or version does not exist
+  # - false otherwise
+  # http://docs.confluent.io/3.1.2/schema-registry/docs/api.html#compatibility
   def compatible?(subject, schema, version = 'latest')
     data = post("/compatibility/subjects/#{subject}/versions/#{version}",
                 expects: [200, 404],
@@ -61,10 +64,34 @@ class AvroTurf::SchemaRegistry
     data.fetch('is_compatible', false) unless data.has_key?('error_code')
   end
 
+  # Get global config
+  def global_config
+    get("/config")
+  end
+
+  # Update global config
+  def update_global_config(config)
+    put("/config", { body: config.to_json })
+  end
+
+  # Get config for subject
+  def subject_config(subject)
+    get("/config/#{subject}")
+  end
+
+  # Update config for subject
+  def update_subject_config(subject, config)
+    put("/config/#{subject}", { body: config.to_json })
+  end
+
   private
 
   def get(path, **options)
     request(path, method: :get, **options)
+  end
+
+  def put(path, **options)
+    request(path, method: :put, **options)
   end
 
   def post(path, **options)

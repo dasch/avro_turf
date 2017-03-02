@@ -178,6 +178,67 @@ shared_examples_for "a schema registry client" do
     end
   end
 
+  describe "#global_config" do
+    let(:expected) do
+      { compatibility: 'BACKWARD' }.to_json
+    end
+
+    it "returns the global configuration" do
+      expect(registry.global_config).to eq(JSON.parse(expected))
+    end
+  end
+
+  describe "#update_global_config" do
+    let(:config) do
+      { compatibility: 'FORWARD' }
+    end
+    let(:expected) { config.to_json }
+
+    it "updates the global configuration and returns it" do
+      expect(registry.update_global_config(config)).to eq(JSON.parse(expected))
+      expect(registry.global_config).to eq(JSON.parse(expected))
+    end
+  end
+
+  describe "#subject_config" do
+    let(:expected) do
+      { compatibility: 'BACKWARD' }.to_json
+    end
+
+    context "when the subject config is not set" do
+      it "returns the global configuration" do
+        expect(registry.subject_config(subject_name)).to eq(JSON.parse(expected))
+      end
+    end
+
+    context "when the subject config is set" do
+      let(:config) do
+        { compatibility: 'FULL' }
+      end
+      let(:expected) { config.to_json }
+
+      before do
+        registry.update_subject_config(subject_name, config)
+      end
+
+      it "returns the subject config" do
+        expect(registry.subject_config(subject_name)).to eq(JSON.parse(expected))
+      end
+    end
+  end
+
+  describe "#update_subject_config" do
+    let(:config) do
+      { compatibility: 'NONE' }
+    end
+    let(:expected) { config.to_json }
+
+    it "updates the subject config and returns it" do
+      expect(registry.update_subject_config(subject_name, config)).to eq(JSON.parse(expected))
+      expect(registry.subject_config(subject_name)).to eq(JSON.parse(expected))
+    end
+  end
+
   # Monkey patch an Avro::Schema to simulate the presence of
   # active_support/core_ext.
   def break_to_json(avro_schema)

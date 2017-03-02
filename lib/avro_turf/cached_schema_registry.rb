@@ -10,7 +10,8 @@ class AvroTurf::CachedSchemaRegistry
   end
 
   # Delegate the following methods to the upstream
-  %i(subjects subject_versions subject_version check compatible?).each do |name|
+  %i(subjects subject_versions subject_version check compatible?
+     global_config update_global_config subject_config update_subject_config).each do |name|
     define_method(name) do |*args|
       instance_variable_get(:@upstream).send(name, *args)
     end

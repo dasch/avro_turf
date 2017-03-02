@@ -3,9 +3,17 @@ require 'sinatra/base'
 class FakeSchemaRegistryServer < Sinatra::Base
   SUBJECTS = Hash.new { Array.new }
   SCHEMAS = []
+  CONFIGS = Hash.new
   SUBJECT_NOT_FOUND = { error_code: 40401, message: 'Subject not found' }.to_json.freeze
   VERSION_NOT_FOUND = { error_code: 40402, message: 'Version not found' }.to_json.freeze
   SCHEMA_NOT_FOUND = { error_code: 40403, message: 'Schema not found' }.to_json.freeze
+  DEFAULT_GLOBAL_CONFIG = { 'compatibility' => 'BACKWARD'.freeze }.freeze
+
+  @global_config = DEFAULT_GLOBAL_CONFIG.dup
+
+  class << self
+    attr_reader :global_config
+  end
 
   helpers do
     def parse_schema
@@ -13,6 +21,15 @@ class FakeSchemaRegistryServer < Sinatra::Base
       JSON.parse(request.body.read).fetch("schema").tap do |schema|
         Avro::Schema.parse(schema)
       end
+    end
+
+    def parse_config
+      request.body.rewind
+      JSON.parse(request.body.read)
+    end
+
+    def global_config
+      self.class.global_config
     end
   end
 
@@ -77,8 +94,36 @@ class FakeSchemaRegistryServer < Sinatra::Base
     }.to_json
   end
 
+  post "/compatibility/subjects/:subject/versions/:version" do
+    # The ruby avro gem does not yet include a compatibility check between schemas.
+    # See https://github.com/apache/avro/pull/170
+    raise NotImplementedError
+  end
+
+  get "/config" do
+    global_config.to_json
+  end
+
+  put "/config" do
+    global_config.merge!(parse_config).to_json
+  end
+
+  get "/config/:subject" do
+    CONFIGS.fetch(params[:subject], global_config).to_json
+  end
+
+  put "/config/:subject" do
+    config = parse_config
+    subject = params[:subject]
+    CONFIGS.fetch(subject) do
+      CONFIGS[subject] = {}
+    end.merge!(config).to_json
+  end
+
   def self.clear
     SUBJECTS.clear
     SCHEMAS.clear
+    CONFIGS.clear
+    @global_config = DEFAULT_GLOBAL_CONFIG.dup
   end
 end

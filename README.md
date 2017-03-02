@@ -121,11 +121,14 @@ data = avro.encode({ "title" => "hello, world" }, schema_name: "greeting")
 avro.decode(data) #=> { "title" => "hello, world" }
 ```
 
-In addition to encoding and decoding data, you can check whether a schema is compatible
-with a subject in the registry using the [Compatibility API](http://docs.confluent.io/2.0.0/schema-registry/docs/api.html#compatibility)
+### Schema Registry Client
+
+The SchemaRegistry client used by the Messaging API can also be used directly.
+It can check whether a schema is compatible with a subject in the registry using the [Compatibility API](http://docs.confluent.io/3.1.2/schema-registry/docs/api.html#compatibility):
 
 ```ruby
-require 'avro_turf/messaging'
+require 'avro_turf'
+require 'avro_turf/schema_registry'
 
 schema = <<-JSON
 {
@@ -144,10 +147,17 @@ schema = <<-JSON
 }
 JSON
 
-avro = AvroTurf::Messaging.new(registry_url: "http://my-registry:8081/")
+registry = AvroTurf::SchemaRegistry.new("http://my-registry:8081/")
 
-# Returns true if the schema is compatible, false otherwise.
-avro.compatible?("person", schema)
+# Returns true if the schema is compatible, nil if the subject or version is not registered, and false otherwise.
+registry.compatible?("person", schema)
+```
+
+The SchemaRegistry client can also change the global compatibility levelor the compatibility level for an individual subject using the [Config API](http://docs.confluent.io/3.1.2/schema-registry/docs/api.html#config):
+
+```ruby
+registry.update_global_config(compatibility: 'FULL')
+registry.update_subject_config("person", compatibility: 'NONE')
 ```
 
 ### Testing Support
