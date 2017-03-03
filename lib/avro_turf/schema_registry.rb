@@ -55,7 +55,7 @@ class AvroTurf::SchemaRegistry
   # Returns:
   # - true if compatible
   # - nil if the subject or version does not exist
-  # - false otherwise
+  # - false if incompatible
   # http://docs.confluent.io/3.1.2/schema-registry/docs/api.html#compatibility
   def compatible?(subject, schema, version = 'latest')
     data = post("/compatibility/subjects/#{subject}/versions/#{version}",
