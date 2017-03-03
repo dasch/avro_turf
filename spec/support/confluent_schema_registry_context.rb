@@ -1,6 +1,6 @@
 # This shared example expects a registry variable to be defined
 # with an instance of the registry class being tested.
-shared_examples_for "a schema registry client" do
+shared_examples_for "a confluent schema registry client" do
   let(:logger) { Logger.new(StringIO.new) }
   let(:registry_url) { "http://registry.example.com" }
   let(:subject_name) { "some-subject" }
@@ -15,8 +15,8 @@ shared_examples_for "a schema registry client" do
   end
 
   before do
-    stub_request(:any, /^#{registry_url}/).to_rack(FakeSchemaRegistryServer)
-    FakeSchemaRegistryServer.clear
+    stub_request(:any, /^#{registry_url}/).to_rack(FakeConfluentSchemaRegistryServer)
+    FakeConfluentSchemaRegistryServer.clear
   end
 
   describe "#register and #fetch" do

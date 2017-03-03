@@ -1,6 +1,11 @@
 require 'logger'
 require 'avro_turf'
 require 'avro_turf/schema_store'
+require 'avro_turf/confluent_schema_registry'
+require 'avro_turf/cached_confluent_schema_registry'
+
+# For back-compatibility require the aliases along with the Messaging API.
+# These names are deprecated and will be removed in a future release.
 require 'avro_turf/schema_registry'
 require 'avro_turf/cached_schema_registry'
 
@@ -20,7 +25,7 @@ class AvroTurf
     # Instantiate a new Messaging instance with the given configuration.
     #
     # registry     - A schema registry object that responds to all methods in the
-    #                AvroTurf::SchemaRegistry interface.
+    #                AvroTurf::ConfluentSchemaRegistry interface.
     # registry_url - The String URL of the schema registry that should be used.
     # schema_store - A schema store object that responds to #find(schema_name, namespace).
     # schemas_path - The String file system path where local schemas are stored.
@@ -30,7 +35,7 @@ class AvroTurf
       @logger = logger || Logger.new($stderr)
       @namespace = namespace
       @schema_store = schema_store || SchemaStore.new(path: schemas_path || DEFAULT_SCHEMAS_PATH)
-      @registry = registry || CachedSchemaRegistry.new(SchemaRegistry.new(registry_url, logger: @logger))
+      @registry = registry || CachedConfluentSchemaRegistry.new(ConfluentSchemaRegistry.new(registry_url, logger: @logger))
       @schemas_by_id = {}
     end
 

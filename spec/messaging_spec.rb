@@ -1,6 +1,6 @@
 require 'webmock/rspec'
 require 'avro_turf/messaging'
-require 'avro_turf/test/fake_schema_registry_server'
+require 'avro_turf/test/fake_confluent_schema_registry_server'
 
 describe AvroTurf::Messaging do
   let(:registry_url) { "http://registry.example.com" }
@@ -21,8 +21,8 @@ describe AvroTurf::Messaging do
   end
 
   before do
-    stub_request(:any, /^#{registry_url}/).to_rack(FakeSchemaRegistryServer)
-    FakeSchemaRegistryServer.clear
+    stub_request(:any, /^#{registry_url}/).to_rack(FakeConfluentSchemaRegistryServer)
+    FakeConfluentSchemaRegistryServer.clear
   end
 
   before do
@@ -63,7 +63,7 @@ describe AvroTurf::Messaging do
   it_behaves_like "encoding and decoding"
 
   context "with a provided registry" do
-    let(:registry) { AvroTurf::SchemaRegistry.new(registry_url, logger: logger) }
+    let(:registry) { AvroTurf::ConfluentSchemaRegistry.new(registry_url, logger: logger) }
 
     let(:avro) do
       AvroTurf::Messaging.new(
