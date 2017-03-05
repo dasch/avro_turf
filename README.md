@@ -80,11 +80,8 @@ In the example above, the `person` schema references the `address` schema, even 
 ```json
 // person_list.avsc
 {
-  "name": "person_list",
-  "type": {
-    "type": "array",
-    "items": "person"
-  }
+  "type": "array",
+  "items": "person"
 }
 ```
 
