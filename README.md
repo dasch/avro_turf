@@ -5,6 +5,17 @@ AvroTurf is a library that makes it easier to encode and decode data using the [
 * Provides an idiomatic Ruby interface.
 * Allows referencing schemas defined in another file.
 
+## Deprecation Notice
+
+The `AvroTurf::SchemaRegistry`, `AvroTurf::CachedSchemaRegistry`,
+and `FakeSchemaRegistryServer` names have been deprecated because the Avro spec recently
+introduced an incompatible [single-message encoding format](https://github.com/apache/avro/commit/30408a9c192c5f4eaaf42f01f0ffbfffd705aa57).
+
+These classes have been renamed to `AvroTurf::ConfluentSchemaRegistry`,
+`AvroTurf::CachedConfluentSchemaRegistry`, and `FakeConfluentSchemaRegistry`.
+
+The aliases for the original names will be removed in a future release.
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -118,11 +129,14 @@ data = avro.encode({ "title" => "hello, world" }, schema_name: "greeting")
 avro.decode(data) #=> { "title" => "hello, world" }
 ```
 
-In addition to encoding and decoding data, you can check whether a schema is compatible
-with a subject in the registry using the [Compatibility API](http://docs.confluent.io/2.0.0/schema-registry/docs/api.html#compatibility)
+### Confluent Schema Registry Client
+
+The ConfluentSchemaRegistry client used by the Messaging API can also be used directly.
+It can check whether a schema is compatible with a subject in the registry using the [Compatibility API](http://docs.confluent.io/3.1.2/schema-registry/docs/api.html#compatibility):
 
 ```ruby
-require 'avro_turf/messaging'
+require 'avro_turf'
+require 'avro_turf/confluent_schema_registry'
 
 schema = <<-JSON
 {
@@ -141,15 +155,22 @@ schema = <<-JSON
 }
 JSON
 
-avro = AvroTurf::Messaging.new(registry_url: "http://my-registry:8081/")
+registry = AvroTurf::ConfluentSchemaRegistry.new("http://my-registry:8081/")
 
-# Returns true if the schema is compatible, false otherwise.
-avro.compatible?("person", schema)
+# Returns true if the schema is compatible, nil if the subject or version is not registered, and false if incompatible.
+registry.compatible?("person", schema)
+```
+
+The ConfluentSchemaRegistry client can also change the global compatibility level or the compatibility level for an individual subject using the [Config API](http://docs.confluent.io/3.1.2/schema-registry/docs/api.html#config):
+
+```ruby
+registry.update_global_config(compatibility: 'FULL')
+registry.update_subject_config("person", compatibility: 'NONE')
 ```
 
 ### Testing Support
 
-AvroTurf includes a `FakeSchemaRegistryServer` that can be used in tests. The
+AvroTurf includes a `FakeConfluentSchemaRegistryServer` that can be used in tests. The
 fake schema registry server depends on Sinatra but it is _not_ listed as a runtime
 dependency for AvroTurf. Sinatra must be added to your Gemfile or gemspec in order
 to use the fake server.
@@ -157,14 +178,14 @@ to use the fake server.
 Example using RSpec:
 
 ```ruby
-require 'avro_turf/test/fake_schema_registry_server'
+require 'avro_turf/test/fake_confluent_schema_registry_server'
 require 'webmock/rspec'
 
 # within an example
 let(:registry_url) { "http://registry.example.com" }
 before do
-  stub_request(:any, /^#{registry_url}/).to_rack(FakeSchemaRegistryServer)
-  FakeSchemaRegistryServer.clear
+  stub_request(:any, /^#{registry_url}/).to_rack(FakeConfluentSchemaRegistryServer)
+  FakeConfluentSchemaRegistryServer.clear
 end
 
 # Messaging objects created with the same registry_url will now use the fake server.
