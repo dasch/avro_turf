@@ -1,6 +1,6 @@
 # avro_turf
 
-## v0.8.0 (unreleased)
+## v0.8.0
 - The names `AvroTurf::SchemaRegistry`, `AvroTurf::CachedSchemaRegistry`, and
   `FakeSchemaRegistryServer` are deprecated and will be removed in a future release.
   Use `AvroTurf::ConfluentSchemaRegistry`, `AvroTurf::CachedConfluentSchemaRegistry`,
