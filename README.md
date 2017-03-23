@@ -32,6 +32,16 @@ Or install it yourself as:
 
     $ gem install avro_turf
 
+## Configuration
+
+AvroTurf allows for configurable logger.
+
+```ruby
+AvroTurf.configure do |config|
+  config.logger = Logger.new($stderr)
+end
+```
+
 ## Usage
 
 Using AvroTurf is quite simple:

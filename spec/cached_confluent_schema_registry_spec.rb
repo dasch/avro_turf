@@ -35,7 +35,7 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
   end
 
   it_behaves_like "a confluent schema registry client" do
-    let(:upstream) { AvroTurf::ConfluentSchemaRegistry.new(registry_url, logger: logger) }
+    let(:upstream) { AvroTurf::ConfluentSchemaRegistry.new(registry_url) }
     let(:registry) { described_class.new(upstream) }
   end
 end

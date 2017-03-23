@@ -1,5 +1,4 @@
 require 'bundler/setup'
-require 'logger'
 require 'json_spec'
 require 'fakefs/spec_helpers'
 require 'avro_turf'

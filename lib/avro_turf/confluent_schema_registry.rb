@@ -3,15 +3,12 @@ require 'excon'
 class AvroTurf::ConfluentSchemaRegistry
   CONTENT_TYPE = "application/vnd.schemaregistry.v1+json".freeze
 
-  def initialize(url, logger: Logger.new($stdout))
-    @logger = logger
-    @connection = Excon.new(url, headers: {
-      "Content-Type" => CONTENT_TYPE,
-    })
+  def initialize(url)
+    @connection = Excon.new(url, headers: { "Content-Type" => CONTENT_TYPE })
   end
 
   def fetch(id)
-    @logger.info "Fetching schema with id #{id}"
+    AvroTurf.logger.info "Fetching schema with id #{id}"
     data = get("/schemas/ids/#{id}")
     data.fetch("schema")
   end
@@ -23,7 +20,7 @@ class AvroTurf::ConfluentSchemaRegistry
 
     id = data.fetch("id")
 
-    @logger.info "Registered schema for subject `#{subject}`; id = #{id}"
+    AvroTurf.logger.info "Registered schema for subject `#{subject}`; id = #{id}"
 
     id
   end

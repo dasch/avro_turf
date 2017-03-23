@@ -1,11 +1,15 @@
-require 'avro_turf/version'
 require 'avro'
 require 'json'
+
+require 'avro_turf/version'
+require 'avro_turf/configuration'
 require 'avro_turf/schema_store'
 require 'avro_turf/core_ext'
 require 'avro_turf/schema_to_avro_patch'
 
 class AvroTurf
+  extend Configuration
+
   class Error < StandardError; end
   class SchemaError < Error; end
   class SchemaNotFoundError < Error; end

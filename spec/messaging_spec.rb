@@ -4,13 +4,11 @@ require 'avro_turf/test/fake_confluent_schema_registry_server'
 
 describe AvroTurf::Messaging do
   let(:registry_url) { "http://registry.example.com" }
-  let(:logger) { Logger.new(StringIO.new) }
 
   let(:avro) {
     AvroTurf::Messaging.new(
       registry_url: registry_url,
-      schemas_path: "spec/schemas",
-      logger: logger
+      schemas_path: "spec/schemas"
     )
   }
 
@@ -42,16 +40,19 @@ describe AvroTurf::Messaging do
 
   shared_examples_for "encoding and decoding" do
     it "encodes and decodes messages" do
+      expect(AvroTurf.logger).to receive(:info).twice
       data = avro.encode(message, schema_name: "person")
       expect(avro.decode(data)).to eq message
     end
 
     it "allows specifying a reader's schema" do
+      expect(AvroTurf.logger).to receive(:info).twice
       data = avro.encode(message, schema_name: "person")
       expect(avro.decode(data, schema_name: "person")).to eq message
     end
 
     it "caches parsed schemas for decoding" do
+      expect(AvroTurf.logger).to receive(:info).twice
       data = avro.encode(message, schema_name: "person")
       avro.decode(data)
       allow(Avro::Schema).to receive(:parse).and_call_original
@@ -63,19 +64,19 @@ describe AvroTurf::Messaging do
   it_behaves_like "encoding and decoding"
 
   context "with a provided registry" do
-    let(:registry) { AvroTurf::ConfluentSchemaRegistry.new(registry_url, logger: logger) }
+    let(:registry) { AvroTurf::ConfluentSchemaRegistry.new(registry_url) }
 
     let(:avro) do
       AvroTurf::Messaging.new(
         registry: registry,
-        schemas_path: "spec/schemas",
-        logger: logger
+        schemas_path: "spec/schemas"
       )
     end
 
     it_behaves_like "encoding and decoding"
 
     it "uses the provided registry" do
+      expect(AvroTurf.logger).to receive(:info)
       allow(registry).to receive(:register).and_call_original
       message = { "full_name" => "John Doe" }
       avro.encode(message, schema_name: "person")
@@ -83,6 +84,7 @@ describe AvroTurf::Messaging do
     end
 
     it "allows specifying a schema registry subject" do
+      expect(AvroTurf.logger).to receive(:info)
       allow(registry).to receive(:register).and_call_original
       message = { "full_name" => "John Doe" }
       avro.encode(message, schema_name: "person", subject: "people")
@@ -96,14 +98,14 @@ describe AvroTurf::Messaging do
     let(:avro) do
       AvroTurf::Messaging.new(
         registry_url: registry_url,
-        schema_store: schema_store,
-        logger: logger
+        schema_store: schema_store
       )
     end
 
     it_behaves_like "encoding and decoding"
 
     it "uses the provided schema store" do
+      expect(AvroTurf.logger).to receive(:info)
       allow(schema_store).to receive(:find).and_call_original
       avro.encode(message, schema_name: "person")
       expect(schema_store).to have_received(:find).with("person", nil)
