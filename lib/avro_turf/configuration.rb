@@ -10,7 +10,7 @@ class AvroTurf
     end
 
     def logger
-      @logger ||= Logger.new($stderr)
+      @logger ||= Logger.new($stdout)
     end
   end
 end
