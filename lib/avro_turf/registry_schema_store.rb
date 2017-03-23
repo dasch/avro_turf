@@ -1,3 +1,4 @@
+# coding: utf-8
 class AvroTurf
   class RegistrySchemaStore
     def initialize(registry_url)
