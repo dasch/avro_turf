@@ -30,12 +30,10 @@ class AvroTurf
     # schema_store - A schema store object that responds to #find(schema_name, namespace).
     # schemas_path - The String file system path where local schemas are stored.
     # namespace    - The String default schema namespace.
-    # logger       - The Logger that should be used to log information (optional).
-    def initialize(registry: nil, registry_url: nil, schema_store: nil, schemas_path: nil, namespace: nil, logger: nil)
-      @logger = logger || Logger.new($stderr)
+    def initialize(registry: nil, registry_url: nil, schema_store: nil, schemas_path: nil, namespace: nil)
       @namespace = namespace
       @schema_store = schema_store || SchemaStore.new(path: schemas_path || DEFAULT_SCHEMAS_PATH)
-      @registry = registry || CachedConfluentSchemaRegistry.new(ConfluentSchemaRegistry.new(registry_url, logger: @logger))
+      @registry = registry || CachedConfluentSchemaRegistry.new(ConfluentSchemaRegistry.new(registry_url))
       @schemas_by_id = {}
     end
 

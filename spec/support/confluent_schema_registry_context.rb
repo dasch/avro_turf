@@ -1,7 +1,6 @@
 # This shared example expects a registry variable to be defined
 # with an instance of the registry class being tested.
 shared_examples_for "a confluent schema registry client" do
-  let(:logger) { Logger.new(StringIO.new) }
   let(:registry_url) { "http://registry.example.com" }
   let(:subject_name) { "some-subject" }
   let(:schema) do
@@ -21,6 +20,7 @@ shared_examples_for "a confluent schema registry client" do
 
   describe "#register and #fetch" do
     it "allows registering a schema" do
+      expect(AvroTurf.logger).to receive(:info).twice
       id = registry.register(subject_name, schema)
       fetched_schema = registry.fetch(id)
 
@@ -31,6 +31,7 @@ shared_examples_for "a confluent schema registry client" do
       let(:avro_schema) { Avro::Schema.parse(schema) }
 
       it "allows registration using an Avro::Schema" do
+        expect(AvroTurf.logger).to receive(:info).twice
         id = registry.register(subject_name, avro_schema)
         expect(registry.fetch(id)).to eq(avro_schema.to_s)
       end
@@ -41,6 +42,7 @@ shared_examples_for "a confluent schema registry client" do
         end
 
         it "allows registering an Avro schema" do
+          expect(AvroTurf.logger).to receive(:info).twice
           id = registry.register(subject_name, avro_schema)
           expect(registry.fetch(id)).to eq(avro_schema.to_s)
         end
@@ -51,6 +53,7 @@ shared_examples_for "a confluent schema registry client" do
   describe "#fetch" do
     context "when the schema does not exist" do
       it "raises an error" do
+        expect(AvroTurf.logger).to receive(:info)
         expect do
           registry.fetch(-1)
         end.to raise_error(Excon::Errors::NotFound)
@@ -61,6 +64,7 @@ shared_examples_for "a confluent schema registry client" do
   describe "#subjects" do
     it "lists the subjects in the registry" do
       subjects = Array.new(2) { |n| "subject#{n}" }
+      expect(AvroTurf.logger).to receive(:info).twice
       subjects.each { |subject| registry.register(subject, schema) }
       expect(registry.subjects).to be_json_eql(subjects.to_json)
     end
@@ -68,6 +72,7 @@ shared_examples_for "a confluent schema registry client" do
 
   describe "#subject_versions" do
     it "lists all the versions for the subject" do
+      expect(AvroTurf.logger).to receive(:info).twice
       2.times do |n|
         registry.register(subject_name,
                           { type: :record, name: "r#{n}", fields: [] }.to_json)
@@ -89,6 +94,7 @@ shared_examples_for "a confluent schema registry client" do
 
   describe "#subject_version" do
     before do
+      expect(AvroTurf.logger).to receive(:info).twice
       2.times do |n|
         registry.register(subject_name,
                           { type: :record, name: "r#{n}", fields: [] }.to_json)
@@ -141,6 +147,8 @@ shared_examples_for "a confluent schema registry client" do
 
   describe "#check" do
     context "when the schema exists" do
+      before { expect(AvroTurf.logger).to receive(:info) }
+
       let!(:schema_id) { registry.register(subject_name, schema) }
       let(:expected) do
         {
