@@ -31,10 +31,10 @@ class AvroTurf
     # schemas_path - The String file system path where local schemas are stored.
     # namespace    - The String default schema namespace.
     # logger       - The Logger that should be used to log information (optional).
-    def initialize(registry: nil, registry_url: nil, schema_store: nil, schemas_path: nil, namespace: nil, logger: nil)
+    def initialize(registry: nil, registry_url: nil, schema_store: nil, schemas_path: nil, namespace: nil, logger: nil, filetype: :avsc)
       @logger = logger || Logger.new($stderr)
       @namespace = namespace
-      @schema_store = schema_store || SchemaStore.new(path: schemas_path || DEFAULT_SCHEMAS_PATH)
+      @schema_store = schema_store || SchemaStore.new(path: schemas_path || DEFAULT_SCHEMAS_PATH, filetype: filetype)
       @registry = registry || CachedConfluentSchemaRegistry.new(ConfluentSchemaRegistry.new(registry_url, logger: @logger))
       @schemas_by_id = {}
     end

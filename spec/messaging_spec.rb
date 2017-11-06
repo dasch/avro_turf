@@ -6,14 +6,6 @@ describe AvroTurf::Messaging do
   let(:registry_url) { "http://registry.example.com" }
   let(:logger) { Logger.new(StringIO.new) }
 
-  let(:avro) {
-    AvroTurf::Messaging.new(
-      registry_url: registry_url,
-      schemas_path: "spec/schemas",
-      logger: logger
-    )
-  }
-
   let(:message) { { "full_name" => "John Doe" } }
 
   before do
@@ -26,7 +18,7 @@ describe AvroTurf::Messaging do
   end
 
   before do
-    define_schema "person.avsc", <<-AVSC
+    define_schema "person.#{filetype}", <<-SCHEMA
       {
         "name": "person",
         "type": "record",
@@ -37,10 +29,20 @@ describe AvroTurf::Messaging do
           }
         ]
       }
-    AVSC
+    SCHEMA
   end
 
-  shared_examples_for "encoding and decoding" do
+  shared_examples_for "encoding and decoding" do |ft|
+    subject(:avro) do
+      AvroTurf::Messaging.new(
+        registry_url: registry_url,
+        schemas_path: "spec/schemas",
+        logger: logger,
+        filetype: filetype
+      )
+    end
+    let(:filetype) { ft }
+
     it "encodes and decodes messages" do
       data = avro.encode(message, schema_name: "person")
       expect(avro.decode(data)).to eq message
@@ -60,53 +62,96 @@ describe AvroTurf::Messaging do
     end
   end
 
-  it_behaves_like "encoding and decoding"
+  it_behaves_like "encoding and decoding", :avsc
+  it_behaves_like "encoding and decoding", :json
 
   context "with a provided registry" do
     let(:registry) { AvroTurf::ConfluentSchemaRegistry.new(registry_url, logger: logger) }
 
-    let(:avro) do
+    subject(:avro) do
       AvroTurf::Messaging.new(
         registry: registry,
         schemas_path: "spec/schemas",
-        logger: logger
+        logger: logger,
+        filetype: filetype
       )
     end
 
-    it_behaves_like "encoding and decoding"
+    context 'and a .avsc filetype' do
+      let(:filetype) { :avsc }
 
-    it "uses the provided registry" do
-      allow(registry).to receive(:register).and_call_original
-      message = { "full_name" => "John Doe" }
-      avro.encode(message, schema_name: "person")
-      expect(registry).to have_received(:register).with("person", anything)
+      it_behaves_like "encoding and decoding", :avsc
+
+      it "uses the provided registry" do
+        allow(registry).to receive(:register).and_call_original
+        message = { "full_name" => "John Doe" }
+        avro.encode(message, schema_name: "person")
+        expect(registry).to have_received(:register).with("person", anything)
+      end
+
+      it "allows specifying a schema registry subject" do
+        allow(registry).to receive(:register).and_call_original
+        message = { "full_name" => "John Doe" }
+        avro.encode(message, schema_name: "person", subject: "people")
+        expect(registry).to have_received(:register).with("people", anything)
+      end
     end
 
-    it "allows specifying a schema registry subject" do
-      allow(registry).to receive(:register).and_call_original
-      message = { "full_name" => "John Doe" }
-      avro.encode(message, schema_name: "person", subject: "people")
-      expect(registry).to have_received(:register).with("people", anything)
+    context '.json filetype' do
+      let(:filetype) { :json }
+
+      it_behaves_like "encoding and decoding", :json
+
+      it "uses the provided registry" do
+        allow(registry).to receive(:register).and_call_original
+        message = { "full_name" => "John Doe" }
+        avro.encode(message, schema_name: "person")
+        expect(registry).to have_received(:register).with("person", anything)
+      end
+
+      it "allows specifying a schema registry subject" do
+        allow(registry).to receive(:register).and_call_original
+        message = { "full_name" => "John Doe" }
+        avro.encode(message, schema_name: "person", subject: "people")
+        expect(registry).to have_received(:register).with("people", anything)
+      end
     end
   end
 
   context "with a provided schema store" do
-    let(:schema_store) { AvroTurf::SchemaStore.new(path: "spec/schemas") }
+    let(:schema_store) { AvroTurf::SchemaStore.new(path: "spec/schemas", filetype: filetype) }
 
-    let(:avro) do
+    subject(:avro) do
       AvroTurf::Messaging.new(
         registry_url: registry_url,
         schema_store: schema_store,
-        logger: logger
+        logger: logger,
+        filetype: filetype
       )
     end
 
-    it_behaves_like "encoding and decoding"
+    context 'and a .avsc filetype' do
+      let(:filetype) { :avsc }
 
-    it "uses the provided schema store" do
-      allow(schema_store).to receive(:find).and_call_original
-      avro.encode(message, schema_name: "person")
-      expect(schema_store).to have_received(:find).with("person", nil)
+      it_behaves_like "encoding and decoding", :avsc
+
+      it "uses the provided schema store" do
+        allow(schema_store).to receive(:find).and_call_original
+        avro.encode(message, schema_name: "person")
+        expect(schema_store).to have_received(:find).with("person", nil)
+      end
+    end
+
+    context 'and a .json filetype' do
+      let(:filetype) { :json }
+
+      it_behaves_like "encoding and decoding", :json
+
+      it "uses the provided schema store" do
+        allow(schema_store).to receive(:find).and_call_original
+        avro.encode(message, schema_name: "person")
+        expect(schema_store).to have_received(:find).with("person", nil)
+      end
     end
   end
 end
