@@ -1,6 +1,7 @@
 class AvroTurf::SchemaStore
-  def initialize(path: nil)
+  def initialize(path: nil, filetype: :avsc)
     @path = path or raise "Please specify a schema path"
+    @filetype = filetype
     @schemas = Hash.new
   end
 
@@ -15,7 +16,7 @@ class AvroTurf::SchemaStore
     return @schemas[fullname] if @schemas.key?(fullname)
 
     *namespace, schema_name = fullname.split(".")
-    schema_path = File.join(@path, *namespace, schema_name + ".avsc")
+    schema_path = File.join(@path, *namespace, schema_name + ".#{@filetype}")
     schema_json = JSON.parse(File.read(schema_path))
     schema = Avro::Schema.real_parse(schema_json, @schemas)
 
@@ -42,14 +43,14 @@ class AvroTurf::SchemaStore
 
   # Loads all schema definition files in the `schemas_dir`.
   def load_schemas!
-    pattern = [@path, "**", "*.avsc"].join("/")
+    pattern = [@path, "**", "*.#{@filetype}"].join("/")
 
     Dir.glob(pattern) do |schema_path|
       # Remove the path prefix.
       schema_path.sub!(/^\/?#{@path}\//, "")
 
       # Replace `/` with `.` and chop off the file extension.
-      schema_name = File.basename(schema_path.tr("/", "."), ".avsc")
+      schema_name = File.basename(schema_path.tr("/", "."), ".#{@filetype}")
 
       # Load and cache the schema.
       find(schema_name)
