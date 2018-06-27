@@ -10,6 +10,8 @@ class AvroTurf
   class SchemaError < Error; end
   class SchemaNotFoundError < Error; end
 
+  attr_accessor :schema_store
+
   DEFAULT_SCHEMAS_PATH = "./schemas"
 
   # Create a new AvroTurf instance with the specified configuration.

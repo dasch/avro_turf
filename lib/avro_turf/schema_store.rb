@@ -1,4 +1,6 @@
 class AvroTurf::SchemaStore
+  attr_accessor :schemas
+
   def initialize(path: nil)
     @path = path or raise "Please specify a schema path"
     @schemas = Hash.new
@@ -54,5 +56,14 @@ class AvroTurf::SchemaStore
       # Load and cache the schema.
       find(schema_name)
     end
+  end
+
+  # @param schema_hash [Hash]
+  def add_schema(schema_hash)
+    name = schema_hash['name']
+    namespace = schema_hash['namespace']
+    full_name = Avro::Name.make_fullname(name, namespace)
+    return if @schemas.key?(full_name)
+    Avro::Schema.real_parse(schema_hash, @schemas)
   end
 end
