@@ -51,6 +51,7 @@ class AvroTurf
   # Returns nothing.
   def encode_to_stream(data, schema_name: nil, stream: nil, namespace: @namespace)
     schema = @schema_store.find(schema_name, namespace)
+    Avro::SchemaValidator.validate!(schema, data) if defined?(Avro::SchemaValidator)
     writer = Avro::IO::DatumWriter.new(schema)
 
     dw = Avro::DataFile::Writer.new(stream, writer, schema, @codec)
