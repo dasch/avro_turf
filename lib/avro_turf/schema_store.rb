@@ -1,4 +1,5 @@
 class AvroTurf::SchemaStore
+
   def initialize(path: nil)
     @path = path or raise "Please specify a schema path"
     @schemas = Hash.new
@@ -55,4 +56,5 @@ class AvroTurf::SchemaStore
       find(schema_name)
     end
   end
+
 end

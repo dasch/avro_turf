@@ -15,13 +15,15 @@ class AvroTurf
   # Create a new AvroTurf instance with the specified configuration.
   #
   # schemas_path - The String path to the root directory containing Avro schemas (default: "./schemas").
+  # schema_store - A schema store object that responds to #find(schema_name, namespace).
   # namespace    - The String namespace that should be used to qualify schema names (optional).
   # codec        - The String name of a codec that should be used to compress messages (optional).
   #
   # Currently, the only valid codec name is `deflate`.
-  def initialize(schemas_path: nil, namespace: nil, codec: nil)
+  def initialize(schemas_path: nil, schema_store: nil, namespace: nil, codec: nil)
     @namespace = namespace
-    @schema_store = SchemaStore.new(path: schemas_path || DEFAULT_SCHEMAS_PATH)
+    @schema_store = schema_store || 
+      SchemaStore.new(path: schemas_path || DEFAULT_SCHEMAS_PATH)
     @codec = codec
   end
 
