@@ -1,6 +1,11 @@
 # avro_turf
 
+## v0.8.1
+
+- Allow accessing schema store from outside AvroTurf (#68).
+
 ## v0.8.0
+
 - The names `AvroTurf::SchemaRegistry`, `AvroTurf::CachedSchemaRegistry`, and
   `FakeSchemaRegistryServer` are deprecated and will be removed in a future release.
   Use `AvroTurf::ConfluentSchemaRegistry`, `AvroTurf::CachedConfluentSchemaRegistry`,
