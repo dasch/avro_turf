@@ -1,0 +1,9 @@
+version: 2
+jobs:
+  unit:
+    docker:
+      - image: circleci/ruby:2.3-jessie
+    steps:
+      - checkout
+      - run: bundle install --path vendor/bundle
+      - run: bundle exec rspec
