@@ -12,6 +12,14 @@ module Helpers
       f.write(content)
     end
   end
+
+  def store_cache(path, hash)
+    File.write(File.join("spec/cache", path), JSON.generate(hash))
+  end
+
+  def load_cache(path)
+    JSON.parse(File.read(File.join("spec/cache", path)))
+  end
 end
 
 RSpec.configure do |config|
