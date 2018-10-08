@@ -10,11 +10,10 @@ class AvroTurf::CachedConfluentSchemaRegistry
   #
   # upstream  - The upstream schema registry object that fully responds to all methods in the
   #             AvroTurf::ConfluentSchemaRegistry interface.
-  # disk_path - Optional path on disk to use the provided DiskCache instead of the default InMemoryCache
   # cache     - Optional user provided Cache object that responds to all methods in the AvroTurf::InMemoryCache interface.
-  def initialize(upstream, disk_path: nil, cache: nil)
+  def initialize(upstream, cache: nil)
     @upstream = upstream
-    @cache = cache || create_cache(disk_path)
+    @cache = cache || AvroTurf::InMemoryCache.new()
   end
 
   # Delegate the following methods to the upstream
@@ -31,11 +30,5 @@ class AvroTurf::CachedConfluentSchemaRegistry
 
   def register(subject, schema)
     @cache.lookup_by_schema(subject, schema) || @cache.store_by_schema(subject, schema, @upstream.register(subject, schema))
-  end
-
-  private 
-
-  def create_cache(disk_path)
-    disk_path ? AvroTurf::DiskCache.new(disk_path) : AvroTurf::InMemoryCache.new()
   end
 end
