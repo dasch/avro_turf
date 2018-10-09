@@ -16,8 +16,9 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
 
   describe "#fetch" do
     it "caches the result of fetch" do
+      # multiple calls return same result, with only one upstream call
       allow(upstream).to receive(:fetch).with(id).and_return(schema)
-      registry.fetch(id)
+      expect(registry.fetch(id)).to eq(schema)
       expect(registry.fetch(id)).to eq(schema)
       expect(upstream).to have_received(:fetch).exactly(1).times
     end
@@ -27,8 +28,9 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
     let(:subject_name) { "a_subject" }
 
     it "caches the result of register" do
+      # multiple calls return same result, with only one upstream call
       allow(upstream).to receive(:register).with(subject_name, schema).and_return(id)
-      registry.register(subject_name, schema)
+      expect(registry.register(subject_name, schema)).to eq(id)
       expect(registry.register(subject_name, schema)).to eq(id)
       expect(upstream).to have_received(:register).exactly(1).times
     end
