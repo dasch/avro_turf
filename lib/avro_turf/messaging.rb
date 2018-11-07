@@ -46,6 +46,8 @@ class AvroTurf
     # schema_name - The String name of the schema that should be used to encode
     #               the data.
     # namespace   - The namespace of the schema (optional).
+    # subject     - The subject name the schema should be registered under in
+    #               the schema registry (optional).
     #
     # Returns the encoded data as a String.
     def encode(message, schema_name: nil, namespace: @namespace, subject: nil)
