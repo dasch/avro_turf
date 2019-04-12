@@ -1,3 +1,8 @@
+begin
+  require 'avro-patches'
+rescue LoadError
+  false
+end
 require 'avro_turf/version'
 require 'avro'
 require 'json'
