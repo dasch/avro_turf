@@ -5,6 +5,7 @@ require 'avro_turf/test/fake_confluent_schema_registry_server'
 describe AvroTurf::CachedConfluentSchemaRegistry do
   let(:upstream) { instance_double(AvroTurf::ConfluentSchemaRegistry) }
   let(:registry) { described_class.new(upstream) }
+  let(:registry_without_url) { described_class.new(nil) }
   let(:id) { rand(999) }
   let(:schema) do
     {

@@ -5,9 +5,7 @@ class AvroTurf::ConfluentSchemaRegistry
 
   def initialize(url, logger: Logger.new($stdout))
     @logger = logger
-    @connection = Excon.new(url, headers: {
-      "Content-Type" => CONTENT_TYPE,
-    })
+    @url = url
   end
 
   def fetch(id)
@@ -100,7 +98,15 @@ class AvroTurf::ConfluentSchemaRegistry
 
   def request(path, **options)
     options = { expects: 200 }.merge!(options)
-    response = @connection.request(path: path, **options)
+    response = connection.request(path: path, **options)
     JSON.parse(response.body)
+  end
+
+  def connection
+    Excon.new(@url, headers: {
+      "Content-Type" => CONTENT_TYPE,
+    })
+  rescue URI::InvalidURIError
+    raise AvroTurf::Error, "Schema registry URL '#{@url}' is not valid"
   end
 end

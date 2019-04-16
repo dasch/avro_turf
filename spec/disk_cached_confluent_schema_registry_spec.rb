@@ -6,6 +6,8 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
   let(:upstream) { instance_double(AvroTurf::ConfluentSchemaRegistry) }
   let(:cache)    { AvroTurf::DiskCache.new("spec/cache")}
   let(:registry) { described_class.new(upstream, cache: cache) }
+  let(:empty_cache) { AvroTurf::DiskCache.new(nil) }
+  let(:registry_without_url) { described_class.new(nil, cache: empty_cache) }
   let(:id) { rand(999) }
   let(:schema) do
     {

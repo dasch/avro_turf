@@ -56,6 +56,14 @@ shared_examples_for "a confluent schema registry client" do
         end.to raise_error(Excon::Errors::NotFound)
       end
     end
+
+    context "when registry URL is empty" do
+      it "raises an error" do
+        expect do
+          registry_without_url.fetch(1)
+        end.to raise_error(AvroTurf::Error)
+      end
+    end
   end
 
   describe "#subjects" do
