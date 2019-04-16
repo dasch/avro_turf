@@ -34,6 +34,10 @@ class AvroTurf::SchemaStore
       # Re-resolve the original schema now that the dependency has been resolved.
       @schemas.delete(fullname)
       find(fullname)
+    elsif e.to_s =~ /"([\w\.]+)" is already in use/
+      # For some reasons the Avro gem complains about inline enum definitions,
+      # which are already in use. Looks like we can safely ignore this.
+      find(fullname)
     else
       raise
     end

@@ -26,7 +26,7 @@ describe AvroTurf::SchemaStore do
       expect(schema.fullname).to eq "message"
     end
 
-    it "resolves missing references" do
+    it "resolves missing references (one-to-one)" do
       define_schema "person.avsc", <<-AVSC
         {
           "name": "person",
@@ -53,7 +53,37 @@ describe AvroTurf::SchemaStore do
       expect(schema.fullname).to eq "person"
     end
 
-    it "finds namespaced schemas" do
+    it "resolves missing references (one-to-many)" do
+      define_schema "person.avsc", <<-AVSC
+        {
+          "name": "person",
+          "type": "record",
+          "fields": [
+            {
+              "name": "address",
+              "type": {
+                "type": "array",
+                "items": "address"
+              }
+            }
+          ]
+        }
+      AVSC
+
+      define_schema "address.avsc", <<-AVSC
+        {
+          "type": "record",
+          "name": "address",
+          "fields": []
+        }
+      AVSC
+
+      schema = store.find("person")
+
+      expect(schema.fullname).to eq "person"
+    end
+
+    it "finds namespaced schemas (one-to-one)" do
       FileUtils.mkdir_p("spec/schemas/test/people")
 
       define_schema "test/people/person.avsc", <<-AVSC
@@ -82,6 +112,89 @@ describe AvroTurf::SchemaStore do
       schema = store.find("person", "test.people")
 
       expect(schema.fullname).to eq "test.people.person"
+    end
+
+    it "finds namespaced schemas (one-to-many)" do
+      FileUtils.mkdir_p("spec/schemas/test/people")
+
+      define_schema "test/people/person.avsc", <<-AVSC
+        {
+          "name": "person",
+          "namespace": "test.people",
+          "type": "record",
+          "fields": [
+            {
+              "name": "address",
+              "type": {
+                "type": "array",
+                "items": "test.people.address"
+              }
+            }
+          ]
+        }
+      AVSC
+
+      define_schema "test/people/address.avsc", <<-AVSC
+        {
+          "name": "address",
+          "namespace": "test.people",
+          "type": "record",
+          "fields": []
+        }
+      AVSC
+
+      schema = store.find("person", "test.people")
+
+      expect(schema.fullname).to eq "test.people.person"
+    end
+
+    it "finds namespaced schemas (complex)" do
+      FileUtils.mkdir_p("spec/schemas/test/complex")
+
+      define_schema "test/complex/person.avsc", <<-AVSC
+        {
+          "name": "person",
+          "namespace": "test.complex",
+          "type": "record",
+          "fields": [
+            {
+              "name": "status",
+              "type": {
+                "type": "enum",
+                "name": "person_status",
+                "symbols": [
+                  "active",
+                  "locked"
+                ]
+              }
+            },
+            {
+              "name": "main_address",
+              "type": "test.complex.address"
+            },
+            {
+              "name": "address",
+              "type": {
+                "type": "array",
+                "items": "test.complex.address"
+              }
+            }
+          ]
+        }
+      AVSC
+
+      define_schema "test/complex/address.avsc", <<-AVSC
+        {
+          "name": "address",
+          "namespace": "test.complex",
+          "type": "record",
+          "fields": []
+        }
+      AVSC
+
+      schema = store.find("person", "test.complex")
+
+      expect(schema.fullname).to eq "test.complex.person"
     end
 
     it "ignores the namespace when the name contains a dot" do

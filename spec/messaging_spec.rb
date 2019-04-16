@@ -109,4 +109,74 @@ describe AvroTurf::Messaging do
       expect(schema_store).to have_received(:find).with("person", nil)
     end
   end
+
+  context "with complex schema" do
+    let(:message) do
+      {
+        "status" => "active",
+        "main_address" => {
+          "city" => "Leipzig"
+        },
+        "addresses": [
+          { "city" => "Berlin" },
+          { "city" => "London" }
+        ]
+      }
+    end
+
+    before do
+      FileUtils.mkdir_p("spec/schemas/test/complex")
+
+      define_schema "test/complex/person.avsc", <<-AVSC
+        {
+          "name": "person",
+          "namespace": "test.complex",
+          "type": "record",
+          "fields": [
+            {
+              "name": "status",
+              "type": {
+                "type": "enum",
+                "name": "person_status",
+                "symbols": [
+                  "active",
+                  "locked"
+                ]
+              }
+            },
+            {
+              "name": "main_address",
+              "type": "test.complex.address"
+            },
+            {
+              "name": "addresses",
+              "type": {
+                "type": "array",
+                "items": "test.complex.address"
+              }
+            }
+          ]
+        }
+      AVSC
+
+      define_schema "test/complex/address.avsc", <<-AVSC
+        {
+          "name": "address",
+          "namespace": "test.complex",
+          "type": "record",
+          "fields": [
+            {
+              "name": "city",
+              "type": "string"
+            }
+          ]
+        }
+      AVSC
+    end
+
+    it "encodes and decodes messages" do
+      data = avro.encode(message, schema_name: "test.complex.person")
+      expect(avro.decode(data)).to eq message
+    end
+  end
 end
