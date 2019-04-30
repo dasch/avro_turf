@@ -197,6 +197,42 @@ describe AvroTurf::SchemaStore do
       schema = store.find("person")
       expect(schema.fullname).to eq "person"
     end
+
+    it "is thread safe" do
+      define_schema "address.avsc", <<-AVSC
+        {
+          "type": "record",
+          "name": "address",
+          "fields": []
+        }
+      AVSC
+
+      # Set a Thread breakpoint right in the core place of race condition
+      expect(Avro::Name)
+        .to receive(:add_name)
+        .and_wrap_original { |m, *args|
+          Thread.stop
+          m.call(*args)
+        }
+
+      # Run two concurring threads which both will trigger the same schema loading
+      threads = 2.times.map { Thread.new { store.find("address") } }
+      # Wait for the moment when both threads will reach the breakpoint
+      sleep 0.001 until threads.all?(&:stop?)
+
+      expect {
+        # Resume the threads evaluation, one after one
+        threads.each do |thread|
+          next unless thread.status == 'sleep'
+
+          thread.run
+          sleep 0.001 until thread.stop?
+        end
+
+        # Ensure that threads are finished
+        threads.each(&:join)
+      }.to_not raise_error
+    end
   end
 
   describe "#load_schemas!" do
