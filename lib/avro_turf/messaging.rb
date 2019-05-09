@@ -1,6 +1,5 @@
 require 'logger'
 require 'avro_turf'
-require 'avro_turf/schema_store'
 require 'avro_turf/confluent_schema_registry'
 require 'avro_turf/cached_confluent_schema_registry'
 
@@ -27,14 +26,11 @@ class AvroTurf
     # registry     - A schema registry object that responds to all methods in the
     #                AvroTurf::ConfluentSchemaRegistry interface.
     # registry_url - The String URL of the schema registry that should be used.
-    # schema_store - A schema store object that responds to #find(schema_name, namespace).
-    # schemas_path - The String file system path where local schemas are stored.
     # namespace    - The String default schema namespace.
     # logger       - The Logger that should be used to log information (optional).
-    def initialize(registry: nil, registry_url: nil, schema_store: nil, schemas_path: nil, namespace: nil, logger: nil)
+    def initialize(registry: nil, registry_url: nil, namespace: nil, logger: nil)
       @logger = logger || Logger.new($stderr)
       @namespace = namespace
-      @schema_store = schema_store || SchemaStore.new(path: schemas_path || DEFAULT_SCHEMAS_PATH)
       @registry = registry || CachedConfluentSchemaRegistry.new(ConfluentSchemaRegistry.new(registry_url, logger: @logger))
       @schemas_by_id = {}
     end
@@ -51,11 +47,15 @@ class AvroTurf
     #
     # Returns the encoded data as a String.
     def encode(message, schema_name: nil, namespace: @namespace, subject: nil)
-      schema = @schema_store.find(schema_name, namespace)
+      fullname = Avro::Name.make_fullname(schema_name, namespace)
+      schema = if @registry.is_a?(CachedConfluentSchemaRegistry)
+        @registry.fetch_matched_schema(subject || fullname, message)
+      else
+        @registry.subject_version(subject || fullname)
+      end
 
-      # Schemas are registered under the full name of the top level Avro record
-      # type, or `subject` if it's provided.
-      schema_id = @registry.register(subject || schema.fullname, schema)
+      schema_id = schema.fetch('id')
+      schema = Avro::Schema.parse(schema.fetch('schema'))
 
       stream = StringIO.new
       writer = Avro::IO::DatumWriter.new(schema)
