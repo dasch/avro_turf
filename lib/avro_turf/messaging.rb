@@ -82,7 +82,12 @@ class AvroTurf
     #
     # Returns the decoded message.
     def decode(data, schema_name: nil, namespace: @namespace)
-      readers_schema = schema_name && @schema_store.find(schema_name, namespace)
+      readers_schema = if schema_name
+        fullname = Avro::Name.make_fullname(schema_name, namespace)
+        schema_json = @registry.subject_version(fullname).fetch('schema')
+        Avro::Schema.parse(schema_json)
+      end
+
       stream = StringIO.new(data)
       decoder = Avro::IO::BinaryDecoder.new(stream)
 
