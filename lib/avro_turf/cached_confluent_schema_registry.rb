@@ -31,4 +31,26 @@ class AvroTurf::CachedConfluentSchemaRegistry
   def register(subject, schema)
     @cache.lookup_by_schema(subject, schema) || @cache.store_by_schema(subject, schema, @upstream.register(subject, schema))
   end
+
+  def fetch_matched_schema(subject, message)
+    schemas = fetch_by_subject(subject)
+    schemas.find do |schema_data|
+      schema = Avro::Schema.parse(schema_data.fetch('schema'))
+      Avro::Schema.validate(schema, message)
+    end
+  end
+
+  private
+
+  def fetch_by_subject(subject)
+    @cache.lookup_by_subject(subject) || load_all_versions(subject)
+  end
+
+  def load_all_versions(subject)
+    schemas = []
+    @upstream.subject_versions(subject).sort.reverse.map do |version|
+      schemas << @upstream.subject_version(subject, version)
+    end
+    @cache.store_by_subject(subject, schemas)
+  end
 end
