@@ -88,16 +88,18 @@ shared_examples_for "a confluent schema registry client" do
   end
 
   describe "#subject_version" do
-    before do
-      2.times do |n|
-        registry.register(subject_name,
-                          { type: :record, name: "r#{n}", fields: [] }.to_json)
-      end
+    let!(:schema_id1) do
+      registry.register(subject_name, { type: :record, name: "r0", fields: [] }.to_json)
     end
+    let!(:schema_id2) do
+      registry.register(subject_name, { type: :record, name: "r1", fields: [] }.to_json)
+    end
+
     let(:expected) do
       {
         name: subject_name,
         version: 1,
+        id: schema_id1,
         schema: { type: :record, name: "r0", fields: [] }.to_json
       }.to_json
     end
@@ -112,6 +114,7 @@ shared_examples_for "a confluent schema registry client" do
         {
           name: subject_name,
           version: 2,
+          id: schema_id2,
           schema: { type: :record, name: "r1", fields: [] }.to_json
         }.to_json
       end

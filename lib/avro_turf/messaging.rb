@@ -48,14 +48,18 @@ class AvroTurf
     # namespace   - The namespace of the schema (optional).
     # subject     - The subject name the schema should be registered under in
     #               the schema registry (optional).
+    # version     - The integer version of the schema that should be used to decode
+    #               the data. Must match the schema used when encoding (optional).
     #
     # Returns the encoded data as a String.
-    def encode(message, schema_name: nil, namespace: @namespace, subject: nil)
-      schema = @schema_store.find(schema_name, namespace)
-
-      # Schemas are registered under the full name of the top level Avro record
-      # type, or `subject` if it's provided.
-      schema_id = @registry.register(subject || schema.fullname, schema)
+    def encode(message, schema_name: nil, namespace: @namespace, subject: nil, version: nil)
+      schema_id, schema = if subject && version
+        fetch_schema(subject, version)
+      elsif schema_name
+        register_schema(subject, schema_name, namespace)
+      else
+        raise ArgumentError.new('Neither schema_name nor subject + version provided to determine the schema.')
+      end
 
       stream = StringIO.new
       writer = Avro::IO::DatumWriter.new(schema)
@@ -71,6 +75,8 @@ class AvroTurf
       writer.write(message, encoder)
 
       stream.string
+    rescue Excon::Error::NotFound
+      raise SchemaNotFoundError.new("Schema with subject: `#{subject}` version: `#{version}` is not found on registry")
     end
 
     # Decodes data into the original message.
@@ -103,6 +109,28 @@ class AvroTurf
 
       reader = Avro::IO::DatumReader.new(writers_schema, readers_schema)
       reader.read(decoder)
+    rescue Excon::Error::NotFound
+      raise SchemaNotFoundError.new("Schema with id: #{schema_id} is not found on registry")
+    end
+
+    private
+
+    # Providing subject and version to determine the schema,
+    # which skips the auto registeration of schema on the schema registry.
+    # Fetch the schema from registry with the provided subject name and version.
+    def fetch_schema(subject, version)
+      schema_data = @registry.subject_version(subject, version)
+      schema_id = schema_data.fetch('id')
+      schema = Avro::Schema.parse(schema_data.fetch('schema'))
+      [schema_id, schema]
+    end
+
+    # Schemas are registered under the full name of the top level Avro record
+    # type, or `subject` if it's provided.
+    def register_schema(subject, schema_name, namespace)
+      schema = @schema_store.find(schema_name, namespace)
+      schema_id = @registry.register(subject || schema.fullname, schema)
+      [schema_id, schema]
     end
   end
 end
