@@ -15,18 +15,8 @@ describe AvroTurf::Messaging do
   }
 
   let(:message) { { "full_name" => "John Doe" } }
-
-  before do
-    FileUtils.mkdir_p("spec/schemas")
-  end
-
-  before do
-    stub_request(:any, /^#{registry_url}/).to_rack(FakeConfluentSchemaRegistryServer)
-    FakeConfluentSchemaRegistryServer.clear
-  end
-
-  before do
-    define_schema "person.avsc", <<-AVSC
+  let(:schema_json) do
+    <<-AVSC
       {
         "name": "person",
         "type": "record",
@@ -40,7 +30,20 @@ describe AvroTurf::Messaging do
     AVSC
   end
 
-  shared_examples_for "encoding and decoding" do
+  before do
+    FileUtils.mkdir_p("spec/schemas")
+  end
+
+  before do
+    stub_request(:any, /^#{registry_url}/).to_rack(FakeConfluentSchemaRegistryServer)
+    FakeConfluentSchemaRegistryServer.clear
+  end
+
+  before do
+    define_schema "person.avsc", schema_json
+  end
+
+  shared_examples_for "encoding and decoding with the schema from schema store" do
     it "encodes and decodes messages" do
       data = avro.encode(message, schema_name: "person")
       expect(avro.decode(data)).to eq message
@@ -60,7 +63,39 @@ describe AvroTurf::Messaging do
     end
   end
 
-  it_behaves_like "encoding and decoding"
+  shared_examples_for 'encoding and decoding with the schema from registry' do
+    before do
+      registry = AvroTurf::ConfluentSchemaRegistry.new(registry_url, logger: logger)
+      registry.register('person', Avro::Schema.parse(schema_json))
+      registry.register('people', Avro::Schema.parse(schema_json))
+    end
+
+    it 'encodes and decodes messages' do
+      data = avro.encode(message, subject: 'person', version: 1)
+      expect(avro.decode(data)).to eq message
+    end
+
+    it "allows specifying a reader's schema by subject and version" do
+      data = avro.encode(message, subject: 'person', version: 1)
+      expect(avro.decode(data, schema_name: 'person')).to eq message
+    end
+
+    it 'raises AvroTurf::SchemaNotFoundError when the schema does not exist on registry' do
+      expect { avro.encode(message, subject: 'missing', version: 1) }.to raise_error(AvroTurf::SchemaNotFoundError)
+    end
+
+    it 'caches parsed schemas for decoding' do
+      data = avro.encode(message, subject: 'person', version: 1)
+      avro.decode(data)
+      allow(Avro::Schema).to receive(:parse).and_call_original
+      expect(avro.decode(data)).to eq message
+      expect(Avro::Schema).not_to have_received(:parse)
+    end
+  end
+
+  it_behaves_like "encoding and decoding with the schema from schema store"
+
+  it_behaves_like 'encoding and decoding with the schema from registry'
 
   context "with a provided registry" do
     let(:registry) { AvroTurf::ConfluentSchemaRegistry.new(registry_url, logger: logger) }
@@ -73,7 +108,9 @@ describe AvroTurf::Messaging do
       )
     end
 
-    it_behaves_like "encoding and decoding"
+    it_behaves_like "encoding and decoding with the schema from schema store"
+
+    it_behaves_like 'encoding and decoding with the schema from registry'
 
     it "uses the provided registry" do
       allow(registry).to receive(:register).and_call_original
@@ -101,7 +138,7 @@ describe AvroTurf::Messaging do
       )
     end
 
-    it_behaves_like "encoding and decoding"
+    it_behaves_like "encoding and decoding with the schema from schema store"
 
     it "uses the provided schema store" do
       allow(schema_store).to receive(:find).and_call_original
