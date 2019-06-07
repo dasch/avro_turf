@@ -1,5 +1,8 @@
 # avro_turf
 
+## Unreleased
+- Compatibility with Avro v1.9.0.
+
 ## v0.8.1
 
 - Allow accessing schema store from outside AvroTurf (#68).
