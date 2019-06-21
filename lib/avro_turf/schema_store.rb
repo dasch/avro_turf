@@ -49,8 +49,8 @@ class AvroTurf::SchemaStore
   def load_schema!(fullname, namespace = nil)
     *namespace, schema_name = fullname.split(".")
     schema_path = File.join(@path, *namespace, schema_name + ".avsc")
-    schema_json = JSON.parse(File.read(schema_path))
-    schema = Avro::Schema.real_parse(schema_json, @schemas)
+    schema = Avro::Schema.parse(File.read(schema_path))
+    @schemas[fullname] = schema
 
     if schema.respond_to?(:fullname) && schema.fullname != fullname
       raise AvroTurf::SchemaError, "expected schema `#{schema_path}' to define type `#{fullname}'"
