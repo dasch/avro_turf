@@ -1,7 +1,14 @@
 # avro_turf
 
 ## Unreleased
-- Compatibility with Avro v1.9.0.
+
+## v0.9.0
+
+- Compatibility with Avro v1.9.0 (#94)
+- Disable the auto registeration of schema (#95)
+- abstracted caching from CachedConfluentSchemaRegistry (#74)
+- Load avro-patches if installed to silence deprecation errors (#85)
+- Make schema store to be thread safe (#92)
 
 ## v0.8.1
 
