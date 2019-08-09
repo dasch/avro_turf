@@ -1,9 +1,9 @@
 workflow "Build and test" {
   on = "push"
-  resolves = ["GitHub Action for Docker"]
+  resolves = ["Setup Ruby for use with actions"]
 }
 
-action "GitHub Action for Docker" {
-  uses = "actions/docker/cli@8cdf801b322af5f369e00d85e9cf3a7122f49108"
-  args = "run ruby:2.6.2-alpine3.9 ./bin/ci"
+action "Setup Ruby for use with actions" {
+  uses = "actions/setup-ruby@348966bbc4a99fb09f8e302ca4cd8a5f89c2627f"
+  runs = "bundle exec rspec"
 }
