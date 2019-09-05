@@ -93,9 +93,36 @@ describe AvroTurf::Messaging do
     end
   end
 
+  shared_examples_for 'encoding and decoding with the schema_id from registry' do
+    before do
+      registry = AvroTurf::ConfluentSchemaRegistry.new(registry_url, logger: logger)
+      registry.register('person', Avro::Schema.parse(schema_json))
+      registry.register('people', Avro::Schema.parse(schema_json))
+    end
+
+    it 'encodes and decodes messages' do
+      data = avro.encode(message, schema_id: 1)
+      expect(avro.decode(data)).to eq message
+    end
+
+    it 'raises AvroTurf::SchemaNotFoundError when the schema does not exist on registry' do
+      expect { avro.encode(message, schema_id: 5) }.to raise_error(AvroTurf::SchemaNotFoundError)
+    end
+
+    it 'caches parsed schemas for decoding' do
+      data = avro.encode(message, schema_id: 1)
+      avro.decode(data)
+      allow(Avro::Schema).to receive(:parse).and_call_original
+      expect(avro.decode(data)).to eq message
+      expect(Avro::Schema).not_to have_received(:parse)
+    end
+  end
+
   it_behaves_like "encoding and decoding with the schema from schema store"
 
   it_behaves_like 'encoding and decoding with the schema from registry'
+
+  it_behaves_like 'encoding and decoding with the schema_id from registry'
 
   context "with a provided registry" do
     let(:registry) { AvroTurf::ConfluentSchemaRegistry.new(registry_url, logger: logger) }
@@ -111,6 +138,8 @@ describe AvroTurf::Messaging do
     it_behaves_like "encoding and decoding with the schema from schema store"
 
     it_behaves_like 'encoding and decoding with the schema from registry'
+
+    it_behaves_like 'encoding and decoding with the schema_id from registry'
 
     it "uses the provided registry" do
       allow(registry).to receive(:register).and_call_original

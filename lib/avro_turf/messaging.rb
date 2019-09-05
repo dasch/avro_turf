@@ -52,15 +52,19 @@ class AvroTurf
     #               the schema registry (optional).
     # version     - The integer version of the schema that should be used to decode
     #               the data. Must match the schema used when encoding (optional).
+    # schema_id   - The integer id of the schema that should be used to encode
+    #               the data.
     #
     # Returns the encoded data as a String.
-    def encode(message, schema_name: nil, namespace: @namespace, subject: nil, version: nil)
-      schema_id, schema = if subject && version
+    def encode(message, schema_name: nil, namespace: @namespace, subject: nil, version: nil, schema_id: nil)
+      schema_id, schema = if schema_id
+        fetch_schema_by_id(schema_id)
+      elsif subject && version
         fetch_schema(subject, version)
       elsif schema_name
         register_schema(subject, schema_name, namespace)
       else
-        raise ArgumentError.new('Neither schema_name nor subject + version provided to determine the schema.')
+        raise ArgumentError.new('Neither schema_name nor schema_id nor subject + version provided to determine the schema.')
       end
 
       stream = StringIO.new
@@ -78,7 +82,11 @@ class AvroTurf
 
       stream.string
     rescue Excon::Error::NotFound
-      raise SchemaNotFoundError.new("Schema with subject: `#{subject}` version: `#{version}` is not found on registry")
+      if schema_id
+        raise SchemaNotFoundError.new("Schema with id: #{schema_id} is not found on registry")
+      else
+        raise SchemaNotFoundError.new("Schema with subject: `#{subject}` version: `#{version}` is not found on registry")
+      end
     end
 
     # Decodes data into the original message.
@@ -140,6 +148,13 @@ class AvroTurf
       schema_data = @registry.subject_version(subject, version)
       schema_id = schema_data.fetch('id')
       schema = Avro::Schema.parse(schema_data.fetch('schema'))
+      [schema_id, schema]
+    end
+
+    # Fetch the schema from registry with the provided schema_id.
+    def fetch_schema_by_id(schema_id)
+      schema_json = @registry.fetch(schema_id)
+      schema = Avro::Schema.parse(schema_json)
       [schema_id, schema]
     end
 
