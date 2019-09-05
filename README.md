@@ -126,9 +126,15 @@ data = avro.encode({ "title" => "hello, world" }, schema_name: "greeting")
 
 # If you don't want to automatically register new schemas, you can pass explicitly
 # subject and version to specify which schema should be used for encoding.
-# It will fetch that schema from the registry and cache it. Subsequent instances 
+# It will fetch that schema from the registry and cache it. Subsequent instances
 # of the same schema version will be served by the cache.
 data = avro.encode({ "title" => "hello, world" }, subject: 'greeting', version: 1)
+
+# You can also pass explicitly schema_id to specify which schema
+# should be used for encoding.
+# It will fetch that schema from the registry and cache it. Subsequent instances
+# of the same schema version will be served by the cache.
+data = avro.encode({ "title" => "hello, world" }, schema_id: 2)
 
 # When decoding, the schema will be fetched from the registry and cached. Subsequent
 # instances of the same schema id will be served by the cache.
