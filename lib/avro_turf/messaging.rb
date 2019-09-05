@@ -21,6 +21,8 @@ class AvroTurf
   # 1: https://github.com/confluentinc/schema-registry
   class Messaging
     MAGIC_BYTE = [0].pack("C").freeze
+    DecodedMessage = Struct.new(:schema_id, :message)
+    private_constant(:DecodedMessage)
 
     # Instantiate a new Messaging instance with the given configuration.
     #
@@ -88,6 +90,20 @@ class AvroTurf
     #
     # Returns the decoded message.
     def decode(data, schema_name: nil, namespace: @namespace)
+      decode_message(data, schema_name: schema_name, namespace: namespace).message
+    end
+
+    # Decodes data into the original message.
+    #
+    # data        - A String containing encoded data.
+    # schema_name - The String name of the schema that should be used to decode
+    #               the data. Must match the schema used when encoding (optional).
+    # namespace   - The namespace of the schema (optional).
+    #
+    # Returns Struct with the next attributes:
+    #   schema_id  - The integer id of schema used to encode the message
+    #   message    - The decoded message
+    def decode_message(data, schema_name: nil, namespace: @namespace)
       readers_schema = schema_name && @schema_store.find(schema_name, namespace)
       stream = StringIO.new(data)
       decoder = Avro::IO::BinaryDecoder.new(stream)
@@ -108,7 +124,9 @@ class AvroTurf
       end
 
       reader = Avro::IO::DatumReader.new(writers_schema, readers_schema)
-      reader.read(decoder)
+      message = reader.read(decoder)
+
+      DecodedMessage.new(schema_id, message)
     rescue Excon::Error::NotFound
       raise SchemaNotFoundError.new("Schema with id: #{schema_id} is not found on registry")
     end
