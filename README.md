@@ -133,6 +133,12 @@ data = avro.encode({ "title" => "hello, world" }, subject: 'greeting', version: 
 # When decoding, the schema will be fetched from the registry and cached. Subsequent
 # instances of the same schema id will be served by the cache.
 avro.decode(data) #=> { "title" => "hello, world" }
+
+# If you want to get decoded message as well as schema_id used to encode the message,
+# you can use `#decode_message` method.
+result = avro.decode_message(data)
+result.message   #=> { "title" => "hello, world" }
+result.schema_id #=> 3
 ```
 
 ### Confluent Schema Registry Client
