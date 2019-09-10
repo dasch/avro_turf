@@ -11,6 +11,9 @@ class AvroTurf::DiskCache < AvroTurf::InMemoryCache
 
     @ids_by_schema_path = File.join(disk_path, 'ids_by_schema.json')
     @ids_by_schema = JSON.parse(File.read(@ids_by_schema_path)) if File.exist?(@ids_by_schema_path)
+
+    @schemas_by_subject_version_path = File.join(disk_path, 'schemas_by_subject_version.json')
+    @schemas_by_subject_version = {}
   end
 
   # override
@@ -34,5 +37,38 @@ class AvroTurf::DiskCache < AvroTurf::InMemoryCache
     value = super
     File.write(@ids_by_schema_path, JSON.pretty_generate(@ids_by_schema))
     return value
+  end
+
+  def lookup_by_version(subject, version)
+    key = "#{subject}#{version}"
+    if schema = @schemas_by_subject_version[key]
+      @schemas_by_subject_version[key]
+    else
+      hash = JSON.parse(File.read(@schemas_by_subject_version_path)) if File.exist?(@schemas_by_subject_version_path)
+      if hash
+        @schemas_by_subject_version = hash
+        @schemas_by_subject_version[key]
+      end
+    end
+  end
+
+  def store_by_version(subject, version, schema)
+    key = "#{subject}#{version}"
+    hash = JSON.parse(File.read(@schemas_by_subject_version_path)) if File.exist?(@schemas_by_subject_version_path)
+    hash = if hash
+             hash[key] = schema
+             hash
+           else
+             {key => schema}
+           end
+
+    write_to_disk_cache(@schemas_by_subject_version_path, hash)
+
+    @schemas_by_subject_version = hash
+    @schemas_by_subject_version[key]
+  end
+
+  private def write_to_disk_cache(path, hash)
+    File.write(path, JSON.pretty_generate(hash))
   end
 end
