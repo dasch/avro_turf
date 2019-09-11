@@ -39,19 +39,28 @@ class AvroTurf::DiskCache < AvroTurf::InMemoryCache
     return value
   end
 
+  # checks instance var (in-memory cache) for schema
+  # checks disk cache if in-memory cache doesn't exists
+  # if file exists but no in-memory cache, read from file and sync in-memory cache
+  # finally, if file doesn't exist return nil
   def lookup_by_version(subject, version)
     key = "#{subject}#{version}"
-    if schema = @schemas_by_subject_version[key]
+    schema = @schemas_by_subject_version[key]
+
+    return schema unless schema.nil?
+
+    hash = JSON.parse(File.read(@schemas_by_subject_version_path)) if File.exist?(@schemas_by_subject_version_path)
+    if hash
+      @schemas_by_subject_version = hash
       @schemas_by_subject_version[key]
-    else
-      hash = JSON.parse(File.read(@schemas_by_subject_version_path)) if File.exist?(@schemas_by_subject_version_path)
-      if hash
-        @schemas_by_subject_version = hash
-        @schemas_by_subject_version[key]
-      end
     end
   end
 
+  # check if file exists and parse json into a hash
+  # if file exists take json and overwite/insert schema at key
+  # if file doesn't exist create new hash
+  # write the new/updated hash to file
+  # update instance var (in memory-cache) to match
   def store_by_version(subject, version, schema)
     key = "#{subject}#{version}"
     hash = JSON.parse(File.read(@schemas_by_subject_version_path)) if File.exist?(@schemas_by_subject_version_path)
