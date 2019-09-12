@@ -11,6 +11,9 @@ class AvroTurf::DiskCache < AvroTurf::InMemoryCache
 
     @ids_by_schema_path = File.join(disk_path, 'ids_by_schema.json')
     @ids_by_schema = JSON.parse(File.read(@ids_by_schema_path)) if File.exist?(@ids_by_schema_path)
+
+    @schemas_by_subject_version_path = File.join(disk_path, 'schemas_by_subject_version.json')
+    @schemas_by_subject_version = {}
   end
 
   # override
@@ -34,5 +37,47 @@ class AvroTurf::DiskCache < AvroTurf::InMemoryCache
     value = super
     File.write(@ids_by_schema_path, JSON.pretty_generate(@ids_by_schema))
     return value
+  end
+
+  # checks instance var (in-memory cache) for schema
+  # checks disk cache if in-memory cache doesn't exists
+  # if file exists but no in-memory cache, read from file and sync in-memory cache
+  # finally, if file doesn't exist return nil
+  def lookup_by_version(subject, version)
+    key = "#{subject}#{version}"
+    schema = @schemas_by_subject_version[key]
+
+    return schema unless schema.nil?
+
+    hash = JSON.parse(File.read(@schemas_by_subject_version_path)) if File.exist?(@schemas_by_subject_version_path)
+    if hash
+      @schemas_by_subject_version = hash
+      @schemas_by_subject_version[key]
+    end
+  end
+
+  # check if file exists and parse json into a hash
+  # if file exists take json and overwite/insert schema at key
+  # if file doesn't exist create new hash
+  # write the new/updated hash to file
+  # update instance var (in memory-cache) to match
+  def store_by_version(subject, version, schema)
+    key = "#{subject}#{version}"
+    hash = JSON.parse(File.read(@schemas_by_subject_version_path)) if File.exist?(@schemas_by_subject_version_path)
+    hash = if hash
+             hash[key] = schema
+             hash
+           else
+             {key => schema}
+           end
+
+    write_to_disk_cache(@schemas_by_subject_version_path, hash)
+
+    @schemas_by_subject_version = hash
+    @schemas_by_subject_version[key]
+  end
+
+  private def write_to_disk_cache(path, hash)
+    File.write(path, JSON.pretty_generate(hash))
   end
 end
