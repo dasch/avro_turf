@@ -29,6 +29,7 @@ describe AvroTurf::Messaging do
       }
     AVSC
   end
+  let(:schema) { Avro::Schema.parse(schema_json) }
 
   before do
     FileUtils.mkdir_p("spec/schemas")
@@ -66,8 +67,8 @@ describe AvroTurf::Messaging do
   shared_examples_for 'encoding and decoding with the schema from registry' do
     before do
       registry = AvroTurf::ConfluentSchemaRegistry.new(registry_url, logger: logger)
-      registry.register('person', Avro::Schema.parse(schema_json))
-      registry.register('people', Avro::Schema.parse(schema_json))
+      registry.register('person', schema)
+      registry.register('people', schema)
     end
 
     it 'encodes and decodes messages' do
@@ -96,8 +97,8 @@ describe AvroTurf::Messaging do
   shared_examples_for 'encoding and decoding with the schema_id from registry' do
     before do
       registry = AvroTurf::ConfluentSchemaRegistry.new(registry_url, logger: logger)
-      registry.register('person', Avro::Schema.parse(schema_json))
-      registry.register('people', Avro::Schema.parse(schema_json))
+      registry.register('person', schema)
+      registry.register('people', schema)
     end
 
     it 'encodes and decodes messages' do
@@ -183,11 +184,16 @@ describe AvroTurf::Messaging do
         result = avro.decode_message(data)
         expect(result.message).to eq message
         expect(result.schema_id).to eq 0
+        expect(result.writers_schema).to eq schema
+        expect(result.readers_schema).to eq nil
       end
 
       it "allows specifying a reader's schema" do
         data = avro.encode(message, schema_name: "person")
-        expect(avro.decode_message(data, schema_name: "person").message).to eq message
+        result = avro.decode_message(data, schema_name: "person")
+        expect(result.message).to eq message
+        expect(result.writers_schema).to eq schema
+        expect(result.readers_schema).to eq schema
       end
 
       it "caches parsed schemas for decoding" do
@@ -202,8 +208,8 @@ describe AvroTurf::Messaging do
     shared_examples_for 'encoding and decoding with the schema from registry' do
       before do
         registry = AvroTurf::ConfluentSchemaRegistry.new(registry_url, logger: logger)
-        registry.register('person', Avro::Schema.parse(schema_json))
-        registry.register('people', Avro::Schema.parse(schema_json))
+        registry.register('person', schema)
+        registry.register('people', schema)
       end
 
       it 'encodes and decodes messages' do
