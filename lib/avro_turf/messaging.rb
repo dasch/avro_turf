@@ -21,7 +21,7 @@ class AvroTurf
   # 1: https://github.com/confluentinc/schema-registry
   class Messaging
     MAGIC_BYTE = [0].pack("C").freeze
-    DecodedMessage = Struct.new(:schema_id, :message)
+    DecodedMessage = Struct.new(:schema_id, :writer_schema, :reader_schema, :message)
     private_constant(:DecodedMessage)
 
     # Instantiate a new Messaging instance with the given configuration.
@@ -134,7 +134,7 @@ class AvroTurf
       reader = Avro::IO::DatumReader.new(writers_schema, readers_schema)
       message = reader.read(decoder)
 
-      DecodedMessage.new(schema_id, message)
+      DecodedMessage.new(schema_id, writers_schema, readers_schema, message)
     rescue Excon::Error::NotFound
       raise SchemaNotFoundError.new("Schema with id: #{schema_id} is not found on registry")
     end
