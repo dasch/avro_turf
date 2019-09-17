@@ -184,16 +184,16 @@ describe AvroTurf::Messaging do
         result = avro.decode_message(data)
         expect(result.message).to eq message
         expect(result.schema_id).to eq 0
-        expect(result.writers_schema).to eq schema
-        expect(result.readers_schema).to eq nil
+        expect(result.writer_schema).to eq schema
+        expect(result.reader_schema).to eq nil
       end
 
       it "allows specifying a reader's schema" do
         data = avro.encode(message, schema_name: "person")
         result = avro.decode_message(data, schema_name: "person")
         expect(result.message).to eq message
-        expect(result.writers_schema).to eq schema
-        expect(result.readers_schema).to eq schema
+        expect(result.writer_schema).to eq schema
+        expect(result.reader_schema).to eq schema
       end
 
       it "caches parsed schemas for decoding" do
