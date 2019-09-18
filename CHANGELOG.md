@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## v0.10.0
+
+- Add more disk caching (#103)
+- Include schema information when decoding (#100, #101, #104)
+
 ## v0.9.0
 
 - Compatibility with Avro v1.9.0 (#94)
