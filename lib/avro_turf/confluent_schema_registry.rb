@@ -3,11 +3,13 @@ require 'excon'
 class AvroTurf::ConfluentSchemaRegistry
   CONTENT_TYPE = "application/vnd.schemaregistry.v1+json".freeze
 
-  def initialize(url, logger: Logger.new($stdout))
+  def initialize(url, logger: Logger.new($stdout), proxy: nil)
     @logger = logger
-    @connection = Excon.new(url, headers: {
-      "Content-Type" => CONTENT_TYPE,
-    })
+    headers = {
+      "Content-Type" => CONTENT_TYPE
+    }
+    headers[:proxy] = proxy if proxy&.present?
+    @connection = Excon.new(url, headers: headers)
   end
 
   def fetch(id)
