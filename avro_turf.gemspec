@@ -21,9 +21,9 @@ Gem::Specification.new do |spec|
   spec.add_dependency "excon", "~> 0.45"
 
   spec.add_development_dependency "bundler", "~> 2.0"
-  spec.add_development_dependency "rake", "~> 10.0"
-  spec.add_development_dependency "rspec", "~> 3.2.0"
-  spec.add_development_dependency "fakefs", "~> 0.6.7"
+  spec.add_development_dependency "rake", "~> 13.0"
+  spec.add_development_dependency "rspec", "~> 3.2"
+  spec.add_development_dependency "fakefs", "~> 0.20.0"
   spec.add_development_dependency "webmock"
   spec.add_development_dependency "sinatra"
   spec.add_development_dependency "json_spec"
