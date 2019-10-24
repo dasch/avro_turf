@@ -26,19 +26,48 @@ class AvroTurf
 
     # Instantiate a new Messaging instance with the given configuration.
     #
-    # registry     - A schema registry object that responds to all methods in the
-    #                AvroTurf::ConfluentSchemaRegistry interface.
-    # registry_url - The String URL of the schema registry that should be used.
-    # schema_store - A schema store object that responds to #find(schema_name, namespace).
-    # schemas_path - The String file system path where local schemas are stored.
-    # namespace    - The String default schema namespace.
-    # logger       - The Logger that should be used to log information (optional).
-    # proxy        - Forward the request via  proxy (optional).
-    def initialize(registry: nil, registry_url: nil, schema_store: nil, schemas_path: nil, namespace: nil, logger: nil, proxy: nil)
+    # registry          - A schema registry object that responds to all methods in the
+    #                     AvroTurf::ConfluentSchemaRegistry interface.
+    # registry_url      - The String URL of the schema registry that should be used.
+    # schema_store      - A schema store object that responds to #find(schema_name, namespace).
+    # schemas_path      - The String file system path where local schemas are stored.
+    # namespace         - The String default schema namespace.
+    # logger            - The Logger that should be used to log information (optional).
+    # proxy             - Forward the request via  proxy (optional).
+    # client_cert       - Name of file containing client certificate (optional).
+    # client_key        - Name of file containing client private key to go with client_cert (optional).
+    # client_key_pass   - Password to go with client_key (optional).
+    # client_cert_data  - In-memory client certificate (optional).
+    # client_key_data   - In-memory client private key to go with client_cert_data (optional).
+    def initialize(
+      registry: nil,
+      registry_url: nil,
+      schema_store: nil,
+      schemas_path: nil,
+      namespace: nil,
+      logger: nil,
+      proxy: nil,
+      client_cert: nil,
+      client_key: nil,
+      client_key_pass: nil,
+      client_cert_data: nil,
+      client_key_data: nil
+    )
       @logger = logger || Logger.new($stderr)
       @namespace = namespace
       @schema_store = schema_store || SchemaStore.new(path: schemas_path || DEFAULT_SCHEMAS_PATH)
-      @registry = registry || CachedConfluentSchemaRegistry.new(ConfluentSchemaRegistry.new(registry_url, logger: @logger, proxy: proxy))
+      @registry = registry || CachedConfluentSchemaRegistry.new(
+        ConfluentSchemaRegistry.new(
+          registry_url,
+          logger: @logger,
+          proxy: proxy,
+          client_cert: client_cert,
+          client_key: client_key,
+          client_key_pass: client_key_pass,
+          client_cert_data: client_cert_data,
+          client_key_data: client_key_data
+        )
+      )
       @schemas_by_id = {}
     end
 
