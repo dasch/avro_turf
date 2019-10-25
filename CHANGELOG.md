@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## v0.11.0
+
+- Add proxy support (#107)
+- Adding support for client certs (#109)
+
 ## v0.10.0
 
 - Add more disk caching (#103)
