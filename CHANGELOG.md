@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Stop caching nested sub-schemas (#111)
+
 ## v0.11.0
 
 - Add proxy support (#107)
