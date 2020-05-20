@@ -16,6 +16,48 @@ These classes have been renamed to `AvroTurf::ConfluentSchemaRegistry`,
 
 The aliases for the original names will be removed in a future release.
 
+## Note about finding nested schemas
+
+As of AvroTurf version 0.12.0, only top-level schemas that have their own .avsc file will be loaded and resolvable by the `AvroTurf::SchemaStore#find` method. This change will likely not affect most users. However, if you use `AvroTurf::SchemaStore#load_schemas!` to pre-cache all your schemas and then rely on `AvroTurf::SchemaStore#find` to access nested schemas that are not defined by their own .avsc files, your code may stop working when you upgrade to v0.12.0.
+
+As an example, if you have a `person` schema (defined in `my/schemas/contacts/person.avsc`) that defines a nested `address` schema like this:
+
+```json
+{
+  "name": "person",
+  "namespace": "contacts",
+  "type": "record",
+  "fields": [
+    {
+      "name": "address",
+      "type": {
+        "name": "address",
+        "type": "record",
+        "fields": [
+          { "name": "addr1", "type": "string" },
+          { "name": "addr2", "type": "string" },
+          { "name": "city", "type": "string" },
+          { "name": "zip", "type": "string" }
+        ]
+      }
+    }
+  ]
+}
+```
+...this will no longer work in v0.12.0:
+```ruby
+store = AvroTurf::SchemaStore.new(path: 'my/schemas')
+store.load_schemas!
+
+# Accessing 'person' is correct and works fine.
+person = store.find('person', 'contacts') # my/schemas/contacts/person.avsc exists
+
+# Trying to access 'address' raises AvroTurf::SchemaNotFoundError
+address = store.find('address', 'contacts') # my/schemas/contacts/address.avsc is not found
+```
+
+For details and context, see [this pull request](https://github.com/dasch/avro_turf/pull/111).
+
 ## Installation
 
 Add this line to your application's Gemfile:

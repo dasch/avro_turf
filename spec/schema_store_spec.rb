@@ -198,6 +198,104 @@ describe AvroTurf::SchemaStore do
       expect(schema.fullname).to eq "person"
     end
 
+    # This test would fail under avro_turf <= v0.11.0
+    it "does NOT cache *nested* schemas in memory" do
+      FileUtils.mkdir_p("spec/schemas/test")
+
+      define_schema "test/person.avsc", <<-AVSC
+        {
+          "name": "person",
+          "namespace": "test",
+          "type": "record",
+          "fields": [
+            {
+              "name": "address",
+              "type": {
+                "name": "address",
+                "type": "record",
+                "fields": [
+                  { "name": "addr1", "type": "string" },
+                  { "name": "addr2", "type": "string" },
+                  { "name": "city", "type": "string" },
+                  { "name": "zip", "type": "string" }
+                ]
+              }
+            }
+          ]
+        }
+      AVSC
+
+      schema = store.find('person', 'test')
+      expect(schema.fullname).to eq "test.person"
+
+      expect { store.find('address', 'test') }.
+        to raise_error(AvroTurf::SchemaNotFoundError)
+    end
+
+    # This test would fail under avro_turf <= v0.11.0
+    it "allows two different avsc files to define nested sub-schemas with the same fullname" do
+      FileUtils.mkdir_p("spec/schemas/test")
+
+      define_schema "test/person.avsc", <<-AVSC
+        {
+          "name": "person",
+          "namespace": "test",
+          "type": "record",
+          "fields": [
+            {
+              "name": "location",
+              "type": {
+                "name": "location",
+                "type": "record",
+                "fields": [
+                  { "name": "city", "type": "string" },
+                  { "name": "zipcode", "type": "string" }
+                ]
+              }
+            }
+          ]
+        }
+      AVSC
+
+      define_schema "test/company.avsc", <<-AVSC
+        {
+          "name": "company",
+          "namespace": "test",
+          "type": "record",
+          "fields": [
+            {
+              "name": "headquarters",
+              "type": {
+                "name": "location",
+                "type": "record",
+                "fields": [
+                  { "name": "city", "type": "string" },
+                  { "name": "postcode", "type": "string" }
+                ]
+              }
+            }
+          ]
+        }
+      AVSC
+
+      company = nil
+      person = store.find('person', 'test')
+
+      # This should *NOT* raise the error:
+      # #<Avro::SchemaParseError: The name "test.location" is already in use.>
+      expect { company = store.find('company', 'test') }.not_to raise_error
+
+      person_location_field = person.fields_hash['location']
+      expect(person_location_field.type.name).to eq('location')
+      expect(person_location_field.type.fields_hash).to include('zipcode')
+      expect(person_location_field.type.fields_hash).not_to include('postcode')
+
+      company_headquarters_field = company.fields_hash['headquarters']
+      expect(company_headquarters_field.type.name).to eq('location')
+      expect(company_headquarters_field.type.fields_hash).to include('postcode')
+      expect(company_headquarters_field.type.fields_hash).not_to include('zipcode')
+    end
+
     it "is thread safe" do
       define_schema "address.avsc", <<-AVSC
         {
