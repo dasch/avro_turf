@@ -1,6 +1,8 @@
-# avro_turf
+# AvroTurf
 
 ## Unreleased
+
+## v1.0.0
 
 - Stop caching nested sub-schemas (#111)
 
