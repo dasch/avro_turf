@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Compatibility with Avro v1.10.x.
+
 ## v1.0.0
 
 - Stop caching nested sub-schemas (#111)
