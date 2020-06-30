@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v1.1.0
+
 - Compatibility with Avro v1.10.x.
 
 ## v1.0.0
