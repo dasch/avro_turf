@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add ability to validate message before encoding in `Messaging#encode` interface (#116, #118)
+
 ## v1.1.0
 
 - Compatibility with Avro v1.10.x.

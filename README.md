@@ -178,6 +178,10 @@ data = avro.encode({ "title" => "hello, world" }, subject: 'greeting', version: 
 # of the same schema version will be served by the cache.
 data = avro.encode({ "title" => "hello, world" }, schema_id: 2)
 
+# Message can be validated before encoding to get a description of problem through
+# Avro::SchemaValidator::ValidationError exception
+data = avro.encode({ "titl" => "hello, world" }, schema_name: "greeting", validate: true)
+
 # When decoding, the schema will be fetched from the registry and cached. Subsequent
 # instances of the same schema id will be served by the cache.
 avro.decode(data) #=> { "title" => "hello, world" }

@@ -297,4 +297,24 @@ describe AvroTurf::Messaging do
       end
     end
   end
+
+  context "validating" do
+    subject(:encode){ avro.encode(message, schema_name: "person", validate: true) }
+
+    context "for correct message" do
+      it { expect { encode }.not_to raise_error }
+    end
+
+    context "when message has wrong type" do
+      let(:message) { { "full_name" => 123 } }
+
+      it { expect { encode }.to raise_error(Avro::SchemaValidator::ValidationError, /\.full_name expected type string, got int/) }
+    end
+
+    context "when message contains extra fields (typo in key)" do
+      let(:message) { { "fulll_name" => "John Doe" } }
+
+      it { expect { encode }.to raise_error(Avro::SchemaValidator::ValidationError, /extra field 'fulll_name'/) }
+    end
+  end
 end

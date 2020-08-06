@@ -84,9 +84,12 @@ class AvroTurf
     #               the data. Must match the schema used when encoding (optional).
     # schema_id   - The integer id of the schema that should be used to encode
     #               the data.
+    # validate    - The boolean for performing complete message validation before
+    #               encoding it, Avro::SchemaValidator::ValidationError with
+    #               a descriptive message will be raised in case of invalid message.
     #
     # Returns the encoded data as a String.
-    def encode(message, schema_name: nil, namespace: @namespace, subject: nil, version: nil, schema_id: nil)
+    def encode(message, schema_name: nil, namespace: @namespace, subject: nil, version: nil, schema_id: nil, validate: false)
       schema_id, schema = if schema_id
         fetch_schema_by_id(schema_id)
       elsif subject && version
@@ -95,6 +98,10 @@ class AvroTurf
         register_schema(subject, schema_name, namespace)
       else
         raise ArgumentError.new('Neither schema_name nor schema_id nor subject + version provided to determine the schema.')
+      end
+
+      if validate
+        Avro::SchemaValidator.validate!(schema, message, recursive: true, encoded: false, fail_on_extra_fields: true)
       end
 
       stream = StringIO.new
