@@ -93,9 +93,9 @@ class AvroTurf
       schema_id, schema = if schema_id
         fetch_schema_by_id(schema_id)
       elsif subject && version
-        fetch_schema(subject, version)
+        fetch_schema(subject: subject, version: version)
       elsif schema_name
-        register_schema(subject, schema_name, namespace)
+        register_schema(subject: subject, schema_name: schema_name, namespace: namespace)
       else
         raise ArgumentError.new('Neither schema_name nor schema_id nor subject + version provided to determine the schema.')
       end
@@ -179,7 +179,7 @@ class AvroTurf
     # Providing subject and version to determine the schema,
     # which skips the auto registeration of schema on the schema registry.
     # Fetch the schema from registry with the provided subject name and version.
-    def fetch_schema(subject, version)
+    def fetch_schema(subject:, version: 'latest')
       schema_data = @registry.subject_version(subject, version)
       schema_id = schema_data.fetch('id')
       schema = Avro::Schema.parse(schema_data.fetch('schema'))
@@ -195,7 +195,7 @@ class AvroTurf
 
     # Schemas are registered under the full name of the top level Avro record
     # type, or `subject` if it's provided.
-    def register_schema(subject, schema_name, namespace)
+    def register_schema(schema_name:, subject: nil, namespace: nil)
       schema = @schema_store.find(schema_name, namespace)
       schema_id = @registry.register(subject || schema.fullname, schema)
       [schema_id, schema]
