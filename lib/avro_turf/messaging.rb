@@ -90,7 +90,7 @@ class AvroTurf
     #
     # Returns the encoded data as a String.
     def encode(message, schema_name: nil, namespace: @namespace, subject: nil, version: nil, schema_id: nil, validate: false)
-      schema_id, schema = if schema_id
+      schema, schema_id = if schema_id
         fetch_schema_by_id(schema_id)
       elsif subject && version
         fetch_schema(subject: subject, version: version)
@@ -183,14 +183,14 @@ class AvroTurf
       schema_data = @registry.subject_version(subject, version)
       schema_id = schema_data.fetch('id')
       schema = Avro::Schema.parse(schema_data.fetch('schema'))
-      [schema_id, schema]
+      [schema, schema_id]
     end
 
     # Fetch the schema from registry with the provided schema_id.
     def fetch_schema_by_id(schema_id)
       schema_json = @registry.fetch(schema_id)
       schema = Avro::Schema.parse(schema_json)
-      [schema_id, schema]
+      [schema, schema_id]
     end
 
     # Schemas are registered under the full name of the top level Avro record
@@ -198,7 +198,7 @@ class AvroTurf
     def register_schema(schema_name:, subject: nil, namespace: nil)
       schema = @schema_store.find(schema_name, namespace)
       schema_id = @registry.register(subject || schema.fullname, schema)
-      [schema_id, schema]
+      [schema, schema_id]
     end
   end
 end
