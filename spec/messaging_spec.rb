@@ -317,4 +317,86 @@ describe AvroTurf::Messaging do
       it { expect { encode }.to raise_error(Avro::SchemaValidator::ValidationError, /extra field 'fulll_name'/) }
     end
   end
+
+  context 'fetching and registering schema' do
+    let(:schema_store) { AvroTurf::SchemaStore.new(path: "spec/schemas") }
+
+    let(:registry) { AvroTurf::ConfluentSchemaRegistry.new(registry_url, logger: logger) }
+
+    let(:avro) do
+      AvroTurf::Messaging.new(
+        registry: registry,
+        schema_store: schema_store,
+        logger: logger
+      )
+    end
+
+    let(:schema_id) { 234 }
+
+    context 'using fetch_schema' do
+      subject { avro.fetch_schema(subject: subj, version: version) }
+
+      let(:subj) { 'subject' }
+
+      let(:version) { 'version' }
+
+      let(:response) { {'id' => schema_id, 'schema' => schema_json} }
+
+      before do
+        allow(registry).to receive(:subject_version).with(subj, version).and_return(response)
+      end
+
+      it 'gets schema from registry' do
+        expect(subject).to eq([schema, schema_id])
+      end
+    end
+
+    context 'using fetch_schema_by_id' do
+      subject { avro.fetch_schema_by_id(schema_id) }
+
+      before do
+        allow(registry).to receive(:fetch).with(schema_id).and_return(schema_json)
+      end
+
+      it 'gets schema from registry' do
+        expect(subject).to eq([schema, schema_id])
+      end
+    end
+
+    context 'using register_schema' do
+      let(:schema_name) { 'schema_name' }
+
+      let(:namespace) { 'namespace' }
+
+      before do
+        allow(schema_store).to receive(:find).with(schema_name, namespace).and_return(schema)
+      end
+
+      context 'when subject is not set' do
+        subject { avro.register_schema(schema_name: schema_name, namespace: namespace) }
+
+        before do
+          allow(registry).to receive(:register).with(schema.fullname, schema).and_return(schema_id)
+        end
+
+        it 'registers schema in registry' do
+          expect(subject).to eq([schema, schema_id])
+        end
+      end
+
+      context 'when subject is set' do
+        subject { avro.register_schema(schema_name: schema_name, namespace: namespace, subject: subj) }
+
+        let(:subj) { 'subject' }
+
+        before do
+          allow(registry).to receive(:register).with(subj, schema).and_return(schema_id)
+        end
+
+        it 'registers schema in registry' do
+          expect(subject).to eq([schema, schema_id])
+        end
+      end
+    end
+  end
 end
