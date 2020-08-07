@@ -176,8 +176,6 @@ class AvroTurf
       raise SchemaNotFoundError.new("Schema with id: #{schema_id} is not found on registry")
     end
 
-    private
-
     # Providing subject and version to determine the schema,
     # which skips the auto registeration of schema on the schema registry.
     # Fetch the schema from registry with the provided subject name and version.
