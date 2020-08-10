@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Expose `fetch_schema`, `fetch_schema_by_id` and `register_schema` schema in `Messaging` interface (#117, #119)
 - Add ability to validate message before encoding in `Messaging#encode` interface (#116, #118)
 
 ## v1.1.0

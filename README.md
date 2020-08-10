@@ -193,6 +193,20 @@ result.message       #=> { "title" => "hello, world" }
 result.schema_id     #=> 3
 result.writer_schema #=> #<Avro::Schema: ...>
 result.reader_schema #=> nil
+
+# You can also work with schema through this interface:
+# Fetch latest schema for subject from registry
+schema, schema_id = avro.fetch_schema(subject: 'greeting')
+# Fetch specific version
+schema, schema_id = avro.fetch_schema(subject: 'greeting', version: 1)
+# Fetch schema by id
+schema, schema_id = avro.fetch_schema_by_id(3)
+# Register schema fetched from store by name
+schema, schema_id = avro.register_schema(schema_name: 'greeting')
+# Specify namespace (same as schema_name: 'somewhere.greeting')
+schema, schema_id = avro.register_schema(schema_name: 'greeting', namespace: 'somewhere')
+# Customize subject under which to register schema
+schema, schema_id = avro.register_schema(schema_name: 'greeting', namespace: 'somewhere', subject: 'test')
 ```
 
 ### Confluent Schema Registry Client

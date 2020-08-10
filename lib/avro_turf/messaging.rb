@@ -90,12 +90,12 @@ class AvroTurf
     #
     # Returns the encoded data as a String.
     def encode(message, schema_name: nil, namespace: @namespace, subject: nil, version: nil, schema_id: nil, validate: false)
-      schema_id, schema = if schema_id
+      schema, schema_id = if schema_id
         fetch_schema_by_id(schema_id)
       elsif subject && version
-        fetch_schema(subject, version)
+        fetch_schema(subject: subject, version: version)
       elsif schema_name
-        register_schema(subject, schema_name, namespace)
+        register_schema(subject: subject, schema_name: schema_name, namespace: namespace)
       else
         raise ArgumentError.new('Neither schema_name nor schema_id nor subject + version provided to determine the schema.')
       end
@@ -176,31 +176,29 @@ class AvroTurf
       raise SchemaNotFoundError.new("Schema with id: #{schema_id} is not found on registry")
     end
 
-    private
-
     # Providing subject and version to determine the schema,
     # which skips the auto registeration of schema on the schema registry.
     # Fetch the schema from registry with the provided subject name and version.
-    def fetch_schema(subject, version)
+    def fetch_schema(subject:, version: 'latest')
       schema_data = @registry.subject_version(subject, version)
       schema_id = schema_data.fetch('id')
       schema = Avro::Schema.parse(schema_data.fetch('schema'))
-      [schema_id, schema]
+      [schema, schema_id]
     end
 
     # Fetch the schema from registry with the provided schema_id.
     def fetch_schema_by_id(schema_id)
       schema_json = @registry.fetch(schema_id)
       schema = Avro::Schema.parse(schema_json)
-      [schema_id, schema]
+      [schema, schema_id]
     end
 
     # Schemas are registered under the full name of the top level Avro record
     # type, or `subject` if it's provided.
-    def register_schema(subject, schema_name, namespace)
+    def register_schema(schema_name:, subject: nil, namespace: nil)
       schema = @schema_store.find(schema_name, namespace)
       schema_id = @registry.register(subject || schema.fullname, schema)
-      [schema_id, schema]
+      [schema, schema_id]
     end
   end
 end
