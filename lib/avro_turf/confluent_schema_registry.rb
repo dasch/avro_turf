@@ -7,6 +7,8 @@ class AvroTurf::ConfluentSchemaRegistry
     url,
     logger: Logger.new($stdout),
     proxy: nil,
+    user: nil,
+    password: nil,
     client_cert: nil,
     client_key: nil,
     client_key_pass: nil,
@@ -21,6 +23,8 @@ class AvroTurf::ConfluentSchemaRegistry
     @connection = Excon.new(
       url,
       headers: headers,
+      user: user,
+      password: password,
       client_cert: client_cert,
       client_key: client_key,
       client_key_pass: client_key_pass,
