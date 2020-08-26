@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add support for plain user/password auth to ConfluentSchemaRegistry (#120)
+
 ## v1.2.0
 
 - Expose `fetch_schema`, `fetch_schema_by_id` and `register_schema` schema in `Messaging` interface (#117, #119)
