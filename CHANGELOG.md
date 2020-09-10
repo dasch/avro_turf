@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v1.3.0
+
 - Add support for plain user/password auth to ConfluentSchemaRegistry (#120)
 
 ## v1.2.0
