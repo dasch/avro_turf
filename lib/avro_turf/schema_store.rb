@@ -22,7 +22,7 @@ class AvroTurf::SchemaStore
       # Still need to check is the schema already loaded
       return @schemas[fullname] if @schemas.key?(fullname)
 
-      load_schema!(fullname, namespace)
+      load_schema!(fullname)
     end
   end
 
@@ -42,13 +42,12 @@ class AvroTurf::SchemaStore
     end
   end
 
-  private
+  protected
 
   # Loads single schema
   # Such method is not thread-safe, do not call it of from mutex synchronization routine
-  def load_schema!(fullname, namespace = nil, local_schemas_cache = {})
-    *namespace, schema_name = fullname.split(".")
-    schema_path = File.join(@path, *namespace, schema_name + ".avsc")
+  def load_schema!(fullname, local_schemas_cache = {})
+    schema_path = build_schema_path(fullname)
     schema_json = JSON.parse(File.read(schema_path))
 
     schema = Avro::Schema.real_parse(schema_json, local_schemas_cache)
@@ -78,17 +77,22 @@ class AvroTurf::SchemaStore
       # Try to first resolve a referenced schema from disk.
       # If this is successful, the Avro gem will have mutated the
       # local_schemas_cache, adding all the new schemas it found.
-      load_schema!($1, nil, local_schemas_cache)
+      load_schema!($1, local_schemas_cache)
 
       # Attempt to re-parse the original schema now that the dependency
       # has been resolved and use the now-updated local_schemas_cache to
       # pick up where we left off.
       local_schemas_cache.delete(fullname)
-      load_schema!(fullname, nil, local_schemas_cache)
+      load_schema!(fullname, local_schemas_cache)
     else
       raise
     end
   rescue Errno::ENOENT, Errno::ENAMETOOLONG
     raise AvroTurf::SchemaNotFoundError, "could not find Avro schema at `#{schema_path}'"
+  end
+
+  def build_schema_path(fullname)
+    *namespace, schema_name = fullname.split(".")
+    schema_path = File.join(@path, *namespace, schema_name + ".avsc")
   end
 end
