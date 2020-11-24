@@ -31,12 +31,18 @@ class AvroTurf::DiskCache < AvroTurf::InMemoryCache
     return value
   end
 
-  # override to include write-thru cache after storing result from upstream
+  # override to use a json serializable cache key
+  def lookup_by_schema(subject, schema)
+    key = "#{subject}#{schema}"
+    @ids_by_schema[key]
+  end
+
+  # override to use a json serializable cache key and update the file cache
   def store_by_schema(subject, schema, id)
-    # must return the value from storing the result (i.e. do not return result from file write)
-    value = super
+    key = "#{subject}#{schema}"
+    @ids_by_schema[key] = id
     File.write(@ids_by_schema_path, JSON.pretty_generate(@ids_by_schema))
-    return value
+    id
   end
 
   # checks instance var (in-memory cache) for schema
