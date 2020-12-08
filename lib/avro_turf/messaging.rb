@@ -194,8 +194,10 @@ class AvroTurf
 
     # Fetch the schema from registry with the provided schema_id.
     def fetch_schema_by_id(schema_id)
-      schema_json = @registry.fetch(schema_id)
-      schema = Avro::Schema.parse(schema_json)
+      schema = @schemas_by_id.fetch(schema_id) do
+        schema_json = @registry.fetch(schema_id)
+        Avro::Schema.parse(schema_json)
+      end
       [schema, schema_id]
     end
 
