@@ -75,6 +75,7 @@ class AvroTurf
         )
       )
       @schemas_by_id = {}
+      @encoded_schema_ids = {}
     end
 
     # Encodes a message using the specified schema.
@@ -118,7 +119,10 @@ class AvroTurf
       encoder.write(MAGIC_BYTE)
 
       # The schema id is encoded as a 4-byte big-endian integer.
-      encoder.write([schema_id].pack("N"))
+      encoded_schema_id = @encoded_schema_ids.fetch(schema_id) do
+        @encoded_schema_ids[schema_id] = [schema_id].pack("N").freeze
+      end
+      encoder.write(encoded_schema_id)
 
       # The actual message comes last.
       writer.write(message, encoder)
