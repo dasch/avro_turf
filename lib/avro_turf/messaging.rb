@@ -115,10 +115,10 @@ class AvroTurf
       encoder = Avro::IO::BinaryEncoder.new(stream)
 
       # Always start with the magic byte.
-      encoder.write(MAGIC_BYTE)
+      stream.write(MAGIC_BYTE)
 
       # The schema id is encoded as a 4-byte big-endian integer.
-      encoder.write([schema_id].pack("N"))
+      stream.write([schema_id].pack("N"))
 
       # The actual message comes last.
       writer.write(message, encoder)
