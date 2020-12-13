@@ -44,6 +44,7 @@ class AvroTurf
     def initialize(
       registry: nil,
       registry_url: nil,
+      registry_path_prefix: nil,
       schema_store: nil,
       schemas_path: nil,
       namespace: nil,
@@ -71,7 +72,8 @@ class AvroTurf
           client_key: client_key,
           client_key_pass: client_key_pass,
           client_cert_data: client_cert_data,
-          client_key_data: client_key_data
+          client_key_data: client_key_data,
+          path_prefix: registry_path_prefix
         )
       )
       @schemas_by_id = {}
