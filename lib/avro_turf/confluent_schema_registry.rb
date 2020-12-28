@@ -19,7 +19,7 @@ class AvroTurf::ConfluentSchemaRegistry
     headers = {
       "Content-Type" => CONTENT_TYPE
     }
-    headers[:proxy] = proxy if proxy&.present?
+    headers[:proxy] = proxy unless proxy.nil?
     @connection = Excon.new(
       url,
       headers: headers,
