@@ -197,6 +197,140 @@ describe AvroTurf::SchemaStore do
       schema = store.find("person")
       expect(schema.fullname).to eq "person"
     end
+
+    # This test would fail under avro_turf <= v0.11.0
+    it "does NOT cache *nested* schemas in memory" do
+      FileUtils.mkdir_p("spec/schemas/test")
+
+      define_schema "test/person.avsc", <<-AVSC
+        {
+          "name": "person",
+          "namespace": "test",
+          "type": "record",
+          "fields": [
+            {
+              "name": "address",
+              "type": {
+                "name": "address",
+                "type": "record",
+                "fields": [
+                  { "name": "addr1", "type": "string" },
+                  { "name": "addr2", "type": "string" },
+                  { "name": "city", "type": "string" },
+                  { "name": "zip", "type": "string" }
+                ]
+              }
+            }
+          ]
+        }
+      AVSC
+
+      schema = store.find('person', 'test')
+      expect(schema.fullname).to eq "test.person"
+
+      expect { store.find('address', 'test') }.
+        to raise_error(AvroTurf::SchemaNotFoundError)
+    end
+
+    # This test would fail under avro_turf <= v0.11.0
+    it "allows two different avsc files to define nested sub-schemas with the same fullname" do
+      FileUtils.mkdir_p("spec/schemas/test")
+
+      define_schema "test/person.avsc", <<-AVSC
+        {
+          "name": "person",
+          "namespace": "test",
+          "type": "record",
+          "fields": [
+            {
+              "name": "location",
+              "type": {
+                "name": "location",
+                "type": "record",
+                "fields": [
+                  { "name": "city", "type": "string" },
+                  { "name": "zipcode", "type": "string" }
+                ]
+              }
+            }
+          ]
+        }
+      AVSC
+
+      define_schema "test/company.avsc", <<-AVSC
+        {
+          "name": "company",
+          "namespace": "test",
+          "type": "record",
+          "fields": [
+            {
+              "name": "headquarters",
+              "type": {
+                "name": "location",
+                "type": "record",
+                "fields": [
+                  { "name": "city", "type": "string" },
+                  { "name": "postcode", "type": "string" }
+                ]
+              }
+            }
+          ]
+        }
+      AVSC
+
+      company = nil
+      person = store.find('person', 'test')
+
+      # This should *NOT* raise the error:
+      # #<Avro::SchemaParseError: The name "test.location" is already in use.>
+      expect { company = store.find('company', 'test') }.not_to raise_error
+
+      person_location_field = person.fields_hash['location']
+      expect(person_location_field.type.name).to eq('location')
+      expect(person_location_field.type.fields_hash).to include('zipcode')
+      expect(person_location_field.type.fields_hash).not_to include('postcode')
+
+      company_headquarters_field = company.fields_hash['headquarters']
+      expect(company_headquarters_field.type.name).to eq('location')
+      expect(company_headquarters_field.type.fields_hash).to include('postcode')
+      expect(company_headquarters_field.type.fields_hash).not_to include('zipcode')
+    end
+
+    it "is thread safe" do
+      define_schema "address.avsc", <<-AVSC
+        {
+          "type": "record",
+          "name": "address",
+          "fields": []
+        }
+      AVSC
+
+      # Set a Thread breakpoint right in the core place of race condition
+      expect(Avro::Name)
+        .to receive(:add_name)
+        .and_wrap_original { |m, *args|
+          Thread.stop
+          m.call(*args)
+        }
+
+      # Run two concurring threads which both will trigger the same schema loading
+      threads = 2.times.map { Thread.new { store.find("address") } }
+      # Wait for the moment when both threads will reach the breakpoint
+      sleep 0.001 until threads.all?(&:stop?)
+
+      expect {
+        # Resume the threads evaluation, one after one
+        threads.each do |thread|
+          next unless thread.status == 'sleep'
+
+          thread.run
+          sleep 0.001 until thread.stop?
+        end
+
+        # Ensure that threads are finished
+        threads.each(&:join)
+      }.to_not raise_error
+    end
   end
 
   describe "#load_schemas!" do

@@ -1,3 +1,3 @@
 class AvroTurf
-  VERSION = "0.8.1"
+  VERSION = "1.3.0"
 end

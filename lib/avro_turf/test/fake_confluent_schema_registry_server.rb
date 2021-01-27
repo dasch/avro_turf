@@ -84,6 +84,7 @@ class FakeConfluentSchemaRegistryServer < Sinatra::Base
     {
       name: params[:subject],
       version: schema_ids.index(schema_id) + 1,
+      id: schema_id,
       schema: schema
     }.to_json
   end

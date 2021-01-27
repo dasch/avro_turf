@@ -1,9 +1,18 @@
+begin
+  require 'avro-patches'
+rescue LoadError
+  false
+end
 require 'avro_turf/version'
 require 'avro'
 require 'json'
 require 'avro_turf/schema_store'
 require 'avro_turf/core_ext'
-require 'avro_turf/schema_to_avro_patch'
+
+# check for something that indicates Avro v1.9.0 or later
+unless defined?(::Avro::LogicalTypes)
+  require 'avro_turf/schema_to_avro_patch'
+end
 
 class AvroTurf
   class Error < StandardError; end

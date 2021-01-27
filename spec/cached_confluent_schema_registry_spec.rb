@@ -36,6 +36,26 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
     end
   end
 
+  describe '#subject_version' do
+    let(:subject_name) { 'a_subject' }
+    let(:version) { 1 }
+    let(:schema_with_meta) do
+      {
+        subject: subject_name,
+        id: 1,
+        version: 1,
+        schema: schema
+      }
+    end
+
+    it 'caches the result of subject_version' do
+      allow(upstream).to receive(:subject_version).with(subject_name, version).and_return(schema_with_meta)
+      registry.subject_version(subject_name, version)
+      registry.subject_version(subject_name, version)
+      expect(upstream).to have_received(:subject_version).exactly(1).times
+    end
+  end
+
   it_behaves_like "a confluent schema registry client" do
     let(:upstream) { AvroTurf::ConfluentSchemaRegistry.new(registry_url, logger: logger) }
     let(:registry) { described_class.new(upstream) }

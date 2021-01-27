@@ -16,6 +16,48 @@ These classes have been renamed to `AvroTurf::ConfluentSchemaRegistry`,
 
 The aliases for the original names will be removed in a future release.
 
+## Note about finding nested schemas
+
+As of AvroTurf version 0.12.0, only top-level schemas that have their own .avsc file will be loaded and resolvable by the `AvroTurf::SchemaStore#find` method. This change will likely not affect most users. However, if you use `AvroTurf::SchemaStore#load_schemas!` to pre-cache all your schemas and then rely on `AvroTurf::SchemaStore#find` to access nested schemas that are not defined by their own .avsc files, your code may stop working when you upgrade to v0.12.0.
+
+As an example, if you have a `person` schema (defined in `my/schemas/contacts/person.avsc`) that defines a nested `address` schema like this:
+
+```json
+{
+  "name": "person",
+  "namespace": "contacts",
+  "type": "record",
+  "fields": [
+    {
+      "name": "address",
+      "type": {
+        "name": "address",
+        "type": "record",
+        "fields": [
+          { "name": "addr1", "type": "string" },
+          { "name": "addr2", "type": "string" },
+          { "name": "city", "type": "string" },
+          { "name": "zip", "type": "string" }
+        ]
+      }
+    }
+  ]
+}
+```
+...this will no longer work in v0.12.0:
+```ruby
+store = AvroTurf::SchemaStore.new(path: 'my/schemas')
+store.load_schemas!
+
+# Accessing 'person' is correct and works fine.
+person = store.find('person', 'contacts') # my/schemas/contacts/person.avsc exists
+
+# Trying to access 'address' raises AvroTurf::SchemaNotFoundError
+address = store.find('address', 'contacts') # my/schemas/contacts/address.avsc is not found
+```
+
+For details and context, see [this pull request](https://github.com/dasch/avro_turf/pull/111).
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -124,9 +166,47 @@ avro = AvroTurf::Messaging.new(registry_url: "http://my-registry:8081/")
 # time a schema is used.
 data = avro.encode({ "title" => "hello, world" }, schema_name: "greeting")
 
+# If you don't want to automatically register new schemas, you can pass explicitly
+# subject and version to specify which schema should be used for encoding.
+# It will fetch that schema from the registry and cache it. Subsequent instances
+# of the same schema version will be served by the cache.
+data = avro.encode({ "title" => "hello, world" }, subject: 'greeting', version: 1)
+
+# You can also pass explicitly schema_id to specify which schema
+# should be used for encoding.
+# It will fetch that schema from the registry and cache it. Subsequent instances
+# of the same schema version will be served by the cache.
+data = avro.encode({ "title" => "hello, world" }, schema_id: 2)
+
+# Message can be validated before encoding to get a description of problem through
+# Avro::SchemaValidator::ValidationError exception
+data = avro.encode({ "titl" => "hello, world" }, schema_name: "greeting", validate: true)
+
 # When decoding, the schema will be fetched from the registry and cached. Subsequent
 # instances of the same schema id will be served by the cache.
 avro.decode(data) #=> { "title" => "hello, world" }
+
+# If you want to get decoded message as well as the schema used to encode the message,
+# you can use `#decode_message` method.
+result = avro.decode_message(data)
+result.message       #=> { "title" => "hello, world" }
+result.schema_id     #=> 3
+result.writer_schema #=> #<Avro::Schema: ...>
+result.reader_schema #=> nil
+
+# You can also work with schema through this interface:
+# Fetch latest schema for subject from registry
+schema, schema_id = avro.fetch_schema(subject: 'greeting')
+# Fetch specific version
+schema, schema_id = avro.fetch_schema(subject: 'greeting', version: 1)
+# Fetch schema by id
+schema, schema_id = avro.fetch_schema_by_id(3)
+# Register schema fetched from store by name
+schema, schema_id = avro.register_schema(schema_name: 'greeting')
+# Specify namespace (same as schema_name: 'somewhere.greeting')
+schema, schema_id = avro.register_schema(schema_name: 'greeting', namespace: 'somewhere')
+# Customize subject under which to register schema
+schema, schema_id = avro.register_schema(schema_name: 'greeting', namespace: 'somewhere', subject: 'test')
 ```
 
 ### Confluent Schema Registry Client
