@@ -7,10 +7,10 @@ class AvroTurf::DiskCache < AvroTurf::InMemoryCache
 
     # load the write-thru cache on startup, if it exists
     @schemas_by_id_path = File.join(disk_path, 'schemas_by_id.json')
-    @schemas_by_id = JSON.parse(File.read(@schemas_by_id_path)) if File.exist?(@schemas_by_id_path)
+    @schemas_by_id = JSON.parse(File.read(@schemas_by_id_path)) if File.size?(@schemas_by_id_path)
 
     @ids_by_schema_path = File.join(disk_path, 'ids_by_schema.json')
-    @ids_by_schema = JSON.parse(File.read(@ids_by_schema_path)) if File.exist?(@ids_by_schema_path)
+    @ids_by_schema = JSON.parse(File.read(@ids_by_schema_path)) if File.size?(@ids_by_schema_path)
 
     @schemas_by_subject_version_path = File.join(disk_path, 'schemas_by_subject_version.json')
     @schemas_by_subject_version = {}
@@ -55,7 +55,7 @@ class AvroTurf::DiskCache < AvroTurf::InMemoryCache
 
     return schema unless schema.nil?
 
-    hash = JSON.parse(File.read(@schemas_by_subject_version_path)) if File.exist?(@schemas_by_subject_version_path)
+    hash = JSON.parse(File.read(@schemas_by_subject_version_path)) if File.size?(@schemas_by_subject_version_path)
     if hash
       @schemas_by_subject_version = hash
       @schemas_by_subject_version[key]
@@ -69,7 +69,7 @@ class AvroTurf::DiskCache < AvroTurf::InMemoryCache
   # update instance var (in memory-cache) to match
   def store_by_version(subject, version, schema)
     key = "#{subject}#{version}"
-    hash = JSON.parse(File.read(@schemas_by_subject_version_path)) if File.exist?(@schemas_by_subject_version_path)
+    hash = JSON.parse(File.read(@schemas_by_subject_version_path)) if File.size?(@schemas_by_subject_version_path)
     hash = if hash
              hash[key] = schema
              hash

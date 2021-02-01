@@ -41,6 +41,10 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
 
   before do
     FileUtils.mkdir_p("spec/cache")
+
+    # simulate zero length file issue
+    File.write(File.join("spec/cache", "schemas_by_id.json"), '')
+    File.write(File.join("spec/cache", "ids_by_schema.json"), '')
   end
 
   describe "#fetch" do
