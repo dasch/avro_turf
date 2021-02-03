@@ -2,15 +2,19 @@
 # Extends the InMemoryCache to provide a write-thru to disk for persistent cache.
 class AvroTurf::DiskCache < AvroTurf::InMemoryCache
 
-  def initialize(disk_path)
+  def initialize(disk_path, logger: Logger.new($stdout))
     super()
+
+    @logger = logger
 
     # load the write-thru cache on startup, if it exists
     @schemas_by_id_path = File.join(disk_path, 'schemas_by_id.json')
-    @schemas_by_id = JSON.parse(File.read(@schemas_by_id_path)) if File.size?(@schemas_by_id_path)
+    hash = read_from_disk_cache(@schemas_by_id_path)
+    @schemas_by_id = hash if hash
 
     @ids_by_schema_path = File.join(disk_path, 'ids_by_schema.json')
-    @ids_by_schema = JSON.parse(File.read(@ids_by_schema_path)) if File.size?(@ids_by_schema_path)
+    hash = read_from_disk_cache(@ids_by_schema_path)
+    @ids_by_schema = hash if hash
 
     @schemas_by_subject_version_path = File.join(disk_path, 'schemas_by_subject_version.json')
     @schemas_by_subject_version = {}
@@ -55,7 +59,7 @@ class AvroTurf::DiskCache < AvroTurf::InMemoryCache
 
     return schema unless schema.nil?
 
-    hash = JSON.parse(File.read(@schemas_by_subject_version_path)) if File.size?(@schemas_by_subject_version_path)
+    hash = read_from_disk_cache(@schemas_by_subject_version_path)
     if hash
       @schemas_by_subject_version = hash
       @schemas_by_subject_version[key]
@@ -69,7 +73,7 @@ class AvroTurf::DiskCache < AvroTurf::InMemoryCache
   # update instance var (in memory-cache) to match
   def store_by_version(subject, version, schema)
     key = "#{subject}#{version}"
-    hash = JSON.parse(File.read(@schemas_by_subject_version_path)) if File.size?(@schemas_by_subject_version_path)
+    hash = read_from_disk_cache(@schemas_by_subject_version_path)
     hash = if hash
              hash[key] = schema
              hash
@@ -81,6 +85,20 @@ class AvroTurf::DiskCache < AvroTurf::InMemoryCache
 
     @schemas_by_subject_version = hash
     @schemas_by_subject_version[key]
+  end
+
+  # Parse the file from disk, if it exists and is not zero length
+  private def read_from_disk_cache(path)
+    hash = nil
+    if File.exist?(path)
+      if File.size(path)!=0
+        hash = JSON.parse(File.read(path))
+      else
+        # just log a message if skipping zero length file
+        @logger.info "skipping JSON.parse of zero length file at #{path}"
+      end
+    end
+    hash
   end
 
   private def write_to_disk_cache(path, hash)
