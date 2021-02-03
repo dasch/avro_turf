@@ -89,16 +89,15 @@ class AvroTurf::DiskCache < AvroTurf::InMemoryCache
 
   # Parse the file from disk, if it exists and is not zero length
   private def read_from_disk_cache(path)
-    hash = nil
     if File.exist?(path)
       if File.size(path)!=0
-        hash = JSON.parse(File.read(path))
+        return JSON.parse(File.read(path))
       else
         # just log a message if skipping zero length file
-        @logger.info "skipping JSON.parse of zero length file at #{path}"
+        @logger.warn "skipping JSON.parse of zero length file at #{path}"
       end
     end
-    hash
+    return nil
   end
 
   private def write_to_disk_cache(path, hash)
