@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix issue with zero length schema cache file (#138)
+
 ## v1.3.0
 
 - Add support for plain user/password auth to ConfluentSchemaRegistry (#120)
