@@ -6,44 +6,103 @@ describe AvroTurf do
   end
 
   describe "#encode" do
-    before do
-      define_schema "person.avsc", <<-AVSC
-        {
-          "name": "person",
-          "type": "record",
-          "fields": [
+    context "when using plain schema" do
+      before do
+        define_schema "person.avsc", <<-AVSC
+          {
+            "name": "person",
+            "type": "record",
+            "fields": [
+              {
+                "type": "string",
+                "name": "full_name"
+              }
+            ]
+          }
+        AVSC
+      end
+
+      it "encodes data with Avro" do
+        data = {
+          "full_name" => "John Doe"
+        }
+
+        encoded_data = avro.encode(data, schema_name: "person")
+
+        expect(avro.decode(encoded_data)).to eq(data)
+      end
+
+      it "allows specifying a codec that should be used to compress messages" do
+        compressed_avro = AvroTurf.new(schemas_path: "spec/schemas/", codec: "deflate")
+
+        data = {
+          "full_name" => "John Doe" * 100
+        }
+
+        uncompressed_data = avro.encode(data, schema_name: "person")
+        compressed_data = compressed_avro.encode(data, schema_name: "person")
+
+        expect(compressed_data.bytesize).to be < uncompressed_data.bytesize
+        expect(compressed_avro.decode(compressed_data)).to eq(data)
+      end
+    end
+
+    context 'when using nested schemas' do
+      before do
+        define_schema "post.avsc", <<-AVSC
+          {
+            "name": "post",
+            "type": "record",
+            "fields": [
+              {
+                "name": "tag",
+                "type": {
+                  "type": "enum",
+                  "name": "tag",
+                  "symbols": ["foo", "bar"]
+                }
+              },
+              {
+                "name": "messages",
+                "type": {
+                  "type": "array",
+                  "items": "message"
+                }
+              }
+            ]
+          }
+        AVSC
+
+        define_schema "message.avsc", <<-AVSC
+          {
+            "name": "message",
+            "type": "record",
+            "fields": [
+              {
+                "type": "string",
+                "name": "content"
+              }
+            ]
+          }
+        AVSC
+      end
+
+      it "encodes data with Avro" do
+        data = {
+          "tag" => "foo",
+          "messages" => [
             {
-              "type": "string",
-              "name": "full_name"
+              "content" => "hello"
             }
           ]
         }
-      AVSC
+
+        encoded_data = avro.encode(data, schema_name: "post")
+
+        expect(avro.decode(encoded_data)).to eq(data)
+      end
     end
 
-    it "encodes data with Avro" do
-      data = {
-        "full_name" => "John Doe"
-      }
-
-      encoded_data = avro.encode(data, schema_name: "person")
-
-      expect(avro.decode(encoded_data)).to eq(data)
-    end
-
-    it "allows specifying a codec that should be used to compress messages" do
-      compressed_avro = AvroTurf.new(schemas_path: "spec/schemas/", codec: "deflate")
-
-      data = {
-        "full_name" => "John Doe" * 100
-      }
-
-      uncompressed_data = avro.encode(data, schema_name: "person")
-      compressed_data = compressed_avro.encode(data, schema_name: "person")
-
-      expect(compressed_data.bytesize).to be < uncompressed_data.bytesize
-      expect(compressed_avro.decode(compressed_data)).to eq(data)
-    end
   end
 
   describe "#decode" do
