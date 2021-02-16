@@ -81,6 +81,14 @@ describe AvroTurf do
               {
                 "type": "string",
                 "name": "content"
+              },
+              {
+                "name": "label",
+                "type": {
+                  "type": "enum",
+                  "name": "label",
+                  "symbols": ["foo", "bar"]
+                }
               }
             ]
           }
@@ -92,7 +100,8 @@ describe AvroTurf do
           "tag" => "foo",
           "messages" => [
             {
-              "content" => "hello"
+              "content" => "hello",
+              "label" => "bar"
             }
           ]
         }
