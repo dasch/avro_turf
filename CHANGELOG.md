@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## v1.3.1
+
+- Prevent CachedConfluentSchemaRegistry from caching the 'latest' version (#140)
 - Fix issue with zero length schema cache file (#138)
 
 ## v1.3.0
