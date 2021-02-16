@@ -83,6 +83,9 @@ class AvroTurf::SchemaStore
       # has been resolved and use the now-updated local_schemas_cache to
       # pick up where we left off.
       local_schemas_cache.delete(fullname)
+      local_schemas_cache.each do |schema_name, schema|
+        local_schemas_cache.delete(schema_name) if schema.type_sym == :enum
+      end
       load_schema!(fullname, local_schemas_cache)
     else
       raise
