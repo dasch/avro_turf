@@ -173,6 +173,67 @@ describe AvroTurf do
 
       expect(avro.decode(stream.string)).to eq "hello"
     end
+
+    context "validating" do
+      subject(:encode_to_stream) do
+        stream = StringIO.new
+        avro.encode_to_stream(message, stream: stream, schema_name: "message", validate: true) 
+      end
+
+      context "with a valid message" do
+        let(:message) { { "full_name" => "John Doe" } }
+
+        it "does not raise any error" do
+          define_schema "message.avsc", <<-AVSC
+            {
+              "name": "message",
+              "type": "record",
+              "fields": [
+                { "name": "full_name", "type": "string" }
+              ]
+            }
+          AVSC
+
+          expect { encode_to_stream }.not_to raise_error
+        end
+      end
+
+      context "when message has wrong type" do
+        let(:message) { { "full_name" => 123 } }
+
+        it "raises Avro::SchemaValidator::ValidationError with a message about type mismatch" do
+          define_schema "message.avsc", <<-AVSC
+            {
+              "name": "message",
+              "type": "record",
+              "fields": [
+                { "name": "full_name", "type": "string" }
+              ]
+            }
+          AVSC
+
+          expect { encode_to_stream }.to raise_error(Avro::SchemaValidator::ValidationError, /\.full_name expected type string, got int/)
+        end
+      end
+
+      context "when message contains extra fields (typo in key)" do
+        let(:message) { { "fulll_name" => "John Doe" } }
+
+        it "raises Avro::SchemaValidator::ValidationError with a message about extra field" do
+          define_schema "message.avsc", <<-AVSC
+            {
+              "name": "message",
+              "type": "record",
+              "fields": [
+                { "name": "full_name", "type": "string" }
+              ]
+            }
+          AVSC
+
+          expect { encode_to_stream }.to raise_error(Avro::SchemaValidator::ValidationError, /extra field 'fulll_name'/)
+        end
+      end
+    end
   end
 
   describe "#decode_stream" do
