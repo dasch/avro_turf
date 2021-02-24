@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add ability to validate message before encoding in `AvroTurf#encode` interface
+
 ## v1.3.1
 
 - Prevent CachedConfluentSchemaRegistry from caching the 'latest' version (#140)

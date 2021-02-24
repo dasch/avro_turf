@@ -88,6 +88,10 @@ avro.decode(encoded_data, schema_name: "person")
 
 # Encode some data using the named schema.
 avro.encode({ "name" => "Jane", "age" => 28 }, schema_name: "person")
+
+# Data can be validated before encoding to get a description of problem through
+# Avro::SchemaValidator::ValidationError exception
+avro.encode({ "titl" => "hello, world" }, schema_name: "person", validate: true)
 ```
 
 ### Inter-schema references
