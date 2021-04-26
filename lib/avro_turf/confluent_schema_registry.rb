@@ -40,9 +40,7 @@ class AvroTurf::ConfluentSchemaRegistry
   end
 
   def register(subject, schema)
-    data = post("/subjects/#{subject}/versions", **{ body: {
-      schema: schema.to_s
-    }.to_json})
+    data = post("/subjects/#{subject}/versions", body: { schema: schema.to_s }.to_json)
 
     id = data.fetch("id")
 
@@ -69,8 +67,8 @@ class AvroTurf::ConfluentSchemaRegistry
   # Check if a schema exists. Returns nil if not found.
   def check(subject, schema)
     data = post("/subjects/#{subject}",
-                ** {expects: [200, 404],
-                body: { schema: schema.to_s }.to_json })
+                expects: [200, 404],
+                body: { schema: schema.to_s }.to_json)
     data unless data.has_key?("error_code")
   end
 
@@ -82,7 +80,7 @@ class AvroTurf::ConfluentSchemaRegistry
   # http://docs.confluent.io/3.1.2/schema-registry/docs/api.html#compatibility
   def compatible?(subject, schema, version = 'latest')
     data = post("/compatibility/subjects/#{subject}/versions/#{version}",
-                **{ expects: [200, 404], body: { schema: schema.to_s }.to_json })
+                expects: [200, 404], body: { schema: schema.to_s }.to_json)
     data.fetch('is_compatible', false) unless data.has_key?('error_code')
   end
 
@@ -93,7 +91,7 @@ class AvroTurf::ConfluentSchemaRegistry
 
   # Update global config
   def update_global_config(config)
-    put("/config", **{ body: config.to_json })
+    put("/config", body: config.to_json)
   end
 
   # Get config for subject
@@ -103,7 +101,7 @@ class AvroTurf::ConfluentSchemaRegistry
 
   # Update config for subject
   def update_subject_config(subject, config)
-    put("/config/#{subject}", **{ body: config.to_json })
+    put("/config/#{subject}", body: config.to_json)
   end
 
   private
