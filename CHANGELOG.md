@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## v1.4.0
+
+- Add support for Ruby 3 (#146)
 - Add ability to validate message before encoding in `AvroTurf#encode` interface
 
 ## v1.3.1
