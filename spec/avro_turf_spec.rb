@@ -68,8 +68,20 @@ describe AvroTurf do
                   "type": "array",
                   "items": "message"
                 }
+              },
+              {
+                "name": "status",
+                "type": "publishing_status"
               }
             ]
+          }
+        AVSC
+
+        define_schema "publishing_status.avsc", <<-AVSC
+          {
+            "name": "publishing_status",
+            "type": "enum",
+            "symbols": ["draft", "published", "archived"]
           }
         AVSC
 
@@ -89,6 +101,10 @@ describe AvroTurf do
                   "name": "label",
                   "symbols": ["foo", "bar"]
                 }
+              },
+              {
+                "name": "status",
+                "type": "publishing_status"
               }
             ]
           }
@@ -101,9 +117,11 @@ describe AvroTurf do
           "messages" => [
             {
               "content" => "hello",
-              "label" => "bar"
+              "label" => "bar",
+              "status" => "draft"
             }
-          ]
+          ],
+          "status" => "published"
         }
 
         encoded_data = avro.encode(data, schema_name: "post")
@@ -177,7 +195,7 @@ describe AvroTurf do
     context "validating" do
       subject(:encode_to_stream) do
         stream = StringIO.new
-        avro.encode_to_stream(message, stream: stream, schema_name: "message", validate: true) 
+        avro.encode_to_stream(message, stream: stream, schema_name: "message", validate: true)
       end
 
       context "with a valid message" do
