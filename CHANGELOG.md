@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v1.4.1
+
+- Purge sub-schemas from cache before re-parsing schema (#151)
+
 ## v1.4.0
 
 - Add support for Ruby 3 (#146)
