@@ -39,6 +39,11 @@ class AvroTurf::ConfluentSchemaRegistry
     data.fetch("schema")
   end
 
+  def fetch_subject_version(id)
+    @logger.info "Fetching subject-version pair for schema with id #{id}"
+    get("/schemas/ids/#{id}/versions").first
+  end
+
   def register(subject, schema)
     data = post("/subjects/#{subject}/versions", body: { schema: schema.to_s }.to_json)
 

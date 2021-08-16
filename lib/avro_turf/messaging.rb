@@ -170,8 +170,9 @@ class AvroTurf
       schema_id = decoder.read(4).unpack("N").first
 
       writers_schema = @schemas_by_id.fetch(schema_id) do
-        schema_json = @registry.fetch(schema_id)
-        @schemas_by_id[schema_id] = Avro::Schema.parse(schema_json)
+        schema_meta = @registry.fetch_subject_version(schema_id)
+        schema, _id = fetch_schema(subject: schema_meta.fetch("subject"), version: schema_meta.fetch("version"))
+        @schemas_by_id[schema_id] = schema
       end
 
       reader = Avro::IO::DatumReader.new(writers_schema, readers_schema)
@@ -188,7 +189,16 @@ class AvroTurf
     def fetch_schema(subject:, version: 'latest')
       schema_data = @registry.subject_version(subject, version)
       schema_id = schema_data.fetch('id')
-      schema = Avro::Schema.parse(schema_data.fetch('schema'))
+      # preload all references as names
+      references = schema_data.fetch('references', [])
+      names = references.inject({}) do |acc, ref|
+        ref_subject = ref.fetch('subject')
+        ref_schema, _ = fetch_schema(subject: ref_subject, version: ref.fetch('version'))
+        acc[ref_subject] = ref_schema
+        acc
+      end
+      
+      schema = Avro::Schema.real_parse(MultiJson.load(schema_data.fetch('schema')), names)
       [schema, schema_id]
     end
 
