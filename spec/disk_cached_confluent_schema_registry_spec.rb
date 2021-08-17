@@ -147,7 +147,7 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
 
     it "writes thru to disk cache" do
       # multiple calls return same result, with only one upstream call
-      allow(upstream).to receive(:register).with(city_name, city_schema).and_return(city_id)
+      allow(upstream).to receive(:register).with(city_name, city_schema, []).and_return(city_id)
       expect(registry.register(city_name, city_schema)).to eq(city_id)
       expect(registry.register(city_name, city_schema)).to eq(city_id)
       expect(upstream).to have_received(:register).exactly(1).times
@@ -170,7 +170,7 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
 
     it "skips zero length disk cache" do
       # multiple calls return same result, with only one upstream call
-      allow(upstream).to receive(:register).with(subject_name, schema).and_return(id)
+      allow(upstream).to receive(:register).with(subject_name, schema, []).and_return(id)
       expect(registry.register(subject_name, schema)).to eq(id)
       expect(registry.register(subject_name, schema)).to eq(id)
       expect(upstream).to have_received(:register).exactly(1).times

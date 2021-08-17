@@ -29,7 +29,7 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
 
     it "caches the result of register" do
       # multiple calls return same result, with only one upstream call
-      allow(upstream).to receive(:register).with(subject_name, schema).and_return(id)
+      allow(upstream).to receive(:register).with(subject_name, schema, []).and_return(id)
       expect(registry.register(subject_name, schema)).to eq(id)
       expect(registry.register(subject_name, schema)).to eq(id)
       expect(upstream).to have_received(:register).exactly(1).times
@@ -44,6 +44,7 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
         subject: subject_name,
         id: 1,
         version: 1,
+        references: [],
         schema: schema
       }
     end

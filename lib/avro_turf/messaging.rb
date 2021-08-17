@@ -197,7 +197,6 @@ class AvroTurf
         acc[ref_subject] = ref_schema
         acc
       end
-      
       schema = Avro::Schema.real_parse(MultiJson.load(schema_data.fetch('schema')), names)
       [schema, schema_id]
     end
@@ -213,9 +212,9 @@ class AvroTurf
 
     # Schemas are registered under the full name of the top level Avro record
     # type, or `subject` if it's provided.
-    def register_schema(schema_name:, subject: nil, namespace: nil)
+    def register_schema(schema_name:, subject: nil, namespace: nil, references: [])
       schema = @schema_store.find(schema_name, namespace)
-      schema_id = @registry.register(subject || schema.fullname, schema)
+      schema_id = @registry.register(subject || schema.fullname, schema, references)
       [schema, schema_id]
     end
   end

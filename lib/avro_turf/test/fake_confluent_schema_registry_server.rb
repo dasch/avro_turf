@@ -2,6 +2,7 @@ require 'sinatra/base'
 
 class FakeConfluentSchemaRegistryServer < Sinatra::Base
   SUBJECTS = Hash.new { Array.new }
+  REFERENCES = {}
   SCHEMAS = []
   CONFIGS = Hash.new
   SUBJECT_NOT_FOUND = { error_code: 40401, message: 'Subject not found' }.to_json.freeze
@@ -18,9 +19,12 @@ class FakeConfluentSchemaRegistryServer < Sinatra::Base
   helpers do
     def parse_schema
       request.body.rewind
-      JSON.parse(request.body.read).fetch("schema").tap do |schema|
-        Avro::Schema.parse(schema)
-      end
+      JSON.parse(request.body.read).fetch("schema")
+    end
+
+    def parse_body
+      request.body.rewind
+      JSON.parse(request.body.read)
     end
 
     def parse_config
@@ -34,19 +38,18 @@ class FakeConfluentSchemaRegistryServer < Sinatra::Base
   end
 
   post "/subjects/:subject/versions" do
-    schema = parse_schema
-    ids_for_subject = SUBJECTS[params[:subject]]
-
-    schemas_for_subject =
-      SCHEMAS.select
-             .with_index { |_, i| ids_for_subject.include?(i) }
+    body = parse_body
+    subject = params[:subject]
+    schema = body.fetch("schema")
+    REFERENCES[subject] = body.fetch("references", [])
+    schemas_for_subject = SUBJECTS[subject].map { |idx| SCHEMAS[idx] }.compact
 
     if schemas_for_subject.include?(schema)
       schema_id = SCHEMAS.index(schema)
     else
       SCHEMAS << schema
       schema_id = SCHEMAS.size - 1
-      SUBJECTS[params[:subject]] = SUBJECTS[params[:subject]] << schema_id
+      SUBJECTS[subject] <<= schema_id
     end
 
     { id: schema_id }.to_json
@@ -92,7 +95,8 @@ class FakeConfluentSchemaRegistryServer < Sinatra::Base
       name: params[:subject],
       version: schema_ids.index(schema_id) + 1,
       id: schema_id,
-      schema: schema
+      schema: schema,
+      references: REFERENCES.fetch(params[:subject], [])
     }.to_json
   end
 

@@ -44,8 +44,8 @@ class AvroTurf::ConfluentSchemaRegistry
     get("/schemas/ids/#{id}/versions").first
   end
 
-  def register(subject, schema)
-    data = post("/subjects/#{subject}/versions", body: { schema: schema.to_s }.to_json)
+  def register(subject, schema, refs = [])
+    data = post("/subjects/#{subject}/versions", body: { schema: schema.to_s, references: refs }.to_json)
 
     id = data.fetch("id")
 
