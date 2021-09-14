@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add CA cert file option (#157)
+
 ## v1.4.1
 
 - Purge sub-schemas from cache before re-parsing schema (#151)
