@@ -36,6 +36,7 @@ class AvroTurf
     # proxy             - Forward the request via  proxy (optional).
     # user              - User for basic auth (optional).
     # password          - Password for basic auth (optional).
+    # ssl_ca_file       - Name of file containing CA certificate (optional).
     # client_cert       - Name of file containing client certificate (optional).
     # client_key        - Name of file containing client private key to go with client_cert (optional).
     # client_key_pass   - Password to go with client_key (optional).
@@ -51,6 +52,7 @@ class AvroTurf
       proxy: nil,
       user: nil,
       password: nil,
+      ssl_ca_file: nil,
       client_cert: nil,
       client_key: nil,
       client_key_pass: nil,
@@ -67,6 +69,7 @@ class AvroTurf
           proxy: proxy,
           user: user,
           password: password,
+          ssl_ca_file: ssl_ca_file,
           client_cert: client_cert,
           client_key: client_key,
           client_key_pass: client_key_pass,
