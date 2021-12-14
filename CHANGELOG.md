@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v1.5.0
+
 - Add CA cert file option (#157)
 - Add compatibility with Avro v1.11.x.
 
