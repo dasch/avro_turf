@@ -4,7 +4,8 @@ require 'avro_turf/test/fake_confluent_schema_registry_server'
 
 describe AvroTurf::CachedConfluentSchemaRegistry do
   let(:upstream) { instance_double(AvroTurf::ConfluentSchemaRegistry) }
-  let(:cache)    { AvroTurf::DiskCache.new("spec/cache")}
+  let(:logger_io) { StringIO.new }
+  let(:cache)    { AvroTurf::DiskCache.new("spec/cache", logger: Logger.new(logger_io))}
   let(:registry) { described_class.new(upstream, cache: cache) }
   let(:id) { rand(999) }
   let(:schema) do
@@ -80,6 +81,40 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
     end
   end
 
+  describe "#fetch (zero length cache file)" do
+    let(:cache_after) do
+      {
+        "#{id}" => "#{schema}"
+      }
+    end
+
+    before do
+      # setup the disk cache with a zero length file
+      File.write(File.join("spec/cache", "schemas_by_id.json"), '')
+    end
+
+    it "skips zero length disk cache" do
+      # multiple calls return same result, with only one upstream call
+      allow(upstream).to receive(:fetch).with(id).and_return(schema)
+      expect(registry.fetch(id)).to eq(schema)
+      expect(registry.fetch(id)).to eq(schema)
+      expect(upstream).to have_received(:fetch).exactly(1).times
+      expect(load_cache("schemas_by_id.json")).to eq cache_after
+      expect(logger_io.string).to include("zero length file at spec/cache/schemas_by_id.json")
+    end
+  end
+
+  describe "#fetch (corrupt cache file)" do
+    before do
+      # setup the disk cache with a corrupt file (i.e. not json)
+      File.write(File.join("spec/cache", "schemas_by_id.json"), 'NOTJSON')
+    end
+
+    it "raises error on corrupt cache file" do
+      expect{registry.fetch(id)}.to raise_error(JSON::ParserError, /unexpected token/)
+    end
+  end
+
   describe "#register" do
     let(:subject_name) { "a_subject" }
     let(:cache_before) do
@@ -117,6 +152,41 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
       expect(registry.register(city_name, city_schema)).to eq(city_id)
       expect(upstream).to have_received(:register).exactly(1).times
       expect(load_cache("ids_by_schema.json")).to eq cache_after
+    end
+  end
+
+  describe "#register (zero length cache file)" do
+    let(:subject_name) { "a_subject" }
+    let(:cache_after) do
+      {
+        "#{subject_name}#{schema}" => id
+      }
+    end
+
+    before do
+      # setup the disk cache with a zero length file
+      File.write(File.join("spec/cache", "ids_by_schema.json"), '')
+    end
+
+    it "skips zero length disk cache" do
+      # multiple calls return same result, with only one upstream call
+      allow(upstream).to receive(:register).with(subject_name, schema).and_return(id)
+      expect(registry.register(subject_name, schema)).to eq(id)
+      expect(registry.register(subject_name, schema)).to eq(id)
+      expect(upstream).to have_received(:register).exactly(1).times
+      expect(load_cache("ids_by_schema.json")).to eq cache_after
+      expect(logger_io.string).to include("zero length file at spec/cache/ids_by_schema.json")
+    end
+  end
+
+  describe "#register (corrupt cache file)" do
+    before do
+      # setup the disk cache with a corrupt file (i.e. not json)
+      File.write(File.join("spec/cache", "ids_by_schema.json"), 'NOTJSON')
+    end
+
+    it "raises error on corrupt cache file" do
+      expect{registry.register(subject_name, schema)}.to raise_error(JSON::ParserError, /unexpected token/)
     end
   end
 

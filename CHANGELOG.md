@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+## v1.5.0
+
+- Add CA cert file option (#157)
+- Add compatibility with Avro v1.11.x.
+
+## v1.4.1
+
+- Purge sub-schemas from cache before re-parsing schema (#151)
+
+## v1.4.0
+
+- Add support for Ruby 3 (#146)
+- Add ability to validate message before encoding in `AvroTurf#encode` interface
+
+## v1.3.1
+
+- Prevent CachedConfluentSchemaRegistry from caching the 'latest' version (#140)
+- Fix issue with zero length schema cache file (#138)
+
 ## v1.3.0
 
 - Add support for plain user/password auth to ConfluentSchemaRegistry (#120)

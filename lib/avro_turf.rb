@@ -40,12 +40,15 @@ class AvroTurf
   #
   # data        - The data that should be encoded.
   # schema_name - The name of a schema in the `schemas_path`.
+  # validate    - The boolean for performing complete data validation before
+  #               encoding it, Avro::SchemaValidator::ValidationError with
+  #               a descriptive message will be raised in case of invalid message.
   #
   # Returns a String containing the encoded data.
-  def encode(data, schema_name: nil, namespace: @namespace)
+  def encode(data, schema_name: nil, namespace: @namespace, validate: false)
     stream = StringIO.new
 
-    encode_to_stream(data, stream: stream, schema_name: schema_name, namespace: namespace)
+    encode_to_stream(data, stream: stream, schema_name: schema_name, namespace: namespace, validate: validate)
 
     stream.string
   end
@@ -56,11 +59,18 @@ class AvroTurf
   # data        - The data that should be encoded.
   # schema_name - The name of a schema in the `schemas_path`.
   # stream      - An IO object that the encoded data should be written to (optional).
+  # validate    - The boolean for performing complete data validation before
+  #               encoding it, Avro::SchemaValidator::ValidationError with
+  #               a descriptive message will be raised in case of invalid message.
   #
   # Returns nothing.
-  def encode_to_stream(data, schema_name: nil, stream: nil, namespace: @namespace)
+  def encode_to_stream(data, schema_name: nil, stream: nil, namespace: @namespace, validate: false)
     schema = @schema_store.find(schema_name, namespace)
     writer = Avro::IO::DatumWriter.new(schema)
+
+    if validate
+      Avro::SchemaValidator.validate!(schema, data, recursive: true, encoded: false, fail_on_extra_fields: true)
+    end
 
     dw = Avro::DataFile::Writer.new(stream, writer, schema, @codec)
     dw << data.as_avro

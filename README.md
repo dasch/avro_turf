@@ -18,7 +18,7 @@ The aliases for the original names will be removed in a future release.
 
 ## Note about finding nested schemas
 
-As of AvroTurf version 0.12.0, only top-level schemas that have their own .avsc file will be loaded and resolvable by the `AvroTurf::SchemaStore#find` method. This change will likely not affect most users. However, if you use `AvroTurf::SchemaStore#load_schemas!` to pre-cache all your schemas and then rely on `AvroTurf::SchemaStore#find` to access nested schemas that are not defined by their own .avsc files, your code may stop working when you upgrade to v0.12.0.
+As of AvroTurf version 1.0.0, only top-level schemas that have their own .avsc file will be loaded and resolvable by the `AvroTurf::SchemaStore#find` method. This change will likely not affect most users. However, if you use `AvroTurf::SchemaStore#load_schemas!` to pre-cache all your schemas and then rely on `AvroTurf::SchemaStore#find` to access nested schemas that are not defined by their own .avsc files, your code may stop working when you upgrade to v1.0.0.
 
 As an example, if you have a `person` schema (defined in `my/schemas/contacts/person.avsc`) that defines a nested `address` schema like this:
 
@@ -44,7 +44,7 @@ As an example, if you have a `person` schema (defined in `my/schemas/contacts/pe
   ]
 }
 ```
-...this will no longer work in v0.12.0:
+...this will no longer work in v1.0.0:
 ```ruby
 store = AvroTurf::SchemaStore.new(path: 'my/schemas')
 store.load_schemas!
@@ -88,6 +88,10 @@ avro.decode(encoded_data, schema_name: "person")
 
 # Encode some data using the named schema.
 avro.encode({ "name" => "Jane", "age" => 28 }, schema_name: "person")
+
+# Data can be validated before encoding to get a description of problem through
+# Avro::SchemaValidator::ValidationError exception
+avro.encode({ "titl" => "hello, world" }, schema_name: "person", validate: true)
 ```
 
 ### Inter-schema references

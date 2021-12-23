@@ -6,44 +6,130 @@ describe AvroTurf do
   end
 
   describe "#encode" do
-    before do
-      define_schema "person.avsc", <<-AVSC
-        {
-          "name": "person",
-          "type": "record",
-          "fields": [
-            {
-              "type": "string",
-              "name": "full_name"
-            }
-          ]
+    context "when using plain schema" do
+      before do
+        define_schema "person.avsc", <<-AVSC
+          {
+            "name": "person",
+            "type": "record",
+            "fields": [
+              {
+                "type": "string",
+                "name": "full_name"
+              }
+            ]
+          }
+        AVSC
+      end
+
+      it "encodes data with Avro" do
+        data = {
+          "full_name" => "John Doe"
         }
-      AVSC
+
+        encoded_data = avro.encode(data, schema_name: "person")
+
+        expect(avro.decode(encoded_data)).to eq(data)
+      end
+
+      it "allows specifying a codec that should be used to compress messages" do
+        compressed_avro = AvroTurf.new(schemas_path: "spec/schemas/", codec: "deflate")
+
+        data = {
+          "full_name" => "John Doe" * 100
+        }
+
+        uncompressed_data = avro.encode(data, schema_name: "person")
+        compressed_data = compressed_avro.encode(data, schema_name: "person")
+
+        expect(compressed_data.bytesize).to be < uncompressed_data.bytesize
+        expect(compressed_avro.decode(compressed_data)).to eq(data)
+      end
     end
 
-    it "encodes data with Avro" do
-      data = {
-        "full_name" => "John Doe"
-      }
+    context 'when using nested schemas' do
+      before do
+        define_schema "post.avsc", <<-AVSC
+          {
+            "name": "post",
+            "type": "record",
+            "fields": [
+              {
+                "name": "tag",
+                "type": {
+                  "type": "enum",
+                  "name": "tag",
+                  "symbols": ["foo", "bar"]
+                }
+              },
+              {
+                "name": "messages",
+                "type": {
+                  "type": "array",
+                  "items": "message"
+                }
+              },
+              {
+                "name": "status",
+                "type": "publishing_status"
+              }
+            ]
+          }
+        AVSC
 
-      encoded_data = avro.encode(data, schema_name: "person")
+        define_schema "publishing_status.avsc", <<-AVSC
+          {
+            "name": "publishing_status",
+            "type": "enum",
+            "symbols": ["draft", "published", "archived"]
+          }
+        AVSC
 
-      expect(avro.decode(encoded_data)).to eq(data)
+        define_schema "message.avsc", <<-AVSC
+          {
+            "name": "message",
+            "type": "record",
+            "fields": [
+              {
+                "type": "string",
+                "name": "content"
+              },
+              {
+                "name": "label",
+                "type": {
+                  "type": "enum",
+                  "name": "label",
+                  "symbols": ["foo", "bar"]
+                }
+              },
+              {
+                "name": "status",
+                "type": "publishing_status"
+              }
+            ]
+          }
+        AVSC
+      end
+
+      it "encodes data with Avro" do
+        data = {
+          "tag" => "foo",
+          "messages" => [
+            {
+              "content" => "hello",
+              "label" => "bar",
+              "status" => "draft"
+            }
+          ],
+          "status" => "published"
+        }
+
+        encoded_data = avro.encode(data, schema_name: "post")
+
+        expect(avro.decode(encoded_data)).to eq(data)
+      end
     end
 
-    it "allows specifying a codec that should be used to compress messages" do
-      compressed_avro = AvroTurf.new(schemas_path: "spec/schemas/", codec: "deflate")
-
-      data = {
-        "full_name" => "John Doe" * 100
-      }
-
-      uncompressed_data = avro.encode(data, schema_name: "person")
-      compressed_data = compressed_avro.encode(data, schema_name: "person")
-
-      expect(compressed_data.bytesize).to be < uncompressed_data.bytesize
-      expect(compressed_avro.decode(compressed_data)).to eq(data)
-    end
   end
 
   describe "#decode" do
@@ -104,6 +190,67 @@ describe AvroTurf do
       avro.encode_to_stream("hello", stream: stream, schema_name: "message")
 
       expect(avro.decode(stream.string)).to eq "hello"
+    end
+
+    context "validating" do
+      subject(:encode_to_stream) do
+        stream = StringIO.new
+        avro.encode_to_stream(message, stream: stream, schema_name: "message", validate: true)
+      end
+
+      context "with a valid message" do
+        let(:message) { { "full_name" => "John Doe" } }
+
+        it "does not raise any error" do
+          define_schema "message.avsc", <<-AVSC
+            {
+              "name": "message",
+              "type": "record",
+              "fields": [
+                { "name": "full_name", "type": "string" }
+              ]
+            }
+          AVSC
+
+          expect { encode_to_stream }.not_to raise_error
+        end
+      end
+
+      context "when message has wrong type" do
+        let(:message) { { "full_name" => 123 } }
+
+        it "raises Avro::SchemaValidator::ValidationError with a message about type mismatch" do
+          define_schema "message.avsc", <<-AVSC
+            {
+              "name": "message",
+              "type": "record",
+              "fields": [
+                { "name": "full_name", "type": "string" }
+              ]
+            }
+          AVSC
+
+          expect { encode_to_stream }.to raise_error(Avro::SchemaValidator::ValidationError, /\.full_name expected type string, got int/)
+        end
+      end
+
+      context "when message contains extra fields (typo in key)" do
+        let(:message) { { "fulll_name" => "John Doe" } }
+
+        it "raises Avro::SchemaValidator::ValidationError with a message about extra field" do
+          define_schema "message.avsc", <<-AVSC
+            {
+              "name": "message",
+              "type": "record",
+              "fields": [
+                { "name": "full_name", "type": "string" }
+              ]
+            }
+          AVSC
+
+          expect { encode_to_stream }.to raise_error(Avro::SchemaValidator::ValidationError, /extra field 'fulll_name'/)
+        end
+      end
     end
   end
 

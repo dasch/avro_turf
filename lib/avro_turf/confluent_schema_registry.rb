@@ -9,6 +9,7 @@ class AvroTurf::ConfluentSchemaRegistry
     proxy: nil,
     user: nil,
     password: nil,
+    ssl_ca_file: nil,
     client_cert: nil,
     client_key: nil,
     client_key_pass: nil,
@@ -21,12 +22,13 @@ class AvroTurf::ConfluentSchemaRegistry
     headers = {
       "Content-Type" => CONTENT_TYPE
     }
-    headers[:proxy] = proxy if proxy&.present?
+    headers[:proxy] = proxy unless proxy.nil?
     @connection = Excon.new(
       url,
       headers: headers,
       user: user,
       password: password,
+      ssl_ca_file: ssl_ca_file,
       client_cert: client_cert,
       client_key: client_key,
       client_key_pass: client_key_pass,
@@ -42,9 +44,7 @@ class AvroTurf::ConfluentSchemaRegistry
   end
 
   def register(subject, schema)
-    data = post("/subjects/#{subject}/versions", body: {
-      schema: schema.to_s
-    }.to_json)
+    data = post("/subjects/#{subject}/versions", body: { schema: schema.to_s }.to_json)
 
     id = data.fetch("id")
 
@@ -84,8 +84,7 @@ class AvroTurf::ConfluentSchemaRegistry
   # http://docs.confluent.io/3.1.2/schema-registry/docs/api.html#compatibility
   def compatible?(subject, schema, version = 'latest')
     data = post("/compatibility/subjects/#{subject}/versions/#{version}",
-                expects: [200, 404],
-                body: { schema: schema.to_s }.to_json)
+                expects: [200, 404], body: { schema: schema.to_s }.to_json)
     data.fetch('is_compatible', false) unless data.has_key?('error_code')
   end
 
@@ -96,7 +95,7 @@ class AvroTurf::ConfluentSchemaRegistry
 
   # Update global config
   def update_global_config(config)
-    put("/config", { body: config.to_json })
+    put("/config", body: config.to_json)
   end
 
   # Get config for subject
@@ -106,7 +105,7 @@ class AvroTurf::ConfluentSchemaRegistry
 
   # Update config for subject
   def update_subject_config(subject, config)
-    put("/config/#{subject}", { body: config.to_json })
+    put("/config/#{subject}", body: config.to_json)
   end
 
   private
