@@ -26,29 +26,30 @@ class AvroTurf
 
     # Instantiate a new Messaging instance with the given configuration.
     #
-    # registry          - A schema registry object that responds to all methods in the
-    #                     AvroTurf::ConfluentSchemaRegistry interface.
-    # registry_url      - The String URL of the schema registry that should be used.
-    # schema_store      - A schema store object that responds to #find(schema_name, namespace).
-    # schemas_path      - The String file system path where local schemas are stored.
-    # namespace         - The String default schema namespace.
-    # logger            - The Logger that should be used to log information (optional).
-    # proxy             - Forward the request via  proxy (optional).
-    # user              - User for basic auth (optional).
-    # password          - Password for basic auth (optional).
-    # ssl_ca_file       - Name of file containing CA certificate (optional).
-    # client_cert       - Name of file containing client certificate (optional).
-    # client_key        - Name of file containing client private key to go with client_cert (optional).
-    # client_key_pass   - Password to go with client_key (optional).
-    # client_cert_data  - In-memory client certificate (optional).
-    # client_key_data   - In-memory client private key to go with client_cert_data (optional).
+    # registry             - A schema registry object that responds to all methods in the
+    #                        AvroTurf::ConfluentSchemaRegistry interface.
+    # registry_url         - The String URL of the schema registry that should be used.
+    # schema_store         - A schema store object that responds to #find(schema_name, namespace).
+    # schemas_path         - The String file system path where local schemas are stored.
+    # namespace            - The String default schema namespace.
+    # registry_path_prefix - The String URL path prefix used to namespace schema registry requests (optional).
+    # logger               - The Logger that should be used to log information (optional).
+    # proxy                - Forward the request via  proxy (optional).
+    # user                 - User for basic auth (optional).
+    # password             - Password for basic auth (optional).
+    # ssl_ca_file          - Name of file containing CA certificate (optional).
+    # client_cert          - Name of file containing client certificate (optional).
+    # client_key           - Name of file containing client private key to go with client_cert (optional).
+    # client_key_pass      - Password to go with client_key (optional).
+    # client_cert_data     - In-memory client certificate (optional).
+    # client_key_data      - In-memory client private key to go with client_cert_data (optional).
     def initialize(
       registry: nil,
       registry_url: nil,
-      registry_path_prefix: nil,
       schema_store: nil,
       schemas_path: nil,
       namespace: nil,
+      registry_path_prefix: nil,
       logger: nil,
       proxy: nil,
       user: nil,
