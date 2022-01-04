@@ -14,8 +14,10 @@ class AvroTurf::ConfluentSchemaRegistry
     client_key: nil,
     client_key_pass: nil,
     client_cert_data: nil,
-    client_key_data: nil
+    client_key_data: nil,
+    path_prefix: nil
   )
+    @path_prefix = path_prefix
     @logger = logger
     headers = {
       "Content-Type" => CONTENT_TYPE
@@ -122,6 +124,7 @@ class AvroTurf::ConfluentSchemaRegistry
 
   def request(path, **options)
     options = { expects: 200 }.merge!(options)
+    path = File.join(@path_prefix, path) unless @path_prefix.nil?
     response = @connection.request(path: path, **options)
     JSON.parse(response.body)
   end

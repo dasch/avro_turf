@@ -1,6 +1,7 @@
 require 'webmock/rspec'
 require 'avro_turf/messaging'
 require 'avro_turf/test/fake_confluent_schema_registry_server'
+require 'avro_turf/test/fake_prefixed_confluent_schema_registry_server'
 
 describe AvroTurf::Messaging do
   let(:registry_url) { "http://registry.example.com" }
@@ -8,7 +9,7 @@ describe AvroTurf::Messaging do
   let(:client_key) { "test client key" }
   let(:client_key_pass) { "test client key password" }
   let(:logger) { Logger.new(StringIO.new) }
-
+  let(:path_prefix) { nil }
   let(:avro) {
     AvroTurf::Messaging.new(
       registry_url: registry_url,
@@ -72,7 +73,7 @@ describe AvroTurf::Messaging do
 
   shared_examples_for 'encoding and decoding with the schema from registry' do
     before do
-      registry = AvroTurf::ConfluentSchemaRegistry.new(registry_url, logger: logger)
+      registry = AvroTurf::ConfluentSchemaRegistry.new(registry_url, logger: logger, path_prefix: path_prefix)
       registry.register('person', schema)
       registry.register('people', schema)
     end
@@ -102,7 +103,7 @@ describe AvroTurf::Messaging do
 
   shared_examples_for 'encoding and decoding with the schema_id from registry' do
     before do
-      registry = AvroTurf::ConfluentSchemaRegistry.new(registry_url, logger: logger)
+      registry = AvroTurf::ConfluentSchemaRegistry.new(registry_url, logger: logger, path_prefix: path_prefix)
       registry.register('person', schema)
       registry.register('people', schema)
     end
@@ -398,5 +399,30 @@ describe AvroTurf::Messaging do
         end
       end
     end
+  end
+
+  context 'with a registry path prefix' do
+    let(:path_prefix) { '/prefix' }
+
+    let(:avro) {
+      AvroTurf::Messaging.new(
+        registry_path_prefix: path_prefix,
+        registry_url: registry_url,
+        schemas_path: "spec/schemas",
+        logger: logger,
+        client_cert: client_cert,
+        client_key: client_key,
+        client_key_pass: client_key_pass
+      )
+    }
+
+    before do
+      stub_request(:any, /^#{registry_url}/).to_rack(FakePrefixedConfluentSchemaRegistryServer)
+      FakePrefixedConfluentSchemaRegistryServer.clear
+    end
+
+    it_behaves_like "encoding and decoding with the schema from schema store"
+    it_behaves_like 'encoding and decoding with the schema from registry'
+    it_behaves_like 'encoding and decoding with the schema_id from registry'
   end
 end
