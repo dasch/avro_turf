@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v1.6.0
+
+- Schema registry path prefix (#162)
+
 ## v1.5.0
 
 - Add CA cert file option (#157)
