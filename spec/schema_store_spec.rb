@@ -26,6 +26,33 @@ describe AvroTurf::SchemaStore do
       expect(schema.fullname).to eq "message"
     end
 
+    it "resolves missing references when nested schema is not a named type" do
+      define_schema "root.avsc", <<-AVSC
+        {
+          "type": "record",
+          "name": "root",
+          "fields": [
+            {
+              "type": "nested",
+              "name": "nested_value"
+            }
+          ]
+        }
+      AVSC
+
+      define_schema "nested.avsc", <<-AVSC
+        {
+          "name": "nested",
+          "type": "string",
+          "logicalType": "uuid"
+        }
+      AVSC
+
+      schema = store.find("root")
+
+      expect(schema.fullname).to eq "root"
+    end
+
     it "resolves missing references" do
       define_schema "person.avsc", <<-AVSC
         {
