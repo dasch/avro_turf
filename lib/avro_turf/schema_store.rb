@@ -88,7 +88,7 @@ class AvroTurf::SchemaStore
       local_schemas_cache.each do |schema_name, schema|
         local_schemas_cache.delete(schema_name) unless File.exist?(build_schema_path(schema_name))
       end
-      load_schema!(fullname, local_schemas_cache)
+      load_schema!(fullname, @schemas.dup)
     else
       raise
     end
