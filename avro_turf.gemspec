@@ -19,6 +19,8 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
+  spec.required_ruby_version = '>= 2.1'
+
   spec.add_dependency "avro", ">= 1.7.7", "< 1.12"
   spec.add_dependency "excon", "~> 0.71"
 

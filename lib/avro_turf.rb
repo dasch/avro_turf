@@ -15,6 +15,7 @@ unless defined?(::Avro::LogicalTypes)
 end
 
 class AvroTurf
+  using CoreExt
   class Error < StandardError; end
   class SchemaError < Error; end
   class SchemaNotFoundError < Error; end

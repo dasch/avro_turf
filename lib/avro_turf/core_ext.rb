@@ -1,10 +1,65 @@
-require 'avro_turf/core_ext/string'
-require 'avro_turf/core_ext/numeric'
-require 'avro_turf/core_ext/enumerable'
-require 'avro_turf/core_ext/hash'
-require 'avro_turf/core_ext/time'
-require 'avro_turf/core_ext/date'
-require 'avro_turf/core_ext/symbol'
-require 'avro_turf/core_ext/nil_class'
-require 'avro_turf/core_ext/true_class'
-require 'avro_turf/core_ext/false_class'
+class AvroTurf
+  module CoreExt
+    refine(String) do
+      def as_avro
+        self
+      end
+    end
+
+    refine(Numeric) do
+      def as_avro
+        self
+      end
+    end
+
+    refine(Enumerable) do
+      def as_avro
+        map(&:as_avro)
+      end
+    end
+
+    refine(Hash) do
+      def as_avro
+        hsh = Hash.new
+        each { |k, v| hsh[k.as_avro] = v.as_avro }
+        hsh
+      end
+    end
+
+    refine(Time) do
+      def as_avro
+        iso8601
+      end
+    end
+
+    refine(Date) do
+      def as_avro
+        iso8601
+      end
+    end
+
+    refine(Symbol) do
+      def as_avro
+        to_s
+      end
+    end
+
+    refine(NilClass) do
+      def as_avro
+        self
+      end
+    end
+
+    refine(TrueClass) do
+      def as_avro
+        self
+      end
+    end
+
+    refine(FalseClass) do
+      def as_avro
+        self
+      end
+    end
+  end
+end

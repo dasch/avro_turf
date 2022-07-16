@@ -1,3 +1,5 @@
+using AvroTurf::CoreExt
+
 describe Enumerable, "#as_avro" do
   it "returns an array" do
     expect(Set.new.as_avro).to eq []

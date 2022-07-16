@@ -1,3 +1,5 @@
+using AvroTurf::CoreExt
+
 describe Date, "#as_avro" do
   it "returns an ISO8601 string describing the time" do
     date = Date.today
