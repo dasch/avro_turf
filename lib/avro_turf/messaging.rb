@@ -21,8 +21,22 @@ class AvroTurf
   # 1: https://github.com/confluentinc/schema-registry
   class Messaging
     MAGIC_BYTE = [0].pack("C").freeze
-    DecodedMessage = Struct.new(:schema_id, :writer_schema, :reader_schema, :message)
-    private_constant(:DecodedMessage)
+    # DecodedMessage = Struct.new(:schema_id, :writer_schema, :reader_schema, :message)
+    # private_constant(:DecodedMessage)
+
+    class DecodedMessage
+      attr_reader :schema_id
+      attr_reader :writer_schema
+      attr_reader :reader_schema
+      attr_reader :message
+
+      def initialize(schema_id, writer_schema, reader_schema, message)
+        @schema_id = schema_id
+        @writer_schema = writer_schema
+        @reader_schema = reader_schema
+        @message = message
+      end
+    end
 
     # Instantiate a new Messaging instance with the given configuration.
     #
