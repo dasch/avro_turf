@@ -1,9 +1,11 @@
 require 'avro_turf/confluent_schema_registry'
 require 'avro_turf/in_memory_cache'
 require 'avro_turf/disk_cache'
+require 'forwardable'
 
 # Caches registrations and lookups to the schema registry in memory.
 class AvroTurf::CachedConfluentSchemaRegistry
+  extend Forwardable
 
   # Instantiate a new CachedConfluentSchemaRegistry instance with the given configuration.
   # By default, uses a provided InMemoryCache to prevent repeated calls to the upstream registry.
@@ -17,12 +19,7 @@ class AvroTurf::CachedConfluentSchemaRegistry
   end
 
   # Delegate the following methods to the upstream
-  %i(subjects subject_versions check compatible?
-     global_config update_global_config subject_config update_subject_config).each do |name|
-    define_method(name) do |*args|
-      instance_variable_get(:@upstream).send(name, *args)
-    end
-  end
+  def_delegators :@upstream, :subjects, :subject_versions, :check, :compatible?, :global_config, :update_global_config, :subject_config, :update_subject_config
 
   def fetch(id)
     @cache.lookup_by_id(id) || @cache.store_by_id(id, @upstream.fetch(id))
