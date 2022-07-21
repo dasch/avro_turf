@@ -16,7 +16,9 @@ end
 
 class AvroTurf
   class Error < StandardError; end
+
   class SchemaError < Error; end
+
   class SchemaNotFoundError < Error; end
 
   DEFAULT_SCHEMAS_PATH = "./schemas"
@@ -31,7 +33,7 @@ class AvroTurf
   # Currently, the only valid codec name is `deflate`.
   def initialize(schemas_path: nil, schema_store: nil, namespace: nil, codec: nil)
     @namespace = namespace
-    @schema_store = schema_store || 
+    @schema_store = schema_store ||
       SchemaStore.new(path: schemas_path || DEFAULT_SCHEMAS_PATH)
     @codec = codec
   end
@@ -62,14 +64,20 @@ class AvroTurf
   # validate    - The boolean for performing complete data validation before
   #               encoding it, Avro::SchemaValidator::ValidationError with
   #               a descriptive message will be raised in case of invalid message.
+  # validate_options - Hash for the Avro::SchemaValidator, default
+  #               {recursive: true, encoded: false, fail_on_extra_fields: true}
   #
   # Returns nothing.
-  def encode_to_stream(data, schema_name: nil, stream: nil, namespace: @namespace, validate: false)
+  def encode_to_stream(data, schema_name: nil, stream: nil, namespace: @namespace,
+                       validate: false,
+                       validate_options: { recursive: true,
+                                           encoded: false,
+                                           fail_on_extra_fields: true })
     schema = @schema_store.find(schema_name, namespace)
     writer = Avro::IO::DatumWriter.new(schema)
 
     if validate
-      Avro::SchemaValidator.validate!(schema, data, recursive: true, encoded: false, fail_on_extra_fields: true)
+      Avro::SchemaValidator.validate!(schema, data, validate_options)
     end
 
     dw = Avro::DataFile::Writer.new(stream, writer, schema, @codec)
