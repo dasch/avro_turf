@@ -252,7 +252,7 @@ describe AvroTurf do
         end
       end
 
-      context "when message contains extra fields" do
+      context "when the `fail_on_extra_fields` validation option is disabled" do
         let(:message) { { "full_name" => "John Doe", "first_name" => "John", "last_name" => "Doe" } }
         subject(:encode_to_stream) do
           stream = StringIO.new

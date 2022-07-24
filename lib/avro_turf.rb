@@ -77,7 +77,7 @@ class AvroTurf
     writer = Avro::IO::DatumWriter.new(schema)
 
     if validate
-      Avro::SchemaValidator.validate!(schema, data, validate_options)
+      Avro::SchemaValidator.validate!(schema, data, **validate_options)
     end
 
     dw = Avro::DataFile::Writer.new(stream, writer, schema, @codec)
