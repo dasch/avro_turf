@@ -251,6 +251,31 @@ describe AvroTurf do
           expect { encode_to_stream }.to raise_error(Avro::SchemaValidator::ValidationError, /extra field 'fulll_name'/)
         end
       end
+
+      context "when the `fail_on_extra_fields` validation option is disabled" do
+        let(:message) { { "full_name" => "John Doe", "first_name" => "John", "last_name" => "Doe" } }
+        subject(:encode_to_stream) do
+          stream = StringIO.new
+          avro.encode_to_stream(message, stream: stream, schema_name: "message",
+                                validate: true,
+                                validate_options: { recursive: true, encoded: false, fail_on_extra_fields: false }
+          )
+        end
+
+        it "should not raise Avro::SchemaValidator::ValidationError with a message about extra field" do
+          define_schema "message.avsc", <<-AVSC
+            {
+              "name": "message",
+              "type": "record",
+              "fields": [
+                { "name": "full_name", "type": "string" }
+              ]
+            }
+          AVSC
+
+          expect { encode_to_stream }.not_to raise_error
+        end
+      end
     end
   end
 
