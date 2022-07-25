@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## v1.7.0
+
+- Added extra params for the validation message schem before encode (#169)
+- Fix infinite retry when loading schema with nested primary type in separate file (#165)
+
 ## v1.6.0
 
 - Schema registry path prefix (#162)
