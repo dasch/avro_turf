@@ -130,7 +130,7 @@ class AvroTurf
       writer.write(message, encoder)
 
       stream.string
-    rescue Excon::Errors::NotFound
+    rescue Excon::Error::NotFound
       if schema_id
         raise SchemaNotFoundError.new("Schema with id: #{schema_id} is not found on registry")
       else
