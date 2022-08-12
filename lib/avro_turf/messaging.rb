@@ -46,7 +46,7 @@ class AvroTurf
     # namespace            - The String default schema namespace.
     # registry_path_prefix - The String URL path prefix used to namespace schema registry requests (optional).
     # logger               - The Logger that should be used to log information (optional).
-    # proxy                - Forward the request via  proxy (optional).
+    # proxy                - Forward the request via  proxy (optional).
     # user                 - User for basic auth (optional).
     # password             - Password for basic auth (optional).
     # ssl_ca_file          - Name of file containing CA certificate (optional).
@@ -142,7 +142,7 @@ class AvroTurf
       writer.write(message, encoder)
 
       stream.string
-    rescue Excon::Errors::NotFound
+    rescue Excon::Error::NotFound
       if schema_id
         raise SchemaNotFoundError.new("Schema with id: #{schema_id} is not found on registry")
       else

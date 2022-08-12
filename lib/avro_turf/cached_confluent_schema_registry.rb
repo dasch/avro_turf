@@ -13,7 +13,7 @@ class AvroTurf::CachedConfluentSchemaRegistry
   # cache     - Optional user provided Cache object that responds to all methods in the AvroTurf::InMemoryCache interface.
   def initialize(upstream, cache: nil)
     @upstream = upstream
-    @cache = cache || AvroTurf::InMemoryCache.new()
+    @cache = cache || AvroTurf::InMemoryCache.new
   end
 
   # Delegate the following methods to the upstream
@@ -34,7 +34,7 @@ class AvroTurf::CachedConfluentSchemaRegistry
 
   def subject_version(subject, version = 'latest')
     return @upstream.subject_version(subject, version) if version == 'latest'
-    
+
     @cache.lookup_by_version(subject, version) ||
       @cache.store_by_version(subject, version, @upstream.subject_version(subject, version))
   end
