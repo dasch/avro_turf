@@ -8,19 +8,11 @@ class AvroTurf::DiskCache
     # load the write-thru cache on startup, if it exists
     @schemas_by_id_path = File.join(disk_path, 'schemas_by_id.json')
     hash = read_from_disk_cache(@schemas_by_id_path)
-    @schemas_by_id = if hash
-                       hash
-                     else
-                       {}
-                     end
+    @schemas_by_id = hash || {}
 
     @ids_by_schema_path = File.join(disk_path, 'ids_by_schema.json')
     hash = read_from_disk_cache(@ids_by_schema_path)
-    @ids_by_schema = if hash
-                       hash
-                     else
-                       {}
-                     end
+    @ids_by_schema = hash || {}
 
     @schemas_by_subject_version_path = File.join(disk_path, 'schemas_by_subject_version.json')
     @schemas_by_subject_version = {}
