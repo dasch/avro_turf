@@ -60,6 +60,7 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
     # setup the disk cache to avoid performing the upstream fetch
     before do
       store_cache("schemas_by_id.json", cache_before)
+
     end
 
     it "uses preloaded disk cache" do
