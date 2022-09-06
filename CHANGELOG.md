@@ -2,9 +2,11 @@
 
 ## Unreleased
 
+- Fixed schema file cache truncation on multiple running instances and parallel access to the cache files.
+
 ## v1.7.0
 
-- Added extra params for the validation message schem before encode (#169)
+- Added extra params for the validation message schema before encode (#169)
 - Fix infinite retry when loading schema with nested primary type in separate file (#165)
 
 ## v1.6.0
@@ -60,7 +62,7 @@
 ## v0.9.0
 
 - Compatibility with Avro v1.9.0 (#94)
-- Disable the auto registeration of schema (#95)
+- Disable the auto registration of schema (#95)
 - abstracted caching from CachedConfluentSchemaRegistry (#74)
 - Load avro-patches if installed to silence deprecation errors (#85)
 - Make schema store to be thread safe (#92)
