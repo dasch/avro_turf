@@ -29,7 +29,7 @@ class AvroTurf::DiskCache
   def store_by_id(id, schema)
     # must return the value from storing the result (i.e. do not return result from file write)
     @schemas_by_id[id.to_s] = schema
-    File.write(@schemas_by_id_path, JSON.pretty_generate(@schemas_by_id))
+    write_to_disk_cache(@schemas_by_id_path, @schemas_by_id)
 
     schema
   end
@@ -44,8 +44,8 @@ class AvroTurf::DiskCache
   def store_by_schema(subject, schema, id)
     key = "#{subject}#{schema}"
     @ids_by_schema[key] = id
-    File.write(@ids_by_schema_path, JSON.pretty_generate(@ids_by_schema))
 
+    write_to_disk_cache(@ids_by_schema_path, @ids_by_schema)
     id
   end
 
@@ -91,16 +91,26 @@ class AvroTurf::DiskCache
   private def read_from_disk_cache(path)
     if File.exist?(path)
       if File.size(path) != 0
-        return JSON.parse(File.read(path))
+        json_data = File.open(path, 'r') do |file|
+          file.flock(File::LOCK_SH)
+          file.read
+        end
+
+        return JSON.parse(json_data)
       else
         # just log a message if skipping zero length file
         @logger.warn "skipping JSON.parse of zero length file at #{path}"
       end
     end
-    return nil
+
+    nil
   end
 
   private def write_to_disk_cache(path, hash)
-    File.write(path, JSON.pretty_generate(hash))
+    # don't use "w" because it truncates the file before lock
+    File.open(path, File::RDWR | File::CREAT, 0644) do |file|
+      file.flock(File::LOCK_EX)
+      file.write(JSON.pretty_generate(hash))
+    end
   end
 end
