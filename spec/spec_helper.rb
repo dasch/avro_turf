@@ -22,6 +22,16 @@ module Helpers
   end
 end
 
+# gem `fakefs` does not support flock for the file, and require patch
+# https://github.com/fakefs/fakefs/issues/433
+module FakeFS
+  class File < StringIO
+    def flock(*)
+      true
+    end
+  end
+end
+
 RSpec.configure do |config|
   config.include FakeFS::SpecHelpers
   config.include Helpers
