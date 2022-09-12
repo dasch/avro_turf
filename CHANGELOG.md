@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- add support for `Date` via appropriate logicalType defintion.  This is a backwards incompatible change  (#177)
+
 ## v1.7.0
 
 - Added extra params for the validation message schem before encode (#169)
