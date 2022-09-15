@@ -16,6 +16,13 @@ describe AvroTurf do
               {
                 "type": "string",
                 "name": "full_name"
+              },
+              {
+                "name": "birth_date",
+                "type": {
+                  "type": "int",
+                  "logicalType": "date"
+                }
               }
             ]
           }
@@ -24,7 +31,8 @@ describe AvroTurf do
 
       it "encodes data with Avro" do
         data = {
-          "full_name" => "John Doe"
+          "full_name" => "John Doe",
+          "birth_date" => Date.new(1934, 1, 2)
         }
 
         encoded_data = avro.encode(data, schema_name: "person")
@@ -36,7 +44,8 @@ describe AvroTurf do
         compressed_avro = AvroTurf.new(schemas_path: "spec/schemas/", codec: "deflate")
 
         data = {
-          "full_name" => "John Doe" * 100
+          "full_name" => "John Doe" * 100,
+          "birth_date" => Date.new(1934, 1, 2)
         }
 
         uncompressed_data = avro.encode(data, schema_name: "person")
@@ -327,6 +336,34 @@ describe AvroTurf do
       AVSC
 
       datum = { message: "hello" }
+      expect(avro.valid?(datum, schema_name: "postcard")).to eq true
+    end
+
+    it "handles logicalType of date in schema" do
+      define_schema "postcard.avsc", <<-AVSC
+        {
+          "name": "postcard",
+          "type": "record",
+          "fields": [
+            {
+              "name": "message",
+              "type": "string"
+            },
+            {
+              "name": "sent_date",
+              "type": {
+                "type": "int",
+                "logicalType": "date"
+              }
+            }
+          ]
+        }
+      AVSC
+
+      datum = { 
+        message: "hello",
+        sent_date: Date.new(2022, 9, 11)
+      }
       expect(avro.valid?(datum, schema_name: "postcard")).to eq true
     end
   end

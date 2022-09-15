@@ -1,5 +1,5 @@
 class Date
   def as_avro
-    iso8601
+    self
   end
 end

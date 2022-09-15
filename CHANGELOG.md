@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- add support for `Date` via appropriate logicalType defintion.  This is a backwards incompatible change  (#177)
 - Fixed schema file cache truncation on multiple running instances and parallel access to the cache files.
 
 ## v1.7.0
