@@ -17,12 +17,12 @@ class AvroTurf::InMemoryCache
   end
 
   def lookup_by_schema(subject, schema)
-    key = [subject, schema.to_s]
+    key = [subject, schema]
     @ids_by_schema[key]
   end
 
   def store_by_schema(subject, schema, id)
-    key = [subject, schema.to_s]
+    key = [subject, schema]
     @ids_by_schema[key] = id
   end
 
