@@ -121,10 +121,9 @@ class AvroTurf
   # namespace - The namespace of the Avro schema (optional).
   #
   # Returns true if the data is valid, false otherwise.
-  def valid?(data, schema_name: nil, namespace: @namespace)
+  def valid?(data, schema_name: nil, namespace: @namespace, validate_options: {})
     schema = schema_name && @schema_store.find(schema_name, namespace)
-
-    Avro::Schema.validate(schema, data.as_avro)
+    Avro::Schema.validate(schema, data.as_avro, **validate_options)
   end
 
   # Loads all schema definition files in the `schemas_dir`.

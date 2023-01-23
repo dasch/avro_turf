@@ -360,11 +360,42 @@ describe AvroTurf do
         }
       AVSC
 
-      datum = { 
+      datum = {
         message: "hello",
         sent_date: Date.new(2022, 9, 11)
       }
       expect(avro.valid?(datum, schema_name: "postcard")).to eq true
+    end
+
+    context "when message contains extra fields (typo in key)" do
+      let(:message) { { "fulll_name" => "John Doe" } }
+
+      before do
+        define_schema "message.avsc", <<-AVSC
+          {
+            "name": "message",
+            "type": "record",
+            "fields": [
+              { "name": "full_name", "type": "string" }
+            ]
+          }
+        AVSC
+      end
+
+      it "is valid" do
+        datum = { "full_name" => "John Doe", "extra" => "extra" }
+        expect(avro.valid?(datum, schema_name: "message")).to eq true
+      end
+
+      it "is invalid when passing fail_on_extra_fields" do
+        datum = { "full_name" => "John Doe", "extra" => "extra" }
+        validate_options = {
+          recursive: true,
+          encoded: false,
+          fail_on_extra_fields: true }
+        valid = avro.valid?(datum, schema_name: "message", validate_options: validate_options)
+        expect(valid).to eq false
+      end
     end
   end
 end
