@@ -19,9 +19,9 @@ class AvroTurf::ConfluentSchemaRegistry
   )
     @path_prefix = path_prefix
     @logger = logger
-    headers = {
+    headers = Excon.defaults[:headers].merge(
       "Content-Type" => CONTENT_TYPE
-    }
+    )
     headers[:proxy] = proxy unless proxy.nil?
     @connection = Excon.new(
       url,
