@@ -13,9 +13,20 @@ shared_examples_for "a confluent schema registry client" do
       ]
     }.to_json
   end
+  let(:headers) do
+    {
+      'Accept'=>'*/*',
+      'Content-Type'=> AvroTurf::ConfluentSchemaRegistry::CONTENT_TYPE,
+      'Host'=> "#{URI.parse(registry_url).host}:80",
+      'User-Agent'=> "excon/#{Excon::VERSION}"
+    }
+  end
 
   before do
-    stub_request(:any, /^#{registry_url}/).to_rack(FakeConfluentSchemaRegistryServer)
+    stub_request(:any, /^#{registry_url}/)
+      .with(headers: headers)
+      .to_rack(FakeConfluentSchemaRegistryServer)
+
     FakeConfluentSchemaRegistryServer.clear
   end
 
