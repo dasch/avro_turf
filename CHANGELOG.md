@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v1.9.0
+
 - Send Accept and User-Agent headers on every request (#184)
 
 ## v1.8.0
