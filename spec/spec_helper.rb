@@ -1,6 +1,7 @@
 require 'bundler/setup'
 require 'logger'
 require 'json_spec'
+require 'pp' # Require pp before fakefs to fix TypeError: superclass mismatch for class File
 require 'fakefs/spec_helpers'
 require 'avro_turf'
 
