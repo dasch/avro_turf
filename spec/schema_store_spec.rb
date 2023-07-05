@@ -361,6 +361,49 @@ describe AvroTurf::SchemaStore do
   end
 
   describe "#load_schemas!" do
+    it "do not try to reload known schemas" do
+      define_schema "first.avsc", <<-AVSC
+        {
+          "name": "first",
+          "type": "record",
+          "fields": [
+            {
+              "type": "string",
+              "name": "a_value"
+            }
+          ]
+        }
+      AVSC
+
+      define_schema "second.avsc", <<-AVSC
+        {
+          "name": "second",
+          "type": "record",
+          "fields": [
+            {
+              "type": "first",
+              "name": "full_name"
+            }
+          ]
+        }
+      AVSC
+
+      define_schema "third.avsc", <<-AVSC
+        {
+          "name": "third",
+          "type": "record",
+          "fields": [
+            {
+              "type": "second",
+              "name": "embedded_first"
+            }
+          ]
+        }
+      AVSC
+
+      expect { store.load_schemas! }.not_to raise_error
+    end
+
     it "loads schemas defined in the `schemas_path` directory" do
       define_schema "person.avsc", <<-AVSC
         {

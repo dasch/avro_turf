@@ -22,7 +22,7 @@ class AvroTurf::SchemaStore
       # Still need to check is the schema already loaded
       return @schemas[fullname] if @schemas.key?(fullname)
 
-      load_schema!(fullname)
+      load_schema!(fullname, @schemas.dup)
     end
   end
 
