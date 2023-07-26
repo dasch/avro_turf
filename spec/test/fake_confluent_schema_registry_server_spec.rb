@@ -37,4 +37,33 @@ describe FakeConfluentSchemaRegistryServer do
       expect(JSON.parse(last_response.body).fetch('id')).not_to eq original_id
     end
   end
+
+  describe 'GET /schemas/ids/:id/versions' do
+    let(:other_schema) do
+      {
+        type: "record",
+        name: "person",
+        fields: [
+          { name: "name", type: "string" },
+          { name: "age", type: "int" }
+        ]
+      }.to_json
+    end
+
+    it "returns array with one element containing subject and version for given schema id" do
+      subject = 'customer'
+      post "/subjects/#{subject}/versions", { schema: schema }.to_json, 'CONTENT_TYPE' => 'application/vnd.schemaregistry+json'
+      post "/subjects/#{subject}/versions", { schema: other_schema }.to_json, 'CONTENT_TYPE' => 'application/vnd.schemaregistry+json'
+      schema_id = JSON.parse(last_response.body).fetch('id')
+
+      get "/schemas/ids/#{schema_id}/versions"
+
+      result = JSON.parse(last_response.body)
+
+      expect(result).to eq [{
+        'subject' => subject,
+        'version' => 2
+      }]
+    end
+  end
 end
