@@ -55,4 +55,47 @@ describe FakeConfluentSchemaRegistryServer do
       expect(JSON.parse(last_response.body).fetch('id')).to_not eq original_id
     end
   end
+
+  describe 'GET /schemas/ids/:id/versions' do
+    def schema(name:)
+      {
+        type: "record",
+        name: name,
+        fields: [
+          { name: "name", type: "string" },
+        ]
+      }.to_json
+    end
+
+    it "returns array containing subjects and versions for given schema id" do
+      schema1 = schema(name: "name1")
+      schema2 = schema(name: "name2")
+
+      post "/subjects/cats/versions", { schema: schema1 }.to_json, 'CONTENT_TYPE' => 'application/vnd.schemaregistry+json'
+      schema1_id = JSON.parse(last_response.body).fetch('id') # Original cats schema
+
+      post "/subjects/dogs/versions", { schema: schema2 }.to_json, 'CONTENT_TYPE' => 'application/vnd.schemaregistry+json'
+      post "/subjects/cats/versions", { schema: schema2 }.to_json, 'CONTENT_TYPE' => 'application/vnd.schemaregistry+json'
+      schema2_id = JSON.parse(last_response.body).fetch('id') # Changed cats schema == Original Dogs schema
+
+      get "/schemas/ids/#{schema1_id}/versions"
+      result = JSON.parse(last_response.body)
+
+      expect(result).to eq [{
+        'subject' => 'cats',
+        'version' => 1
+      }]
+
+      get "/schemas/ids/#{schema2_id}/versions"
+      result = JSON.parse(last_response.body)
+
+      expect(result).to include( {
+        'subject' => 'cats',
+        'version' => 2
+      }, {
+        'subject' => 'dogs',
+        'version' => 1
+      })
+    end
+  end
 end
