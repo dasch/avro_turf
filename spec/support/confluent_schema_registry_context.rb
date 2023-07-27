@@ -77,16 +77,16 @@ shared_examples_for "a confluent schema registry client" do
     end
   end
 
-  describe "#schema_subject_version" do
+  describe "#schema_subject_versions" do
     it "returns subject and version for a schema id" do
       schema_id1 = registry.register(subject_name, { type: :record, name: "r1", fields: [] }.to_json)
       registry.register(subject_name, { type: :record, name: "r2", fields: [] }.to_json)
       schema_id2 = registry.register("other#{subject_name}", { type: :record, name: "r2", fields: [] }.to_json)
-      expect(registry.schema_subject_version(schema_id1)).to eq([
+      expect(registry.schema_subject_versions(schema_id1)).to eq([
         'subject' => subject_name,
         'version' => 1
       ])
-      expect(registry.schema_subject_version(schema_id2)).to include({
+      expect(registry.schema_subject_versions(schema_id2)).to include({
         'subject' => subject_name,
         'version' => 2
       },{
@@ -98,7 +98,7 @@ shared_examples_for "a confluent schema registry client" do
     context "when the schema does not exist" do
       it "raises an error" do
         expect do
-          registry.schema_subject_version(-1)
+          registry.schema_subject_versions(-1)
         end.to raise_error(Excon::Errors::NotFound)
       end
     end

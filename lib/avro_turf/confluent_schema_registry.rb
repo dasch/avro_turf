@@ -69,7 +69,7 @@ class AvroTurf::ConfluentSchemaRegistry
   end
 
   # Get the subject and version for a schema id
-  def schema_subject_version(schema_id)
+  def schema_subject_versions(schema_id)
     get("/schemas/ids/#{schema_id}/versions")
   end
 
