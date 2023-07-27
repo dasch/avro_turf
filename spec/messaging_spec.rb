@@ -109,7 +109,7 @@ describe AvroTurf::Messaging do
     end
 
     it 'encodes and decodes messages' do
-      data = avro.encode(message, schema_id: 1)
+      data = avro.encode(message, schema_id: 0)
       expect(avro.decode(data)).to eq message
     end
 
@@ -118,7 +118,7 @@ describe AvroTurf::Messaging do
     end
 
     it 'caches parsed schemas for decoding' do
-      data = avro.encode(message, schema_id: 1)
+      data = avro.encode(message, schema_id: 0)
       avro.decode(data)
       allow(Avro::Schema).to receive(:parse).and_call_original
       expect(avro.decode(data)).to eq message
