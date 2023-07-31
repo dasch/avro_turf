@@ -70,28 +70,22 @@ class AvroTurf::SchemaStore
     @schemas[fullname] = schema
 
     schema
-  rescue ::Avro::SchemaParseError => e
-    # This is a hack in order to figure out exactly which type was missing. The
-    # Avro gem ought to provide this data directly.
-    if e.to_s =~ /"([\w\.]+)" is not a schema we know about/
-      # Try to first resolve a referenced schema from disk.
-      # If this is successful, the Avro gem will have mutated the
-      # local_schemas_cache, adding all the new schemas it found.
-      load_schema!($1, local_schemas_cache)
+  rescue ::Avro::UnknownSchemaError => e
+    # Try to first resolve a referenced schema from disk.
+    # If this is successful, the Avro gem will have mutated the
+    # local_schemas_cache, adding all the new schemas it found.
+    load_schema!(e.type_name, local_schemas_cache)
 
-      # Attempt to re-parse the original schema now that the dependency
-      # has been resolved and use the now-updated local_schemas_cache to
-      # pick up where we left off.
-      local_schemas_cache.delete(fullname)
-      # Ensure all sub-schemas are cleaned up to avoid conflicts when re-parsing
-      # schema.
-      local_schemas_cache.each do |schema_name, schema|
-        local_schemas_cache.delete(schema_name) unless File.exist?(build_schema_path(schema_name))
-      end
-      load_schema!(fullname, @schemas.dup)
-    else
-      raise
+    # Attempt to re-parse the original schema now that the dependency
+    # has been resolved and use the now-updated local_schemas_cache to
+    # pick up where we left off.
+    local_schemas_cache.delete(fullname)
+    # Ensure all sub-schemas are cleaned up to avoid conflicts when re-parsing
+    # schema.
+    local_schemas_cache.each_key do |schema_name|
+      local_schemas_cache.delete(schema_name) unless File.exist?(build_schema_path(schema_name))
     end
+    load_schema!(fullname, @schemas.dup)
   rescue Errno::ENOENT, Errno::ENAMETOOLONG
     raise AvroTurf::SchemaNotFoundError, "could not find Avro schema at `#{schema_path}'"
   end
