@@ -35,18 +35,15 @@ class FakeConfluentSchemaRegistryServer < Sinatra::Base
 
   post "/subjects/:subject/versions" do
     schema = parse_schema
-    ids_for_subject = SUBJECTS[params[:subject]]
-
-    schemas_for_subject =
-      SCHEMAS.select
-             .with_index { |_, i| ids_for_subject.include?(i) }
-
-    if schemas_for_subject.include?(schema)
-      schema_id = SCHEMAS.index(schema)
-    else
+    schema_id = SCHEMAS.index(schema)
+    if schema_id.nil?
       SCHEMAS << schema
       schema_id = SCHEMAS.size - 1
-      SUBJECTS[params[:subject]] = SUBJECTS[params[:subject]] << schema_id
+    end
+
+    subject = params[:subject]
+    unless SUBJECTS[subject].include?(schema_id)
+      SUBJECTS[subject] = SUBJECTS[subject] << schema_id
     end
 
     { id: schema_id }.to_json
