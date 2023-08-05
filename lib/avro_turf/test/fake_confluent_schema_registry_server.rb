@@ -49,6 +49,21 @@ class FakeConfluentSchemaRegistryServer < Sinatra::Base
     { id: schema_id }.to_json
   end
 
+  get "/schemas/ids/:schema_id/versions" do
+    schema_id = params[:schema_id].to_i
+    schema = SCHEMAS.at(schema_id)
+    halt(404, SCHEMA_NOT_FOUND) unless schema
+
+    related_subjects = SUBJECTS.select {|_, vs| vs.include? schema_id }
+
+    related_subjects.map do |subject, versions|
+      {
+        subject: subject,
+        version: versions.find_index(schema_id) + 1
+      }
+    end.to_json
+  end
+
   get "/schemas/ids/:schema_id" do
     schema = SCHEMAS.at(params[:schema_id].to_i)
     halt(404, SCHEMA_NOT_FOUND) unless schema

@@ -68,6 +68,11 @@ class AvroTurf::ConfluentSchemaRegistry
     get("/subjects/#{subject}/versions/#{version}")
   end
 
+  # Get the subject and version for a schema id
+  def schema_subject_versions(schema_id)
+    get("/schemas/ids/#{schema_id}/versions")
+  end
+
   # Check if a schema exists. Returns nil if not found.
   def check(subject, schema)
     data = post("/subjects/#{subject}",

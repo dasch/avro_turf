@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add `schema_subject_versions` to `ConfluentSchemaRegistry` to retrieve all subject versions for a schema id. (#189)
+- `FakeConfluentSchemaRegistryServer` now returns same id if identical schema is created for a different subject (#188)
+
 ## v1.9.0
 
 - Send Accept and User-Agent headers on every request (#184)
