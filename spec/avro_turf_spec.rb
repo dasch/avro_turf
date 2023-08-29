@@ -191,7 +191,7 @@ describe AvroTurf do
       let(:encoded_data) {  "Obj\u0001\u0004\u0014avro.codec\bnull\u0016avro.schema\xB6\u0004[{\"type\": \"record\", \"name\": \"address\", \"fields\": [{\"type\": \"string\", \"name\": \"street\"}, {\"type\": \"string\", \"name\": \"city\"}]}, {\"type\": \"record\", \"name\": \"person\", \"fields\": [{\"type\": \"string\", \"name\": \"name\"}, {\"type\": \"int\", \"name\": \"age\"}, {\"type\": \"address\", \"name\": \"address\"}]}]\u0000\xF9u\x84\xA1c\u0010\x82B\xE2\xCF\xF1\x98\xF7\xF1JH\u0004\x96\u0001\u0002\u0014Python🐍\x80\u0004\u0018Green Street\u001ASan Francisco\u0002\u0010Mojo🐍\u0002\u0016Blue Street\u0014Saturn🪐\xF9u\x84\xA1c\u0010\x82B\xE2\xCF\xF1\x98\xF7\xF1JH" } 
 
       it "returns array of entries decoded using the inlined writer's schema " do
-        expect(avro.decode_all(encoded_data)).to eq(
+        expect(avro.decode_all(encoded_data).entries).to eq(
           [
             {"name"=>"Python🐍", "age"=>256, "address"=>{"street"=>"Green Street", "city"=>"San Francisco"}},
             {"name"=>"Mojo🐍", "age"=>1, "address"=>{"street"=>"Blue Street", "city"=>"Saturn🪐"}}
@@ -216,7 +216,7 @@ describe AvroTurf do
 
         expect(
           AvroTurf.new(schemas_path: "spec/schemas/reader")
-                  .decode_all(encoded_data, schema_name: "person")
+                  .decode_all(encoded_data, schema_name: "person").entries
         ).to eq(
           [
             {"name"=>"Python🐍", "age"=>256, "fav_color"=>"red🟥"},
@@ -350,7 +350,7 @@ describe AvroTurf do
       encoded_data = "Obj\u0001\u0004\u0014avro.codec\bnull\u0016avro.schema\xB6\u0004[{\"type\": \"record\", \"name\": \"address\", \"fields\": [{\"type\": \"string\", \"name\": \"street\"}, {\"type\": \"string\", \"name\": \"city\"}]}, {\"type\": \"record\", \"name\": \"person\", \"fields\": [{\"type\": \"string\", \"name\": \"name\"}, {\"type\": \"int\", \"name\": \"age\"}, {\"type\": \"address\", \"name\": \"address\"}]}]\u0000\xF9u\x84\xA1c\u0010\x82B\xE2\xCF\xF1\x98\xF7\xF1JH\u0004\x96\u0001\u0002\u0014Python🐍\x80\u0004\u0018Green Street\u001ASan Francisco\u0002\u0010Mojo🐍\u0002\u0016Blue Street\u0014Saturn🪐\xF9u\x84\xA1c\u0010\x82B\xE2\xCF\xF1\x98\xF7\xF1JH"
       stream = StringIO.new(encoded_data)
 
-      expect(avro.decode_all_from_stream(stream)).to eq(
+      expect(avro.decode_all_from_stream(stream).entries).to eq(
         [
           {"name"=>"Python🐍", "age"=>256, "address"=>{"street"=>"Green Street", "city"=>"San Francisco"}},
           {"name"=>"Mojo🐍", "age"=>1, "address"=>{"street"=>"Blue Street", "city"=>"Saturn🪐"}}
