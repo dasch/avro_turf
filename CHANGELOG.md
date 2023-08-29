@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## v1.11.0
+
+- Add `decode_all` and `decode_all_from_stream` methods to return all entries in a data file (#194)
+- Improve the way schemas are automatically loaded (#190)
+- Increment dependency on `avro` gem to v1.8.
+
 ## v1.10.0
 
 - Add `schema_subject_versions` to `ConfluentSchemaRegistry` to retrieve all subject versions for a schema id. (#189)
