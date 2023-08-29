@@ -142,7 +142,7 @@ describe AvroTurf do
   end
 
   describe "#decode" do
-    it "returns an entry when decodes Avro data containing only one entry using the inlined writer's schema" do
+    it "decodes Avro data using the inlined writer's schema" do
       define_schema "message.avsc", <<-AVSC
         {
           "name": "message",
@@ -153,18 +153,6 @@ describe AvroTurf do
       encoded_data = avro.encode("hello, world", schema_name: "message")
 
       expect(avro.decode(encoded_data)).to eq "hello, world"
-    end
-
-    it "returns array of entries using the inlined writer's schema when data contains multiple entries" do
-      encoded_data = "Obj\u0001\u0004\u0014avro.codec\bnull\u0016avro.schema\xB6\u0004[{\"type\": \"record\", \"name\": \"address\", \"fields\": [{\"type\": \"string\", \"name\": \"street\"}, {\"type\": \"string\", \"name\": \"city\"}]}, {\"type\": \"record\", \"name\": \"person\", \"fields\": [{\"type\": \"string\", \"name\": \"name\"}, {\"type\": \"int\", \"name\": \"age\"}, {\"type\": \"address\", \"name\": \"address\"}]}]\u0000\xF9u\x84\xA1c\u0010\x82B\xE2\xCF\xF1\x98\xF7\xF1JH\u0004\x96\u0001\u0002\u0014Python🐍\x80\u0004\u0018Green Street\u001ASan Francisco\u0002\u0010Mojo🐍\u0002\u0016Blue Street\u0014Saturn🪐\xF9u\x84\xA1c\u0010\x82B\xE2\xCF\xF1\x98\xF7\xF1JH"
-
-      expect(avro.decode(encoded_data)).to eq(
-        [
-          {"name"=>"Python🐍", "age"=>256, "address"=>{"street"=>"Green Street", "city"=>"San Francisco"}},
-          {"name"=>"Mojo🐍", "age"=>1, "address"=>{"street"=>"Blue Street", "city"=>"Saturn🪐"}}
-        ]
-      )
-
     end
 
     it "decodes Avro data using a specified reader's schema" do
@@ -301,7 +289,7 @@ describe AvroTurf do
   end
 
   describe "#decode_stream" do
-    it "returns an entry when decodes Avro data from a stream containing only one entry" do
+    it "decodes Avro data from a stream" do
       define_schema "message.avsc", <<-AVSC
         {
           "name": "message",
@@ -313,18 +301,6 @@ describe AvroTurf do
       stream = StringIO.new(encoded_data)
 
       expect(avro.decode_stream(stream)).to eq "hello"
-    end
-
-    it "returns all entries when decodes Avro data from a stream containing multiple entries" do
-      encoded_data = "Obj\u0001\u0004\u0014avro.codec\bnull\u0016avro.schema\xB6\u0004[{\"type\": \"record\", \"name\": \"address\", \"fields\": [{\"type\": \"string\", \"name\": \"street\"}, {\"type\": \"string\", \"name\": \"city\"}]}, {\"type\": \"record\", \"name\": \"person\", \"fields\": [{\"type\": \"string\", \"name\": \"name\"}, {\"type\": \"int\", \"name\": \"age\"}, {\"type\": \"address\", \"name\": \"address\"}]}]\u0000\xF9u\x84\xA1c\u0010\x82B\xE2\xCF\xF1\x98\xF7\xF1JH\u0004\x96\u0001\u0002\u0014Python🐍\x80\u0004\u0018Green Street\u001ASan Francisco\u0002\u0010Mojo🐍\u0002\u0016Blue Street\u0014Saturn🪐\xF9u\x84\xA1c\u0010\x82B\xE2\xCF\xF1\x98\xF7\xF1JH"
-      stream = StringIO.new(encoded_data)
-
-      expect(avro.decode_stream(stream)).to eq(
-        [
-          {"name"=>"Python🐍", "age"=>256, "address"=>{"street"=>"Green Street", "city"=>"San Francisco"}},
-          {"name"=>"Mojo🐍", "age"=>1, "address"=>{"street"=>"Blue Street", "city"=>"Saturn🪐"}}
-        ]
-      )
     end
   end
 

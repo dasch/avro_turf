@@ -109,12 +109,8 @@ class AvroTurf
   def decode_stream(stream, schema_name: nil, namespace: @namespace)
     schema = schema_name && @schema_store.find(schema_name, namespace)
     reader = Avro::IO::DatumReader.new(nil, schema)
-    entries = Avro::DataFile::Reader.new(stream, reader).entries
-
-    case entries.size
-    when 1 then entries.first
-    when 2.. then entries
-    end
+    dr = Avro::DataFile::Reader.new(stream, reader)
+    dr.first
   end
 
   # Validates data against an Avro schema.
