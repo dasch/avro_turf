@@ -98,6 +98,12 @@ class AvroTurf
     decode_stream(stream, schema_name: schema_name, namespace: namespace)
   end
 
+  # Returns all entries encoded in the data.
+  def decode_all(encoded_data, schema_name: nil, namespace: @namespace)
+    stream = StringIO.new(encoded_data)
+    decode_all_from_stream(stream, schema_name: schema_name, namespace: namespace)
+  end
+
   # Decodes Avro data from an IO stream.
   #
   # stream       - An IO object containing Avro data.
@@ -105,12 +111,20 @@ class AvroTurf
   #                the data. If nil, the writer schema will be used.
   # namespace    - The namespace of the Avro schema used to decode the data.
   #
-  # Returns whatever is encoded in the stream.
+  # Returns first entry encoded in the stream.
   def decode_stream(stream, schema_name: nil, namespace: @namespace)
     schema = schema_name && @schema_store.find(schema_name, namespace)
     reader = Avro::IO::DatumReader.new(nil, schema)
     dr = Avro::DataFile::Reader.new(stream, reader)
     dr.first
+  end
+
+  # Returns all entries encoded in the stream.
+  def decode_all_from_stream(stream, schema_name: nil, namespace: @namespace)
+    schema = schema_name && @schema_store.find(schema_name, namespace)
+    reader = Avro::IO::DatumReader.new(nil, schema)
+    dr = Avro::DataFile::Reader.new(stream, reader)
+    dr.entries
   end
 
   # Validates data against an Avro schema.
