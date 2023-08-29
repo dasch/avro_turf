@@ -93,10 +93,12 @@ class AvroTurf
   # namespace    - The namespace of the Avro schema used to decode the data.
   #
   # Returns whatever is encoded in the data.
-  def decode(encoded_data, schema_name: nil, namespace: @namespace)
+  def decode_first(encoded_data, schema_name: nil, namespace: @namespace)
     stream = StringIO.new(encoded_data)
     decode_stream(stream, schema_name: schema_name, namespace: namespace)
   end
+
+  alias decode decode_first
 
   # Returns all entries encoded in the data.
   def decode_all(encoded_data, schema_name: nil, namespace: @namespace)
@@ -104,7 +106,7 @@ class AvroTurf
     decode_all_from_stream(stream, schema_name: schema_name, namespace: namespace)
   end
 
-  # Decodes Avro data from an IO stream.
+  # Decodes the first entry from an IO stream containing Avro data.
   #
   # stream       - An IO object containing Avro data.
   # schema_name  - The String name of the schema that should be used to read
@@ -112,19 +114,18 @@ class AvroTurf
   # namespace    - The namespace of the Avro schema used to decode the data.
   #
   # Returns first entry encoded in the stream.
-  def decode_stream(stream, schema_name: nil, namespace: @namespace)
-    schema = schema_name && @schema_store.find(schema_name, namespace)
-    reader = Avro::IO::DatumReader.new(nil, schema)
-    dr = Avro::DataFile::Reader.new(stream, reader)
-    dr.first
+  def decode_first_from_stream(stream, schema_name: nil, namespace: @namespace)
+    data = decode_all_from_stream(stream, schema_name: schema_name, namespace: namespace)
+    data.first
   end
+
+  alias decode_stream decode_first_from_stream
 
   # Returns all entries encoded in the stream.
   def decode_all_from_stream(stream, schema_name: nil, namespace: @namespace)
     schema = schema_name && @schema_store.find(schema_name, namespace)
     reader = Avro::IO::DatumReader.new(nil, schema)
-    dr = Avro::DataFile::Reader.new(stream, reader)
-    dr.entries
+    Avro::DataFile::Reader.new(stream, reader)
   end
 
   # Validates data against an Avro schema.
