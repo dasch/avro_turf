@@ -24,18 +24,18 @@ class AvroTurf::CachedConfluentSchemaRegistry
     end
   end
 
-  def fetch(id)
-    @cache.lookup_by_id(id) || @cache.store_by_id(id, @upstream.fetch(id))
+  def fetch(id, **options)
+    @cache.lookup_by_id(id) || @cache.store_by_id(id, @upstream.fetch(id, **options))
   end
 
-  def register(subject, schema)
-    @cache.lookup_by_schema(subject, schema) || @cache.store_by_schema(subject, schema, @upstream.register(subject, schema))
+  def register(subject, schema, **options)
+    @cache.lookup_by_schema(subject, schema) || @cache.store_by_schema(subject, schema, @upstream.register(subject, schema, **options))
   end
 
-  def subject_version(subject, version = 'latest')
-    return @upstream.subject_version(subject, version) if version == 'latest'
+  def subject_version(subject, version = 'latest', **options)
+    return @upstream.subject_version(subject, version, **options) if version == 'latest'
 
     @cache.lookup_by_version(subject, version) ||
-      @cache.store_by_version(subject, version, @upstream.subject_version(subject, version))
+      @cache.store_by_version(subject, version, @upstream.subject_version(subject, version, **options))
   end
 end

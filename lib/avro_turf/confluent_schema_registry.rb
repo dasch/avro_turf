@@ -37,14 +37,14 @@ class AvroTurf::ConfluentSchemaRegistry
     )
   end
 
-  def fetch(id)
+  def fetch(id, **options)
     @logger.info "Fetching schema with id #{id}"
-    data = get("/schemas/ids/#{id}")
+    data = get("/schemas/ids/#{id}", **options)
     data.fetch("schema")
   end
 
-  def register(subject, schema)
-    data = post("/subjects/#{subject}/versions", body: { schema: schema.to_s }.to_json)
+  def register(subject, schema, **options)
+    data = post("/subjects/#{subject}/versions", body: { schema: schema.to_s }.to_json, **options)
 
     id = data.fetch("id")
 
@@ -54,30 +54,31 @@ class AvroTurf::ConfluentSchemaRegistry
   end
 
   # List all subjects
-  def subjects
-    get('/subjects')
+  def subjects(**options)
+    get('/subjects', **options)
   end
 
   # List all versions for a subject
-  def subject_versions(subject)
-    get("/subjects/#{subject}/versions")
+  def subject_versions(subject, **options)
+    get("/subjects/#{subject}/versions", **options)
   end
 
   # Get a specific version for a subject
-  def subject_version(subject, version = 'latest')
-    get("/subjects/#{subject}/versions/#{version}")
+  def subject_version(subject, version = 'latest', **options)
+    get("/subjects/#{subject}/versions/#{version}", **options)
   end
 
   # Get the subject and version for a schema id
-  def schema_subject_versions(schema_id)
-    get("/schemas/ids/#{schema_id}/versions")
+  def schema_subject_versions(schema_id, **options)
+    get("/schemas/ids/#{schema_id}/versions", **options)
   end
 
   # Check if a schema exists. Returns nil if not found.
-  def check(subject, schema)
+  def check(subject, schema, **options)
     data = post("/subjects/#{subject}",
                 expects: [200, 404],
-                body: { schema: schema.to_s }.to_json)
+                body: { schema: schema.to_s }.to_json,
+                **options)
     data unless data.has_key?("error_code")
   end
 
@@ -87,30 +88,30 @@ class AvroTurf::ConfluentSchemaRegistry
   # - nil if the subject or version does not exist
   # - false if incompatible
   # http://docs.confluent.io/3.1.2/schema-registry/docs/api.html#compatibility
-  def compatible?(subject, schema, version = 'latest')
+  def compatible?(subject, schema, version = 'latest', **options)
     data = post("/compatibility/subjects/#{subject}/versions/#{version}",
-                expects: [200, 404], body: { schema: schema.to_s }.to_json)
+                expects: [200, 404], body: { schema: schema.to_s }.to_json, **options)
     data.fetch('is_compatible', false) unless data.has_key?('error_code')
   end
 
   # Get global config
-  def global_config
-    get("/config")
+  def global_config(**options)
+    get("/config", **options)
   end
 
   # Update global config
-  def update_global_config(config)
-    put("/config", body: config.to_json)
+  def update_global_config(config, **options)
+    put("/config", body: config.to_json, **options)
   end
 
   # Get config for subject
-  def subject_config(subject)
-    get("/config/#{subject}")
+  def subject_config(subject, **options)
+    get("/config/#{subject}", **options)
   end
 
   # Update config for subject
-  def update_subject_config(subject, config)
-    put("/config/#{subject}", body: config.to_json)
+  def update_subject_config(subject, config, **options)
+    put("/config/#{subject}", body: config.to_json, **options)
   end
 
   private
