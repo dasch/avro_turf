@@ -33,7 +33,7 @@ shared_examples_for "a confluent schema registry client" do
 
   describe "#register and #fetch" do
     it "allows registering a schema" do
-      id = registry.register(subject_name, schema)
+      id = registry.register(subject_name, schema, **connection_options)
       fetched_schema = registry.fetch(id, **connection_options)
 
       expect(fetched_schema).to eq(schema)
@@ -43,7 +43,7 @@ shared_examples_for "a confluent schema registry client" do
       let(:avro_schema) { Avro::Schema.parse(schema) }
 
       it "allows registration using an Avro::Schema" do
-        id = registry.register(subject_name, avro_schema)
+        id = registry.register(subject_name, avro_schema, **connection_options)
         expect(registry.fetch(id, **connection_options)).to eq(avro_schema.to_s)
       end
 
@@ -53,7 +53,7 @@ shared_examples_for "a confluent schema registry client" do
         end
 
         it "allows registering an Avro schema" do
-          id = registry.register(subject_name, avro_schema)
+          id = registry.register(subject_name, avro_schema, **connection_options)
           expect(registry.fetch(id, **connection_options)).to eq(avro_schema.to_s)
         end
       end
@@ -73,16 +73,16 @@ shared_examples_for "a confluent schema registry client" do
   describe "#subjects" do
     it "lists the subjects in the registry" do
       subjects = Array.new(2) { |n| "subject#{n}" }
-      subjects.each { |subject| registry.register(subject, schema) }
+      subjects.each { |subject| registry.register(subject, schema, **connection_options) }
       expect(registry.subjects).to be_json_eql(subjects.to_json)
     end
   end
 
   describe "#schema_subject_versions" do
     it "returns subject and version for a schema id" do
-      schema_id1 = registry.register(subject_name, { type: :record, name: "r1", fields: [] }.to_json)
-      registry.register(subject_name, { type: :record, name: "r2", fields: [] }.to_json)
-      schema_id2 = registry.register("other#{subject_name}", { type: :record, name: "r2", fields: [] }.to_json)
+      schema_id1 = registry.register(subject_name, { type: :record, name: "r1", fields: [] }.to_json, **connection_options)
+      registry.register(subject_name, { type: :record, name: "r2", fields: [] }.to_json, **connection_options)
+      schema_id2 = registry.register("other#{subject_name}", { type: :record, name: "r2", fields: [] }.to_json, **connection_options)
       expect(registry.schema_subject_versions(schema_id1)).to eq([
         'subject' => subject_name,
         'version' => 1
@@ -109,7 +109,8 @@ shared_examples_for "a confluent schema registry client" do
     it "lists all the versions for the subject" do
       2.times do |n|
         registry.register(subject_name,
-                          { type: :record, name: "r#{n}", fields: [] }.to_json)
+                          { type: :record, name: "r#{n}", fields: [] }.to_json,
+                          **connection_options)
       end
       expect(registry.subject_versions(subject_name))
         .to be_json_eql((1..2).to_a.to_json)
@@ -128,10 +129,10 @@ shared_examples_for "a confluent schema registry client" do
 
   describe "#subject_version" do
     let!(:schema_id1) do
-      registry.register(subject_name, { type: :record, name: "r0", fields: [] }.to_json)
+      registry.register(subject_name, { type: :record, name: "r0", fields: [] }.to_json, **connection_options)
     end
     let!(:schema_id2) do
-      registry.register(subject_name, { type: :record, name: "r1", fields: [] }.to_json)
+      registry.register(subject_name, { type: :record, name: "r1", fields: [] }.to_json, **connection_options)
     end
 
     let(:expected) do
@@ -183,7 +184,7 @@ shared_examples_for "a confluent schema registry client" do
 
   describe "#check" do
     context "when the schema exists" do
-      let!(:schema_id) { registry.register(subject_name, schema) }
+      let!(:schema_id) { registry.register(subject_name, schema, **connection_options) }
       let(:expected) do
         {
           subject: subject_name,
