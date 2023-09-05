@@ -34,7 +34,7 @@ shared_examples_for "a confluent schema registry client" do
   describe "#register and #fetch" do
     it "allows registering a schema" do
       id = registry.register(subject_name, schema)
-      fetched_schema = registry.fetch(id)
+      fetched_schema = registry.fetch(id, **connection_options)
 
       expect(fetched_schema).to eq(schema)
     end
@@ -44,7 +44,7 @@ shared_examples_for "a confluent schema registry client" do
 
       it "allows registration using an Avro::Schema" do
         id = registry.register(subject_name, avro_schema)
-        expect(registry.fetch(id)).to eq(avro_schema.to_s)
+        expect(registry.fetch(id, **connection_options)).to eq(avro_schema.to_s)
       end
 
       context "with ActiveSupport present" do
@@ -54,7 +54,7 @@ shared_examples_for "a confluent schema registry client" do
 
         it "allows registering an Avro schema" do
           id = registry.register(subject_name, avro_schema)
-          expect(registry.fetch(id)).to eq(avro_schema.to_s)
+          expect(registry.fetch(id, **connection_options)).to eq(avro_schema.to_s)
         end
       end
     end
@@ -64,7 +64,7 @@ shared_examples_for "a confluent schema registry client" do
     context "when the schema does not exist" do
       it "raises an error" do
         expect do
-          registry.fetch(-1)
+          registry.fetch(-1, **connection_options)
         end.to raise_error(Excon::Errors::NotFound)
       end
     end

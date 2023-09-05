@@ -24,8 +24,8 @@ class AvroTurf::CachedConfluentSchemaRegistry
     end
   end
 
-  def fetch(id)
-    @cache.lookup_by_id(id) || @cache.store_by_id(id, @upstream.fetch(id))
+  def fetch(id, **connection_options)
+    @cache.lookup_by_id(id) || @cache.store_by_id(id, @upstream.fetch(id, **connection_options))
   end
 
   def register(subject, schema)

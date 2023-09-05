@@ -129,6 +129,11 @@ describe AvroTurf::Messaging do
       expect(avro.decode(data)).to eq message
       expect(Avro::Schema).not_to have_received(:parse)
     end
+
+    it 'passes the read_timeout connection option down to Excon' do
+      expect_any_instance_of(Excon::Connection).to receive(:request).with(hash_including(read_timeout: 10)).and_call_original
+      avro.encode(message, schema_id: 0, read_timeout: 10)
+    end
   end
 
   it_behaves_like "encoding and decoding with the schema from schema store"

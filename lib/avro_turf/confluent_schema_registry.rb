@@ -37,9 +37,9 @@ class AvroTurf::ConfluentSchemaRegistry
     )
   end
 
-  def fetch(id)
+  def fetch(id, **connection_options)
     @logger.info "Fetching schema with id #{id}"
-    data = get("/schemas/ids/#{id}")
+    data = get("/schemas/ids/#{id}", **connection_options)
     data.fetch("schema")
   end
 

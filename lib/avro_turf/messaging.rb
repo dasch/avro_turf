@@ -117,7 +117,7 @@ class AvroTurf
     # Returns the encoded data as a String.
     def encode(message, schema_name: nil, namespace: @namespace, subject: nil, version: nil, schema_id: nil, validate: false, read_timeout: nil)
       schema, schema_id = if schema_id
-        fetch_schema_by_id(schema_id)
+        fetch_schema_by_id(schema_id, read_timeout: read_timeout)
       elsif subject && version
         fetch_schema(subject: subject, version: version, read_timeout: read_timeout)
       elsif schema_name
@@ -213,9 +213,9 @@ class AvroTurf
     end
 
     # Fetch the schema from registry with the provided schema_id.
-    def fetch_schema_by_id(schema_id)
+    def fetch_schema_by_id(schema_id, **connection_options)
       schema = @schemas_by_id.fetch(schema_id) do
-        schema_json = @registry.fetch(schema_id)
+        schema_json = @registry.fetch(schema_id, **connection_options)
         Avro::Schema.parse(schema_json)
       end
       [schema, schema_id]
