@@ -64,8 +64,8 @@ class AvroTurf::ConfluentSchemaRegistry
   end
 
   # Get a specific version for a subject
-  def subject_version(subject, version = 'latest')
-    get("/subjects/#{subject}/versions/#{version}")
+  def subject_version(subject, version = 'latest', **connection_options)
+    get("/subjects/#{subject}/versions/#{version}", **connection_options)
   end
 
   # Get the subject and version for a schema id

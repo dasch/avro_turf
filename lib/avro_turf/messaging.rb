@@ -97,27 +97,29 @@ class AvroTurf
 
     # Encodes a message using the specified schema.
     #
-    # message     - The message that should be encoded. Must be compatible with
-    #               the schema.
-    # schema_name - The String name of the schema that should be used to encode
-    #               the data.
-    # namespace   - The namespace of the schema (optional).
-    # subject     - The subject name the schema should be registered under in
-    #               the schema registry (optional).
-    # version     - The integer version of the schema that should be used to decode
-    #               the data. Must match the schema used when encoding (optional).
-    # schema_id   - The integer id of the schema that should be used to encode
-    #               the data.
-    # validate    - The boolean for performing complete message validation before
-    #               encoding it, Avro::SchemaValidator::ValidationError with
-    #               a descriptive message will be raised in case of invalid message.
+    # message      - The message that should be encoded. Must be compatible with
+    #                the schema.
+    # schema_name  - The String name of the schema that should be used to encode
+    #                the data.
+    # namespace    - The namespace of the schema (optional).
+    # subject      - The subject name the schema should be registered under in
+    #                the schema registry (optional).
+    # version      - The integer version of the schema that should be used to decode
+    #                the data. Must match the schema used when encoding (optional).
+    # schema_id    - The integer id of the schema that should be used to encode
+    #                the data.
+    # validate     - The boolean for performing complete message validation before
+    #                encoding it, Avro::SchemaValidator::ValidationError with
+    #                a descriptive message will be raised in case of invalid message.
+    # read_timeout - The timeout for the connection to the schema registry. Defaults
+    #                to 60 seconds by Excon.
     #
     # Returns the encoded data as a String.
-    def encode(message, schema_name: nil, namespace: @namespace, subject: nil, version: nil, schema_id: nil, validate: false)
+    def encode(message, schema_name: nil, namespace: @namespace, subject: nil, version: nil, schema_id: nil, validate: false, read_timeout: nil)
       schema, schema_id = if schema_id
         fetch_schema_by_id(schema_id)
       elsif subject && version
-        fetch_schema(subject: subject, version: version)
+        fetch_schema(subject: subject, version: version, read_timeout: read_timeout)
       elsif schema_name
         register_schema(subject: subject, schema_name: schema_name, namespace: namespace)
       else
@@ -203,8 +205,8 @@ class AvroTurf
     # Providing subject and version to determine the schema,
     # which skips the auto registeration of schema on the schema registry.
     # Fetch the schema from registry with the provided subject name and version.
-    def fetch_schema(subject:, version: 'latest')
-      schema_data = @registry.subject_version(subject, version)
+    def fetch_schema(subject:, version: 'latest', **connection_options)
+      schema_data = @registry.subject_version(subject, version, **connection_options)
       schema_id = schema_data.fetch('id')
       schema = Avro::Schema.parse(schema_data.fetch('schema'))
       [schema, schema_id]

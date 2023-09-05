@@ -32,10 +32,10 @@ class AvroTurf::CachedConfluentSchemaRegistry
     @cache.lookup_by_schema(subject, schema) || @cache.store_by_schema(subject, schema, @upstream.register(subject, schema))
   end
 
-  def subject_version(subject, version = 'latest')
-    return @upstream.subject_version(subject, version) if version == 'latest'
+  def subject_version(subject, version = 'latest', **connection_options)
+    return @upstream.subject_version(subject, version, **connection_options) if version == 'latest'
 
     @cache.lookup_by_version(subject, version) ||
-      @cache.store_by_version(subject, version, @upstream.subject_version(subject, version))
+      @cache.store_by_version(subject, version, @upstream.subject_version(subject, version, **connection_options))
   end
 end

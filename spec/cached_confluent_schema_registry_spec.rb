@@ -39,6 +39,7 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
   describe '#subject_version' do
     let(:subject_name) { 'a_subject' }
     let(:version) { 1 }
+    let(:connection_options) { { read_timeout: 10 } }
     let(:schema_with_meta) do
       {
         subject: subject_name,
@@ -49,9 +50,9 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
     end
 
     it 'caches the result of subject_version' do
-      allow(upstream).to receive(:subject_version).with(subject_name, version).and_return(schema_with_meta)
-      registry.subject_version(subject_name, version)
-      registry.subject_version(subject_name, version)
+      allow(upstream).to receive(:subject_version).with(subject_name, version, **connection_options).and_return(schema_with_meta)
+      registry.subject_version(subject_name, version, **connection_options)
+      registry.subject_version(subject_name, version, **connection_options)
       expect(upstream).to have_received(:subject_version).exactly(1).times
     end
   end
