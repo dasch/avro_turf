@@ -4,6 +4,7 @@ shared_examples_for "a confluent schema registry client" do
   let(:logger) { Logger.new(StringIO.new) }
   let(:registry_url) { "http://registry.example.com" }
   let(:subject_name) { "some-subject" }
+  let(:connection_options) { { read_timeout: 10 } }
   let(:schema) do
     {
       type: "record",
@@ -143,7 +144,7 @@ shared_examples_for "a confluent schema registry client" do
     end
 
     it "returns a specific version of a schema" do
-      expect(registry.subject_version(subject_name, 1))
+      expect(registry.subject_version(subject_name, 1, **connection_options))
         .to eq(JSON.parse(expected))
     end
 
@@ -158,7 +159,7 @@ shared_examples_for "a confluent schema registry client" do
       end
 
       it "returns the latest version" do
-        expect(registry.subject_version(subject_name))
+        expect(registry.subject_version(subject_name, **connection_options))
           .to eq(JSON.parse(expected))
       end
     end
@@ -166,7 +167,7 @@ shared_examples_for "a confluent schema registry client" do
     context "when the subject does not exist" do
       it "raises an error" do
         expect do
-          registry.subject_version('missing')
+          registry.subject_version('missing', **connection_options)
         end.to raise_error(Excon::Errors::NotFound)
       end
     end
@@ -174,7 +175,7 @@ shared_examples_for "a confluent schema registry client" do
     context "when the version does not exist" do
       it "raises an error" do
         expect do
-          registry.subject_version(subject_name, 3)
+          registry.subject_version(subject_name, 3, **connection_options)
         end.to raise_error(Excon::Errors::NotFound)
       end
     end
