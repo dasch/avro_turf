@@ -6,7 +6,7 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
   let(:upstream) { instance_double(AvroTurf::ConfluentSchemaRegistry) }
   let(:registry) { described_class.new(upstream) }
   let(:id) { rand(999) }
-  let(:connection_options) { { read_timeout: 10 } }
+  let(:connection_options) { { foo: :bar } }
   let(:schema) do
     {
       type: "record",

@@ -163,14 +163,14 @@ describe AvroTurf::Messaging do
       allow(registry).to receive(:register).and_call_original
       message = { "full_name" => "John Doe" }
       avro.encode(message, schema_name: "person")
-      expect(registry).to have_received(:register).with("person", anything, { read_timeout: nil })
+      expect(registry).to have_received(:register).with("person", anything, { write_timeout: nil })
     end
 
     it "allows specifying a schema registry subject" do
       allow(registry).to receive(:register).and_call_original
       message = { "full_name" => "John Doe" }
       avro.encode(message, schema_name: "person", subject: "people")
-      expect(registry).to have_received(:register).with("people", anything, { read_timeout: nil })
+      expect(registry).to have_received(:register).with("people", anything, { write_timeout: nil })
     end
   end
 
@@ -277,14 +277,14 @@ describe AvroTurf::Messaging do
         allow(registry).to receive(:register).and_call_original
         message = { "full_name" => "John Doe" }
         avro.encode(message, schema_name: "person")
-        expect(registry).to have_received(:register).with("person", anything, { read_timeout: nil })
+        expect(registry).to have_received(:register).with("person", anything, { write_timeout: nil })
       end
 
       it "allows specifying a schema registry subject" do
         allow(registry).to receive(:register).and_call_original
         message = { "full_name" => "John Doe" }
         avro.encode(message, schema_name: "person", subject: "people")
-        expect(registry).to have_received(:register).with("people", anything, { read_timeout: nil })
+        expect(registry).to have_received(:register).with("people", anything, { write_timeout: nil })
       end
     end
 
@@ -384,10 +384,10 @@ describe AvroTurf::Messaging do
       end
 
       context 'when subject is not set' do
-        subject { avro.register_schema(schema_name: schema_name, namespace: namespace, read_timeout: 10) }
+        subject { avro.register_schema(schema_name: schema_name, namespace: namespace, write_timeout: 10) }
 
         before do
-          allow(registry).to receive(:register).with(schema.fullname, schema, { read_timeout: 10 }).and_return(schema_id)
+          allow(registry).to receive(:register).with(schema.fullname, schema, { write_timeout: 10 }).and_return(schema_id)
         end
 
         it 'registers schema in registry' do
@@ -396,12 +396,12 @@ describe AvroTurf::Messaging do
       end
 
       context 'when subject is set' do
-        subject { avro.register_schema(schema_name: schema_name, namespace: namespace, subject: subj, read_timeout: 10) }
+        subject { avro.register_schema(schema_name: schema_name, namespace: namespace, subject: subj, write_timeout: 10) }
 
         let(:subj) { 'subject' }
 
         before do
-          allow(registry).to receive(:register).with(subj, schema, { read_timeout: 10 }).and_return(schema_id)
+          allow(registry).to receive(:register).with(subj, schema, { write_timeout: 10 }).and_return(schema_id)
         end
 
         it 'registers schema in registry' do

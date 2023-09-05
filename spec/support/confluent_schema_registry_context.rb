@@ -4,7 +4,7 @@ shared_examples_for "a confluent schema registry client" do
   let(:logger) { Logger.new(StringIO.new) }
   let(:registry_url) { "http://registry.example.com" }
   let(:subject_name) { "some-subject" }
-  let(:connection_options) { { read_timeout: 10 } }
+  let(:connection_options) { { foo: :bar } }
   let(:schema) do
     {
       type: "record",
