@@ -445,7 +445,7 @@ describe AvroTurf::Messaging do
 
     it 'passes the connect timeout setting to Excon' do
       expect(Excon).to receive(:new).with(anything, hash_including(connect_timeout: 10)).and_call_original
-      avro.encode(message, schema_name: "person")
+      avro
     end
   end
 end
