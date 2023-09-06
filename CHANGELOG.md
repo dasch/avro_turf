@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add `connect_timeout` parameter to `AvroTurf::Messaging` to set the timeout for the connection to the schema registry (#197)
+
 ## v1.11.0
 
 - Add `decode_all` and `decode_all_from_stream` methods to return all entries in a data file (#194)
