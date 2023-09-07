@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v1.12.0
+
 - Add `connect_timeout` parameter to `AvroTurf::Messaging` to set the timeout for the connection to the schema registry (#197)
 
 ## v1.11.0
