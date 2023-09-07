@@ -8,6 +8,7 @@ describe AvroTurf::ConfluentSchemaRegistry do
   let(:client_cert) { "test client cert" }
   let(:client_key) { "test client key" }
   let(:client_key_pass) { "test client key password" }
+  let(:connect_timeout) { 10 }
 
   it_behaves_like "a confluent schema registry client" do
     let(:registry) {
@@ -27,6 +28,17 @@ describe AvroTurf::ConfluentSchemaRegistry do
         registry_url,
         user: user,
         password: password,
+      )
+    }
+  end
+
+  it_behaves_like "a confluent schema registry client" do
+    let(:registry) {
+      described_class.new(
+        registry_url,
+        user: user,
+        password: password,
+        connect_timeout: connect_timeout
       )
     }
   end
