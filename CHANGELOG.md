@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Set `idempotent: true` for the request except one that registers a new schema (#199)
+
 ## v1.12.0
 
 - Add `connect_timeout` parameter to `AvroTurf::Messaging` to set the timeout for the connection to the schema registry (#197)
