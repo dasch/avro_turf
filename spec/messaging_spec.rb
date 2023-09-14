@@ -444,7 +444,7 @@ describe AvroTurf::Messaging do
     it_behaves_like 'encoding and decoding with the schema_id from registry'
 
     it 'passes the connect timeout setting to Excon' do
-      expect(Excon).to receive(:new).with(anything, hash_including(connect_timeout: 10)).and_call_original
+      expect(Excon).to receive(:new).with(anything, hash_including(connect_timeout: 10, dns_timeouts: 10)).and_call_original
       avro
     end
   end

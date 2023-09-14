@@ -55,7 +55,7 @@ class AvroTurf
     # client_key_pass      - Password to go with client_key (optional).
     # client_cert_data     - In-memory client certificate (optional).
     # client_key_data      - In-memory client private key to go with client_cert_data (optional).
-    # connect_timeout      - Timeout to use in the connection with the schema registry (optional).
+    # connect_timeout      - Timeout to use in the connection with the domain name server and the schema registry (optional).
     def initialize(
       registry: nil,
       registry_url: nil,
