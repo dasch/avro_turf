@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "avro", ">= 1.8.0", "< 1.12"
-  spec.add_dependency "excon", "~> 0.71"
+  spec.add_dependency "excon", "~> 0.103"
 
   spec.add_development_dependency "bundler", "~> 2.0"
   spec.add_development_dependency "rake", "~> 13.0"
