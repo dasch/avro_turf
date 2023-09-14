@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v1.13.0
+
 - Set `idempotent: true` for the request except one that registers a new schema (#199)
 - Use `connect_timeout` for `Excon`'s `dns_timeouts` that set the timeout for the connection to the Domain Name Server (#201)
 
