@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v1.14.0
+
 - Add `resolv_resolver` parameter to `AvroTurf::Messaging` to make use of custom domain name resolvers and their options, for example `nameserver` and `timeouts` (#202)
 - Stop using `Excon`'s `dns_timeouts` in favour of `resolv_resolver` because `dns_timeouts` is now deprecated due to https://github.com/excon/excon/issues/832 (#202)
 
