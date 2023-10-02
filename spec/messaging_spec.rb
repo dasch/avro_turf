@@ -444,7 +444,31 @@ describe AvroTurf::Messaging do
     it_behaves_like 'encoding and decoding with the schema_id from registry'
 
     it 'passes the connect timeout setting to Excon' do
-      expect(Excon).to receive(:new).with(anything, hash_including(connect_timeout: 10, dns_timeouts: 10)).and_call_original
+      expect(Excon).to receive(:new).with(anything, hash_including(connect_timeout: 10)).and_call_original
+      avro
+    end
+  end
+
+  context 'with a custom domain name resolver' do
+    let(:resolv_resolver) { Resolv.new([Resolv::Hosts.new, Resolv::DNS.new(nameserver: ['127.0.0.1', '127.0.0.1'])]) }
+    let(:avro) {
+      AvroTurf::Messaging.new(
+        registry_url: registry_url,
+        schemas_path: "spec/schemas",
+        logger: logger,
+        client_cert: client_cert,
+        client_key: client_key,
+        client_key_pass: client_key_pass,
+        resolv_resolver: resolv_resolver
+      )
+    }
+
+    it_behaves_like "encoding and decoding with the schema from schema store"
+    it_behaves_like 'encoding and decoding with the schema from registry'
+    it_behaves_like 'encoding and decoding with the schema_id from registry'
+
+    it 'passes the domain name resolver setting to Excon' do
+      expect(Excon).to receive(:new).with(anything, hash_including(resolv_resolver: resolv_resolver)).and_call_original
       avro
     end
   end

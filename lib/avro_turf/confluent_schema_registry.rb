@@ -16,7 +16,8 @@ class AvroTurf::ConfluentSchemaRegistry
     client_cert_data: nil,
     client_key_data: nil,
     path_prefix: nil,
-    connect_timeout: nil
+    connect_timeout: nil,
+    resolv_resolver: nil
   )
     @path_prefix = path_prefix
     @logger = logger
@@ -36,7 +37,7 @@ class AvroTurf::ConfluentSchemaRegistry
       client_cert_data: client_cert_data,
       client_key_data: client_key_data,
       connect_timeout: connect_timeout,
-      dns_timeouts: connect_timeout
+      resolv_resolver: resolv_resolver
     )
   end
 

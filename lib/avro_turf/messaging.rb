@@ -55,7 +55,8 @@ class AvroTurf
     # client_key_pass      - Password to go with client_key (optional).
     # client_cert_data     - In-memory client certificate (optional).
     # client_key_data      - In-memory client private key to go with client_cert_data (optional).
-    # connect_timeout      - Timeout to use in the connection with the domain name server and the schema registry (optional).
+    # connect_timeout      - Timeout to use in the connection with the schema registry (optional).
+    # resolv_resolver      - Custom domain name resolver (optional).
     def initialize(
       registry: nil,
       registry_url: nil,
@@ -73,7 +74,8 @@ class AvroTurf
       client_key_pass: nil,
       client_cert_data: nil,
       client_key_data: nil,
-      connect_timeout: nil
+      connect_timeout: nil,
+      resolv_resolver: nil
     )
       @logger = logger || Logger.new($stderr)
       @namespace = namespace
@@ -92,7 +94,8 @@ class AvroTurf
           client_cert_data: client_cert_data,
           client_key_data: client_key_data,
           path_prefix: registry_path_prefix,
-          connect_timeout: connect_timeout
+          connect_timeout: connect_timeout,
+          resolv_resolver: resolv_resolver
         )
       )
       @schemas_by_id = {}
