@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "avro", ">= 1.8.0", "< 1.12"
-  spec.add_dependency "excon", "~> 0.103"
+  spec.add_dependency "excon", "~> 0.104"
 
   spec.add_development_dependency "bundler", "~> 2.0"
   spec.add_development_dependency "rake", "~> 13.0"
@@ -30,6 +30,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "sinatra"
   spec.add_development_dependency "json_spec"
   spec.add_development_dependency "rack-test"
+  spec.add_development_dependency "resolv"
 
   spec.post_install_message = %{
 avro_turf v0.8.0 deprecates the names AvroTurf::SchemaRegistry,
