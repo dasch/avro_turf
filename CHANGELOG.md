@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Use `default_namespace` from exception to load nested schemas from the correct namespace. (#203)
+- Bump minimum avro version to 1.11.3
+
 ## v1.14.0
 
 - Add `resolv_resolver` parameter to `AvroTurf::Messaging` to make use of custom domain name resolvers and their options, for example `nameserver` and `timeouts` (#202)
