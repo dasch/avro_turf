@@ -26,6 +26,35 @@ describe AvroTurf::SchemaStore do
       expect(schema.fullname).to eq "message"
     end
 
+    it 'searches for nested types with the correct namespace' do
+      define_schema "foo/bar.avsc", <<-AVSC
+        {
+          "type": "record",
+          "namespace": "foo",
+          "name": "bar",
+          "fields": [
+            {
+              "name": "another",
+              "type": "another_schema"
+            }     
+          ]
+        }
+      AVSC
+
+      define_schema "foo/another_schema.avsc", <<-AVSC
+        {
+          "namespace": "foo",
+          "name": "another_schema", 
+          "type": "record",
+          "fields": [ { "name": "str", "type": "string" } ]
+        }
+      AVSC
+
+      schema = store.find('foo.bar')
+      expect(schema.fullname).to eq "foo.bar"
+      expect(schema.fields.first.type.fullname).to eq "foo.another_schema"
+    end
+
     it "resolves missing references when nested schema is not a named type" do
       define_schema "root.avsc", <<-AVSC
         {
