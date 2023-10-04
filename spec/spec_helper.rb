@@ -9,7 +9,10 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 
 module Helpers
   def define_schema(path, content)
-    File.open(File.join("spec/schemas", path), "w") do |f|
+    file = File.join("spec/schemas", path)
+    dir = File.dirname(file)
+    FileUtils.mkdir_p(dir)
+    File.open(file, "w") do |f|
       f.write(content)
     end
   end

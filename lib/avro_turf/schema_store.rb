@@ -74,7 +74,7 @@ class AvroTurf::SchemaStore
     # Try to first resolve a referenced schema from disk.
     # If this is successful, the Avro gem will have mutated the
     # local_schemas_cache, adding all the new schemas it found.
-    load_schema!(e.type_name, local_schemas_cache)
+    load_schema!(::Avro::Name.make_fullname(e.type_name, e.default_namespace), local_schemas_cache)
 
     # Attempt to re-parse the original schema now that the dependency
     # has been resolved and use the now-updated local_schemas_cache to
