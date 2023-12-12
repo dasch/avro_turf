@@ -1,43 +1,45 @@
 require 'sinatra/base'
 
 class FakePrefixedConfluentSchemaRegistryServer < FakeConfluentSchemaRegistryServer
+  DEFAULT_CONTEXT='.'
+
   post "/prefix/subjects/:subject/versions" do
     schema = parse_schema
-    ids_for_subject = SUBJECTS[params[:subject]]
+    ids_for_subject = SUBJECTS[DEFAULT_CONTEXT][params[:subject]]
 
     schemas_for_subject =
-      SCHEMAS.select
+      SCHEMAS[DEFAULT_CONTEXT].select
              .with_index { |_, i| ids_for_subject.include?(i) }
 
     if schemas_for_subject.include?(schema)
-      schema_id = SCHEMAS.index(schema)
+      schema_id = SCHEMAS[DEFAULT_CONTEXT].index(schema)
     else
-      SCHEMAS << schema
-      schema_id = SCHEMAS.size - 1
-      SUBJECTS[params[:subject]] = SUBJECTS[params[:subject]] << schema_id
+      SCHEMAS[DEFAULT_CONTEXT] << schema
+      schema_id = SCHEMAS[DEFAULT_CONTEXT].size - 1
+      SUBJECTS[DEFAULT_CONTEXT][params[:subject]] = SUBJECTS[DEFAULT_CONTEXT][params[:subject]] << schema_id
     end
 
     { id: schema_id }.to_json
   end
 
   get "/prefix/schemas/ids/:schema_id" do
-    schema = SCHEMAS.at(params[:schema_id].to_i)
+    schema = SCHEMAS[DEFAULT_CONTEXT].at(params[:schema_id].to_i)
     halt(404, SCHEMA_NOT_FOUND) unless schema
     { schema: schema }.to_json
   end
 
   get "/prefix/subjects" do
-    SUBJECTS.keys.to_json
+    SUBJECTS[DEFAULT_CONTEXT].keys.to_json
   end
 
   get "/prefix/subjects/:subject/versions" do
-    schema_ids = SUBJECTS[params[:subject]]
+    schema_ids = SUBJECTS[DEFAULT_CONTEXT][params[:subject]]
     halt(404, SUBJECT_NOT_FOUND) if schema_ids.empty?
     (1..schema_ids.size).to_a.to_json
   end
 
   get "/prefix/subjects/:subject/versions/:version" do
-    schema_ids = SUBJECTS[params[:subject]]
+    schema_ids = SUBJECTS[DEFAULT_CONTEXT][params[:subject]]
     halt(404, SUBJECT_NOT_FOUND) if schema_ids.empty?
 
     schema_id = if params[:version] == 'latest'
@@ -47,7 +49,7 @@ class FakePrefixedConfluentSchemaRegistryServer < FakeConfluentSchemaRegistrySer
                 end
     halt(404, VERSION_NOT_FOUND) unless schema_id
 
-    schema = SCHEMAS.at(schema_id)
+    schema = SCHEMAS[DEFAULT_CONTEXT].at(schema_id)
 
     {
       name: params[:subject],
@@ -69,7 +71,7 @@ class FakePrefixedConfluentSchemaRegistryServer < FakeConfluentSchemaRegistrySer
     {
       subject: params[:subject],
       id: schema_id,
-      version: SUBJECTS[params[:subject]].index(schema_id) + 1,
+      version: SUBJECTS[DEFAULT_CONTEXT][params[:subject]].index(schema_id) + 1,
       schema: schema
     }.to_json
   end
