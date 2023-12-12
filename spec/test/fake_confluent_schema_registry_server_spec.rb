@@ -202,14 +202,14 @@ describe FakeConfluentSchemaRegistryServer do
 
       get '/subjects/gerbil/versions/1'
       result = JSON.parse(last_response.body)
-      expect(result['name']).to eq('gerbil')
+      expect(result['subject']).to eq('gerbil')
       expect(result['version']).to eq(1)
       expect(result['id']).to eq(id1)
       expect(result['schema']).to eq(schema1)
 
       get '/subjects/gerbil/versions/2'
       result = JSON.parse(last_response.body)
-      expect(result['name']).to eq('gerbil')
+      expect(result['subject']).to eq('gerbil')
       expect(result['version']).to eq(2)
       expect(result['id']).to eq(id2)
       expect(result['schema']).to eq(schema2)

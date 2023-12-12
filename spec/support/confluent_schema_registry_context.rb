@@ -135,7 +135,7 @@ shared_examples_for "a confluent schema registry client" do
 
     let(:expected) do
       {
-        name: subject_name,
+        subject: subject_name,
         version: 1,
         id: schema_id1,
         schema: { type: :record, name: "r0", fields: [] }.to_json
@@ -150,7 +150,7 @@ shared_examples_for "a confluent schema registry client" do
     context "when the version is not specified" do
       let(:expected) do
         {
-          name: subject_name,
+          subject: subject_name,
           version: 2,
           id: schema_id2,
           schema: { type: :record, name: "r1", fields: [] }.to_json

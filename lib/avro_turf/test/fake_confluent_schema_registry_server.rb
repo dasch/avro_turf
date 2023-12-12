@@ -108,7 +108,7 @@ class FakeConfluentSchemaRegistryServer < Sinatra::Base
     schema = SCHEMAS[context].at(schema_id)
 
     {
-      name: params[:qualified_subject],
+      subject: params[:qualified_subject],
       version: schema_ids.index(schema_id) + 1,
       id: schema_id,
       schema: schema
