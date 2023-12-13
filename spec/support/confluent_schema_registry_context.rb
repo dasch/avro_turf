@@ -1,9 +1,10 @@
 # This shared example expects a registry variable to be defined
 # with an instance of the registry class being tested.
-shared_examples_for "a confluent schema registry client" do
+shared_examples_for "a confluent schema registry client" do |schema_context: nil|
   let(:logger) { Logger.new(StringIO.new) }
   let(:registry_url) { "http://registry.example.com" }
   let(:subject_name) { "some-subject" }
+  let(:expected_subject_name) { with_schema_context_if_applicable(schema_context, subject_name) }
   let(:schema) do
     {
       type: "record",
@@ -72,8 +73,9 @@ shared_examples_for "a confluent schema registry client" do
   describe "#subjects" do
     it "lists the subjects in the registry" do
       subjects = Array.new(2) { |n| "subject#{n}" }
+      expected_subjects = subjects.map { |subject| with_schema_context_if_applicable(schema_context, subject) }
       subjects.each { |subject| registry.register(subject, schema) }
-      expect(registry.subjects).to be_json_eql(subjects.to_json)
+      expect(registry.subjects).to be_json_eql(expected_subjects.to_json)
     end
   end
 
@@ -81,16 +83,17 @@ shared_examples_for "a confluent schema registry client" do
     it "returns subject and version for a schema id" do
       schema_id1 = registry.register(subject_name, { type: :record, name: "r1", fields: [] }.to_json)
       registry.register(subject_name, { type: :record, name: "r2", fields: [] }.to_json)
-      schema_id2 = registry.register("other#{subject_name}", { type: :record, name: "r2", fields: [] }.to_json)
+      other_subject_name = "other#{subject_name}"
+      schema_id2 = registry.register(other_subject_name, { type: :record, name: "r2", fields: [] }.to_json)
       expect(registry.schema_subject_versions(schema_id1)).to eq([
-        'subject' => subject_name,
+        'subject' => expected_subject_name,
         'version' => 1
       ])
       expect(registry.schema_subject_versions(schema_id2)).to include({
-        'subject' => subject_name,
+        'subject' => expected_subject_name,
         'version' => 2
       },{
-        'subject' => "other#{subject_name}",
+        'subject' => with_schema_context_if_applicable(schema_context, other_subject_name),
         'version' => 1
       } )
     end
@@ -135,7 +138,7 @@ shared_examples_for "a confluent schema registry client" do
 
     let(:expected) do
       {
-        subject: subject_name,
+        subject: expected_subject_name,
         version: 1,
         id: schema_id1,
         schema: { type: :record, name: "r0", fields: [] }.to_json
@@ -150,7 +153,7 @@ shared_examples_for "a confluent schema registry client" do
     context "when the version is not specified" do
       let(:expected) do
         {
-          subject: subject_name,
+          subject: expected_subject_name,
           version: 2,
           id: schema_id2,
           schema: { type: :record, name: "r1", fields: [] }.to_json
@@ -185,7 +188,7 @@ shared_examples_for "a confluent schema registry client" do
       let!(:schema_id) { registry.register(subject_name, schema) }
       let(:expected) do
         {
-          subject: subject_name,
+          subject: expected_subject_name,
           id: schema_id,
           version: 1,
           schema: schema
@@ -288,5 +291,9 @@ shared_examples_for "a confluent schema registry client" do
         result[ivar.to_s.sub('@', '')] = instance_variable_get(ivar)
       end.to_json(*args)
     end
+  end
+
+  def with_schema_context_if_applicable(schema_context, subject_name)
+    schema_context.nil? ? subject_name : ":.#{schema_context}:#{subject_name}"
   end
 end

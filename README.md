@@ -252,6 +252,10 @@ registry.update_global_config(compatibility: 'FULL')
 registry.update_subject_config("person", compatibility: 'NONE')
 ```
 
+An optional `schema_context` parameter allows the registry to be scoped to a 
+[schema context](https://docs.confluent.io/platform/7.5/schema-registry/schema-linking-cp.html#schema-contexts). 
+If there is a need to access multiple contexts, you will need to use multiple instances of `ConfluentSchemaRegistry`. 
+
 ### Testing Support
 
 AvroTurf includes a `FakeConfluentSchemaRegistryServer` that can be used in tests. The
