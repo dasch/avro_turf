@@ -102,7 +102,7 @@ describe FakeConfluentSchemaRegistryServer do
         result = JSON.parse(last_response.body)
 
         expect(result).to eq [{
-          'subject' => 'cats',
+          'subject' => ':.pets:cats',
           'version' => 1
         }]
 
@@ -110,7 +110,7 @@ describe FakeConfluentSchemaRegistryServer do
         result = JSON.parse(last_response.body)
 
         expect(result).to eq [{
-          'subject' => 'cats',
+          'subject' => ':.animals:cats',
           'version' => 1
         }]
       end

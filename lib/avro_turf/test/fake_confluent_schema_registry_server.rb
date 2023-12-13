@@ -64,7 +64,7 @@ class FakeConfluentSchemaRegistryServer < Sinatra::Base
 
     related_subjects.map do |subject, versions|
       {
-        subject: subject,
+        subject: qualify_subject(context, subject),
         version: versions.find_index(schema_id) + 1
       }
     end.to_json
@@ -175,5 +175,9 @@ class FakeConfluentSchemaRegistryServer < Sinatra::Base
     else
       [ DEFAULT_CONTEXT, qualified_subject]
     end
+  end
+
+  def qualify_subject(context, subject)
+    context == "." ? subject : ":#{context}:#{subject}"
   end
 end
