@@ -5,6 +5,7 @@ class AvroTurf::ConfluentSchemaRegistry
 
   def initialize(
     url,
+    schema_context: nil,
     logger: Logger.new($stdout),
     proxy: nil,
     user: nil,
@@ -20,6 +21,8 @@ class AvroTurf::ConfluentSchemaRegistry
     resolv_resolver: nil
   )
     @path_prefix = path_prefix
+    @schema_context_prefix = schema_context.nil? ? '' : ":.#{schema_context}:"
+    @schema_context_options = schema_context.nil? ? {} : {query: {subject: @schema_context_prefix}}
     @logger = logger
     headers = Excon.defaults[:headers].merge(
       "Content-Type" => CONTENT_TYPE
@@ -43,16 +46,16 @@ class AvroTurf::ConfluentSchemaRegistry
 
   def fetch(id)
     @logger.info "Fetching schema with id #{id}"
-    data = get("/schemas/ids/#{id}", idempotent: true)
+    data = get("/schemas/ids/#{id}", idempotent: true, **@schema_context_options, )
     data.fetch("schema")
   end
 
   def register(subject, schema)
-    data = post("/subjects/#{subject}/versions", body: { schema: schema.to_s }.to_json)
+    data = post("/subjects/#{@schema_context_prefix}#{subject}/versions", body: { schema: schema.to_s }.to_json)
 
     id = data.fetch("id")
 
-    @logger.info "Registered schema for subject `#{subject}`; id = #{id}"
+    @logger.info "Registered schema for subject `#{@schema_context_prefix}#{subject}`; id = #{id}"
 
     id
   end
@@ -64,22 +67,22 @@ class AvroTurf::ConfluentSchemaRegistry
 
   # List all versions for a subject
   def subject_versions(subject)
-    get("/subjects/#{subject}/versions", idempotent: true)
+    get("/subjects/#{@schema_context_prefix}#{subject}/versions", idempotent: true)
   end
 
   # Get a specific version for a subject
   def subject_version(subject, version = 'latest')
-    get("/subjects/#{subject}/versions/#{version}", idempotent: true)
+    get("/subjects/#{@schema_context_prefix}#{subject}/versions/#{version}", idempotent: true)
   end
 
   # Get the subject and version for a schema id
   def schema_subject_versions(schema_id)
-    get("/schemas/ids/#{schema_id}/versions", idempotent: true)
+    get("/schemas/ids/#{schema_id}/versions", idempotent: true, **@schema_context_options)
   end
 
   # Check if a schema exists. Returns nil if not found.
   def check(subject, schema)
-    data = post("/subjects/#{subject}",
+    data = post("/subjects/#{@schema_context_prefix}#{subject}",
                 expects: [200, 404],
                 body: { schema: schema.to_s }.to_json,
                 idempotent: true)
@@ -93,7 +96,7 @@ class AvroTurf::ConfluentSchemaRegistry
   # - false if incompatible
   # http://docs.confluent.io/3.1.2/schema-registry/docs/api.html#compatibility
   def compatible?(subject, schema, version = 'latest')
-    data = post("/compatibility/subjects/#{subject}/versions/#{version}",
+    data = post("/compatibility/subjects/#{@schema_context_prefix}#{subject}/versions/#{version}",
                 expects: [200, 404], body: { schema: schema.to_s }.to_json, idempotent: true)
     data.fetch('is_compatible', false) unless data.has_key?('error_code')
   end
@@ -110,12 +113,12 @@ class AvroTurf::ConfluentSchemaRegistry
 
   # Get config for subject
   def subject_config(subject)
-    get("/config/#{subject}", idempotent: true)
+    get("/config/#{@schema_context_prefix}#{subject}", idempotent: true)
   end
 
   # Update config for subject
   def update_subject_config(subject, config)
-    put("/config/#{subject}", body: config.to_json, idempotent: true)
+    put("/config/#{@schema_context_prefix}#{subject}", body: config.to_json, idempotent: true)
   end
 
   private

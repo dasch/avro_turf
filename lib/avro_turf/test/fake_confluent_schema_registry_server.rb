@@ -1,8 +1,13 @@
 require 'sinatra/base'
 
 class FakeConfluentSchemaRegistryServer < Sinatra::Base
-  SUBJECTS = Hash.new { Array.new }
-  SCHEMAS = []
+  QUALIFIED_SUBJECT = /
+      :(?<context>\.[^:]*)
+      :(?<subject>.*)
+    /x
+  DEFAULT_CONTEXT = '.'
+  SUBJECTS = Hash.new { |hash, key| hash[key] = Hash.new { Array.new } }
+  SCHEMAS = Hash.new { |hash, key| hash[key] = Array.new }
   CONFIGS = Hash.new
   SUBJECT_NOT_FOUND = { error_code: 40401, message: 'Subject not found' }.to_json.freeze
   VERSION_NOT_FOUND = { error_code: 40402, message: 'Version not found' }.to_json.freeze
@@ -33,17 +38,17 @@ class FakeConfluentSchemaRegistryServer < Sinatra::Base
     end
   end
 
-  post "/subjects/:subject/versions" do
+  post "/subjects/:qualified_subject/versions" do
     schema = parse_schema
-    schema_id = SCHEMAS.index(schema)
+    context, subject = parse_qualified_subject(params[:qualified_subject])
+    schema_id = SCHEMAS[context].index(schema)
     if schema_id.nil?
-      SCHEMAS << schema
-      schema_id = SCHEMAS.size - 1
+      SCHEMAS[context] << schema
+      schema_id = SCHEMAS[context].size - 1
     end
 
-    subject = params[:subject]
-    unless SUBJECTS[subject].include?(schema_id)
-      SUBJECTS[subject] = SUBJECTS[subject] << schema_id
+    unless SUBJECTS[context][subject].include?(schema_id)
+      SUBJECTS[context][subject] = SUBJECTS[context][subject] << schema_id
     end
 
     { id: schema_id }.to_json
@@ -51,37 +56,46 @@ class FakeConfluentSchemaRegistryServer < Sinatra::Base
 
   get "/schemas/ids/:schema_id/versions" do
     schema_id = params[:schema_id].to_i
-    schema = SCHEMAS.at(schema_id)
+    context, _subject = parse_qualified_subject(params[:subject])
+    schema = SCHEMAS[context].at(schema_id)
     halt(404, SCHEMA_NOT_FOUND) unless schema
 
-    related_subjects = SUBJECTS.select {|_, vs| vs.include? schema_id }
+    related_subjects = SUBJECTS[context].select {|_, vs| vs.include? schema_id }
 
     related_subjects.map do |subject, versions|
       {
-        subject: subject,
+        subject: qualify_subject(context, subject),
         version: versions.find_index(schema_id) + 1
       }
     end.to_json
   end
 
   get "/schemas/ids/:schema_id" do
-    schema = SCHEMAS.at(params[:schema_id].to_i)
+    context, _subject = parse_qualified_subject(params[:subject])
+    schema = SCHEMAS[context].at(params[:schema_id].to_i)
     halt(404, SCHEMA_NOT_FOUND) unless schema
     { schema: schema }.to_json
   end
 
   get "/subjects" do
-    SUBJECTS.keys.to_json
+    subject_names = SUBJECTS.reduce([]) do |acc, args|
+      context, subjects = args
+      subjects.keys.each { |subject| acc << (context == '.' ? subject : ":#{context}:#{subject}") }
+      acc
+    end
+    subject_names.to_json
   end
 
-  get "/subjects/:subject/versions" do
-    schema_ids = SUBJECTS[params[:subject]]
+  get "/subjects/:qualified_subject/versions" do
+    context, subject = parse_qualified_subject(params[:qualified_subject])
+    schema_ids = SUBJECTS[context][subject]
     halt(404, SUBJECT_NOT_FOUND) if schema_ids.empty?
     (1..schema_ids.size).to_a.to_json
   end
 
-  get "/subjects/:subject/versions/:version" do
-    schema_ids = SUBJECTS[params[:subject]]
+  get "/subjects/:qualified_subject/versions/:version" do
+    context, subject = parse_qualified_subject(params[:qualified_subject])
+    schema_ids = SUBJECTS[context][subject]
     halt(404, SUBJECT_NOT_FOUND) if schema_ids.empty?
 
     schema_id = if params[:version] == 'latest'
@@ -91,29 +105,30 @@ class FakeConfluentSchemaRegistryServer < Sinatra::Base
                 end
     halt(404, VERSION_NOT_FOUND) unless schema_id
 
-    schema = SCHEMAS.at(schema_id)
+    schema = SCHEMAS[context].at(schema_id)
 
     {
-      name: params[:subject],
+      subject: params[:qualified_subject],
       version: schema_ids.index(schema_id) + 1,
       id: schema_id,
       schema: schema
     }.to_json
   end
 
-  post "/subjects/:subject" do
+  post "/subjects/:qualified_subject" do
     schema = parse_schema
 
     # Note: this does not actually handle the same schema registered under
     # multiple subjects
-    schema_id = SCHEMAS.index(schema)
+    context, subject = parse_qualified_subject(params[:qualified_subject])
+    schema_id = SCHEMAS[context].index(schema)
 
     halt(404, SCHEMA_NOT_FOUND) unless schema_id
 
     {
-      subject: params[:subject],
+      subject: params[:qualified_subject],
       id: schema_id,
-      version: SUBJECTS[params[:subject]].index(schema_id) + 1,
+      version: SUBJECTS[context][subject].index(schema_id) + 1,
       schema: schema
     }.to_json
   end
@@ -149,5 +164,20 @@ class FakeConfluentSchemaRegistryServer < Sinatra::Base
     SCHEMAS.clear
     CONFIGS.clear
     @global_config = DEFAULT_GLOBAL_CONFIG.dup
+  end
+
+  private
+
+  def parse_qualified_subject(qualified_subject)
+    match = QUALIFIED_SUBJECT.match(qualified_subject)
+    if !match.nil?
+      match.named_captures.values_at('context', 'subject')
+    else
+      [ DEFAULT_CONTEXT, qualified_subject]
+    end
+  end
+
+  def qualify_subject(context, subject)
+    context == "." ? subject : ":#{context}:#{subject}"
   end
 end

@@ -10,36 +10,56 @@ describe AvroTurf::ConfluentSchemaRegistry do
   let(:client_key_pass) { "test client key password" }
   let(:connect_timeout) { 10 }
 
-  it_behaves_like "a confluent schema registry client" do
-    let(:registry) {
-      described_class.new(
-        registry_url,
-        logger: logger,
-        client_cert: client_cert,
-        client_key: client_key,
-        client_key_pass: client_key_pass
-      )
-    }
+  context 'authenticated by cert' do
+    it_behaves_like "a confluent schema registry client" do
+      let(:registry) {
+        described_class.new(
+          registry_url,
+          logger: logger,
+          client_cert: client_cert,
+          client_key: client_key,
+          client_key_pass: client_key_pass
+        )
+      }
+    end
   end
 
-  it_behaves_like "a confluent schema registry client" do
-    let(:registry) {
-      described_class.new(
-        registry_url,
-        user: user,
-        password: password,
-      )
-    }
+  context 'authenticated by basic auth' do
+    it_behaves_like "a confluent schema registry client" do
+      let(:registry) {
+        described_class.new(
+          registry_url,
+          user: user,
+          password: password,
+        )
+      }
+    end
   end
 
-  it_behaves_like "a confluent schema registry client" do
-    let(:registry) {
-      described_class.new(
-        registry_url,
-        user: user,
-        password: password,
-        connect_timeout: connect_timeout
-      )
-    }
+  context 'with connect_timeout' do
+    it_behaves_like "a confluent schema registry client" do
+      let(:registry) {
+        described_class.new(
+          registry_url,
+          user: user,
+          password: password,
+          connect_timeout: connect_timeout
+        )
+      }
+    end
+  end
+
+  context 'with non default schema_context' do
+    it_behaves_like "a confluent schema registry client", schema_context: 'other' do
+      let(:registry) {
+        described_class.new(
+          registry_url,
+          schema_context: 'other',
+          user: user,
+          password: password,
+          connect_timeout: connect_timeout
+        )
+      }
+    end
   end
 end

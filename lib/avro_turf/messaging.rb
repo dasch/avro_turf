@@ -41,6 +41,7 @@ class AvroTurf
     # registry             - A schema registry object that responds to all methods in the
     #                        AvroTurf::ConfluentSchemaRegistry interface.
     # registry_url         - The String URL of the schema registry that should be used.
+    # schema_context       - Schema registry context name (optional)
     # schema_store         - A schema store object that responds to #find(schema_name, namespace).
     # schemas_path         - The String file system path where local schemas are stored.
     # namespace            - The String default schema namespace.
@@ -60,6 +61,7 @@ class AvroTurf
     def initialize(
       registry: nil,
       registry_url: nil,
+      schema_context: nil,
       schema_store: nil,
       schemas_path: nil,
       namespace: nil,
@@ -83,6 +85,7 @@ class AvroTurf
       @registry = registry || CachedConfluentSchemaRegistry.new(
         ConfluentSchemaRegistry.new(
           registry_url,
+          schema_context: schema_context,
           logger: @logger,
           proxy: proxy,
           user: user,
