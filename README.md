@@ -175,10 +175,14 @@ avro = AvroTurf::Messaging.new(registry_url: "http://my-registry:8081/")
 data = avro.encode({ "title" => "hello, world" }, schema_name: "greeting")
 
 # If you don't want to automatically register new schemas, you can pass explicitly
-# subject and version to specify which schema should be used for encoding.
+# both subject and version to specify which schema should be used for encoding.
 # It will fetch that schema from the registry and cache it. Subsequent instances
 # of the same schema version will be served by the cache.
 data = avro.encode({ "title" => "hello, world" }, subject: 'greeting', version: 1)
+
+# If you want to use a specific local schema, but register it with a different name in the
+# registry, then provide a subject and a schema_name, but not a version
+data = avro.encode({ "title" => "hello, world" }, subject: "greeting-value", schema_name: "greeting")
 
 # You can also pass explicitly schema_id to specify which schema
 # should be used for encoding.
