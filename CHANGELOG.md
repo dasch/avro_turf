@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add compatibility with Avro v1.12.x.
+
 ## v1.15.0
 
 - Use `default_namespace` from exception to load nested schemas from the correct namespace. (#203)
