@@ -6,6 +6,7 @@ class AvroTurf::InMemoryCache
     @schemas_by_id = {}
     @ids_by_schema = {}
     @schema_by_subject_version = {}
+    @data_by_schema = {}
   end
 
   def lookup_by_id(id)
@@ -21,9 +22,21 @@ class AvroTurf::InMemoryCache
     @ids_by_schema[key]
   end
 
+  def lookup_data_by_schema(subject, schema)
+    key = [subject, schema]
+    @data_by_schema[key]
+  end
+
   def store_by_schema(subject, schema, id)
     key = [subject, schema]
     @ids_by_schema[key] = id
+  end
+
+  def store_data_by_schema(subject, schema, data)
+    return unless data
+
+    key = [subject, schema]
+    @data_by_schema[key] = data
   end
 
   def lookup_by_version(subject, version)

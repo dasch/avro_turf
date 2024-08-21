@@ -17,11 +17,15 @@ class AvroTurf::CachedConfluentSchemaRegistry
   end
 
   # Delegate the following methods to the upstream
-  %i(subjects subject_versions schema_subject_versions check compatible?
+  %i(subjects subject_versions schema_subject_versions compatible?
      global_config update_global_config subject_config update_subject_config).each do |name|
     define_method(name) do |*args|
       instance_variable_get(:@upstream).send(name, *args)
     end
+  end
+
+  def check(subject, schema)
+    @cache.lookup_data_by_schema(subject, schema) || @cache.store_data_by_schema(subject, schema, @upstream.check(subject, schema))
   end
 
   def fetch(id)
