@@ -222,6 +222,66 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
     end
   end
 
+  describe "#check" do
+    let(:city_name) { "a_city" }
+    let(:schema_data) do
+      {
+        subject: subject,
+        version: version,
+        id: id,
+        schema: schema
+      }.to_json
+    end
+
+    let(:city_schema_data) do
+      {
+        subject: city_name,
+        version: version,
+        id: city_id,
+        schema: city_schema
+      }.to_json
+    end
+
+    let(:cache_before) do
+      {
+        "#{subject}#{schema}" => schema_data
+      }
+    end
+
+    let(:cache_after) do
+      {
+        "#{subject}#{schema}" => schema_data,
+        "#{city_name}#{city_schema}" => city_schema_data
+      }
+    end
+
+    # setup the disk cache to avoid performing the upstream fetch
+    before do
+      store_cache("data_by_schema.json", cache_before)
+      allow(upstream).to receive(:check).with(subject, schema).and_return(schema_data)
+      allow(upstream).to receive(:check).with(city_name, city_schema).and_return(city_schema_data)
+    end
+
+    context "when the schema is not found in the cache" do
+      it "makes only one request using upstream" do
+        expect(registry.check(city_name, city_schema)).to eq(city_schema_data)
+        expect(registry.check(city_name, city_schema)).to eq(city_schema_data)
+        expect(upstream).to have_received(:check).with(city_name, city_schema).exactly(1).times
+        expect(load_cache("data_by_schema.json")).to eq cache_after
+      end
+    end
+
+    context "when schema is already in the cache" do
+      it "uses preloaded disk cache" do
+        # multiple calls return same result, with zero upstream calls
+        expect(registry.check(subject, schema)).to eq(schema_data)
+        expect(registry.check(subject, schema)).to eq(schema_data)
+        expect(upstream).to have_received(:check).exactly(0).times
+        expect(load_cache("data_by_schema.json")).to eq cache_before
+      end
+    end
+  end
+
   it_behaves_like "a confluent schema registry client" do
     let(:upstream) { AvroTurf::ConfluentSchemaRegistry.new(registry_url, logger: logger) }
     let(:registry) { described_class.new(upstream) }

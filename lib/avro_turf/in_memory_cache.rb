@@ -1,7 +1,6 @@
 # A cache for the CachedConfluentSchemaRegistry.
 # Simply stores the schemas and ids in in-memory hashes.
 class AvroTurf::InMemoryCache
-
   def initialize
     @schemas_by_id = {}
     @ids_by_schema = {}
