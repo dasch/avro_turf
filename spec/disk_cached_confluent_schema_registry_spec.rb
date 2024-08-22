@@ -226,20 +226,20 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
     let(:city_name) { "a_city" }
     let(:schema_data) do
       {
-        subject: subject,
-        version: version,
-        id: id,
-        schema: schema
-      }.to_json
+        "subject" => subject,
+        "version" => version,
+        "id" => id,
+        "schema" => schema
+      }
     end
 
     let(:city_schema_data) do
       {
-        subject: city_name,
-        version: version,
-        id: city_id,
-        schema: city_schema
-      }.to_json
+        "subject" => city_name,
+        "version" => version,
+        "id" => city_id,
+        "schema" => city_schema
+      }
     end
 
     let(:cache_before) do

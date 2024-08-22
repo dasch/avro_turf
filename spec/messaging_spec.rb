@@ -398,7 +398,7 @@ describe AvroTurf::Messaging do
           "subject" => subject_name,
           "version" => 123,
           "id" => city_schema_id,
-          "schema" => city_schema.to_s
+          "schema" => city_schema
         }
       end
 

@@ -38,11 +38,11 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
   describe "#check" do
     let(:schema_data) do
       {
-        subject: subject_name,
-        version: 123,
-        id: id,
-        schema: schema
-      }.to_json
+        "subject" => subject_name,
+        "version" => 123,
+        "id" => id,
+        "schema" => schema
+      }
     end
 
     before do
