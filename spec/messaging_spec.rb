@@ -116,6 +116,11 @@ describe AvroTurf::Messaging do
         to raise_error(AvroTurf::SchemaNotFoundError, "Schema with structure: #{city_schema} not found on registry")
     end
 
+    it 'encodes with read_only true when the schema exists on the registry' do
+      data = avro.encode(message, schema_name: 'person', read_only: true)
+      expect(avro.decode(data, schema_name: 'person')).to eq message
+    end
+
     it 'caches parsed schemas for decoding' do
       data = avro.encode(message, subject: 'person', version: 1)
       avro.decode(data)
