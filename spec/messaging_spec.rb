@@ -36,6 +36,24 @@ describe AvroTurf::Messaging do
       }
     AVSC
   end
+
+  let(:city_message) { { "name" => "Paris" } }
+  let(:city_schema_json) do
+    <<-AVSC
+      {
+        "name": "city",
+        "type": "record",
+        "fields": [
+          {
+            "type": "string",
+            "name": "name"
+          }
+        ]
+      }
+    AVSC
+  end
+
+  let(:city_schema) { Avro::Schema.parse(city_schema_json) }
   let(:schema) { Avro::Schema.parse(schema_json) }
 
   before do
@@ -49,6 +67,7 @@ describe AvroTurf::Messaging do
 
   before do
     define_schema "person.avsc", schema_json
+    define_schema "city.avsc", city_schema_json
   end
 
   shared_examples_for "encoding and decoding with the schema from schema store" do
@@ -90,6 +109,11 @@ describe AvroTurf::Messaging do
 
     it 'raises AvroTurf::SchemaNotFoundError when the schema does not exist on registry' do
       expect { avro.encode(message, subject: 'missing', version: 1) }.to raise_error(AvroTurf::SchemaNotFoundError)
+    end
+
+    it 'raises AvroTurf::SchemaNotFoundError when the schema does not exist on registry and read_only true' do
+      expect { avro.encode(city_message, schema_name: 'city', read_only: true) }.
+        to raise_error(AvroTurf::SchemaNotFoundError, "Schema with structure: #{city_schema} not found on registry")
     end
 
     it 'caches parsed schemas for decoding' do
@@ -361,6 +385,34 @@ describe AvroTurf::Messaging do
 
       it 'gets schema from registry' do
         expect(subject).to eq([schema, schema_id])
+      end
+    end
+
+    context 'using fetch_schema_by_body' do
+      let(:subject_name) { 'city' }
+      let(:schema_name) { 'city' }
+      let(:namespace) { 'namespace' }
+      let(:city_schema_id) { 125 }
+      let(:city_schema_data) do
+        {
+          "subject" => subject_name,
+          "version" => 123,
+          "id" => city_schema_id,
+          "schema" => city_schema.to_s
+        }
+      end
+
+      subject(:fetch_schema_by_body) do
+        avro.fetch_schema_by_body(schema_name: schema_name, namespace: namespace, subject: subject_name)
+      end
+
+      before do
+        allow(schema_store).to receive(:find).with(schema_name, namespace).and_return(city_schema)
+        allow(registry).to receive(:check).with(subject_name, city_schema).and_return(city_schema_data)
+      end
+
+      it 'gets schema from registry' do
+        expect(fetch_schema_by_body).to eq([city_schema, city_schema_id])
       end
     end
 

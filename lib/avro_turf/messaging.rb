@@ -239,7 +239,7 @@ class AvroTurf
       schema_data = @registry.check(subject || schema.fullname, schema)
       raise SchemaNotFoundError.new("Schema with structure: #{schema} not found on registry") unless schema_data
 
-      [schema, schema_data.fetch('id')]
+      [schema, schema_data["id"]]
     end
 
     # Schemas are registered under the full name of the top level Avro record
