@@ -16,6 +16,10 @@ class AvroTurf::DiskCache
 
     @schemas_by_subject_version_path = File.join(disk_path, 'schemas_by_subject_version.json')
     @schemas_by_subject_version = {}
+
+    @data_by_schema_path = File.join(disk_path, 'data_by_schema.json')
+    hash = read_from_disk_cache(@data_by_schema_path)
+    @data_by_schema = hash || {}
   end
 
   # override
@@ -40,6 +44,12 @@ class AvroTurf::DiskCache
     @ids_by_schema[key]
   end
 
+  # override to use a json serializable cache key
+  def lookup_data_by_schema(subject, schema)
+    key = "#{subject}#{schema}"
+    @data_by_schema[key]
+  end
+
   # override to use a json serializable cache key and update the file cache
   def store_by_schema(subject, schema, id)
     key = "#{subject}#{schema}"
@@ -47,6 +57,15 @@ class AvroTurf::DiskCache
 
     write_to_disk_cache(@ids_by_schema_path, @ids_by_schema)
     id
+  end
+
+  def store_data_by_schema(subject, schema, data)
+    return unless data
+
+    key = "#{subject}#{schema}"
+    @data_by_schema[key] = data
+    write_to_disk_cache(@data_by_schema_path, @data_by_schema)
+    data
   end
 
   # checks instance var (in-memory cache) for schema

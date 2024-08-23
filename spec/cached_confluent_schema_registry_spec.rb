@@ -6,6 +6,7 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
   let(:upstream) { instance_double(AvroTurf::ConfluentSchemaRegistry) }
   let(:registry) { described_class.new(upstream) }
   let(:id) { rand(999) }
+  let(:subject_name) { 'a_subject' }
   let(:schema) do
     {
       type: "record",
@@ -25,8 +26,6 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
   end
 
   describe "#register" do
-    let(:subject_name) { "a_subject" }
-
     it "caches the result of register" do
       # multiple calls return same result, with only one upstream call
       allow(upstream).to receive(:register).with(subject_name, schema).and_return(id)
@@ -36,8 +35,29 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
     end
   end
 
+  describe "#check" do
+    let(:schema_data) do
+      {
+        "subject" => subject_name,
+        "version" => 123,
+        "id" => id,
+        "schema" => schema
+      }
+    end
+
+    before do
+      allow(upstream).to receive(:check).with(subject_name, schema).and_return(schema_data)
+    end
+
+    it "caches the result of check" do
+      # multiple calls return same result, with only one upstream call
+      expect(registry.check(subject_name, schema)).to eq(schema_data)
+      expect(registry.check(subject_name, schema)).to eq(schema_data)
+      expect(upstream).to have_received(:check).exactly(1).times
+    end
+  end
+
   describe '#subject_version' do
-    let(:subject_name) { 'a_subject' }
     let(:version) { 1 }
     let(:schema_with_meta) do
       {

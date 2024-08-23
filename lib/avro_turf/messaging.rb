@@ -106,27 +106,33 @@ class AvroTurf
 
     # Encodes a message using the specified schema.
     #
-    # message     - The message that should be encoded. Must be compatible with
-    #               the schema.
-    # schema_name - The String name of the schema that should be used to encode
-    #               the data.
-    # namespace   - The namespace of the schema (optional).
-    # subject     - The subject name the schema should be registered under in
-    #               the schema registry (optional).
-    # version     - The integer version of the schema that should be used to decode
-    #               the data. Must match the schema used when encoding (optional).
-    # schema_id   - The integer id of the schema that should be used to encode
-    #               the data.
-    # validate    - The boolean for performing complete message validation before
-    #               encoding it, Avro::SchemaValidator::ValidationError with
-    #               a descriptive message will be raised in case of invalid message.
+    # message           - The message that should be encoded. Must be compatible with
+    #                     the schema.
+    # schema_name       - The String name of the schema that should be used to encode
+    #                     the data.
+    # namespace         - The namespace of the schema (optional).
+    # subject           - The subject name the schema should be registered under in
+    #                     the schema registry (optional).
+    # version           - The integer version of the schema that should be used to decode
+    #                     the data. Must match the schema used when encoding (optional).
+    # schema_id         - The integer id of the schema that should be used to encode
+    #                     the data.
+    # validate          - The boolean for performing complete message validation before
+    #                     encoding it, Avro::SchemaValidator::ValidationError with
+    #                     a descriptive message will be raised in case of invalid message.
+    # register_schemas  - The boolean that indicates whether or not the schema should be
+    #                     registered in case it does not exist, or if it should be fetched
+    #                     from the registry without registering it (register_schemas: false).
     #
     # Returns the encoded data as a String.
-    def encode(message, schema_name: nil, namespace: @namespace, subject: nil, version: nil, schema_id: nil, validate: false)
+    def encode(message, schema_name: nil, namespace: @namespace, subject: nil, version: nil, schema_id: nil, validate: false,
+               register_schemas: true)
       schema, schema_id = if schema_id
         fetch_schema_by_id(schema_id)
       elsif subject && version
         fetch_schema(subject: subject, version: version)
+      elsif schema_name && !register_schemas
+        fetch_schema_by_body(subject: subject, schema_name: schema_name, namespace: namespace)
       elsif schema_name
         register_schema(subject: subject, schema_name: schema_name, namespace: namespace)
       else
@@ -226,6 +232,14 @@ class AvroTurf
         Avro::Schema.parse(schema_json)
       end
       [schema, schema_id]
+    end
+
+    def fetch_schema_by_body(schema_name:, subject: nil, namespace: nil)
+      schema = @schema_store.find(schema_name, namespace)
+      schema_data = @registry.check(subject || schema.fullname, schema)
+      raise SchemaNotFoundError.new("Schema with structure: #{schema} not found on registry") unless schema_data
+
+      [schema, schema_data["id"]]
     end
 
     # Schemas are registered under the full name of the top level Avro record

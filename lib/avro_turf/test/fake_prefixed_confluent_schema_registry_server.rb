@@ -64,7 +64,8 @@ class FakePrefixedConfluentSchemaRegistryServer < FakeConfluentSchemaRegistrySer
 
     # Note: this does not actually handle the same schema registered under
     # multiple subjects
-    schema_id = SCHEMAS.index(schema)
+    context, _subject = parse_qualified_subject(params[:subject])
+    schema_id = SCHEMAS[context].index(schema)
 
     halt(404, SCHEMA_NOT_FOUND) unless schema_id
 
