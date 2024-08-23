@@ -93,8 +93,8 @@ avro.encode({ "name" => "Jane", "age" => 28 }, schema_name: "person")
 # Avro::SchemaValidator::ValidationError exception
 avro.encode({ "titl" => "hello, world" }, schema_name: "person", validate: true)
 
-# If you do not want to register the schema in case it does not exist, you can pass the read_only option
-avro.encode({ "name" => "Jane", "age" => 28 }, schema_name: "person", read_only: true)
+# If you do not want to register the schema in case it does not exist, you can pass the register_schemas option as false
+avro.encode({ "name" => "Jane", "age" => 28 }, schema_name: "person", register_schemas: false)
 ```
 
 ### Inter-schema references

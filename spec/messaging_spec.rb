@@ -111,13 +111,13 @@ describe AvroTurf::Messaging do
       expect { avro.encode(message, subject: 'missing', version: 1) }.to raise_error(AvroTurf::SchemaNotFoundError)
     end
 
-    it 'raises AvroTurf::SchemaNotFoundError when the schema does not exist on registry and read_only true' do
-      expect { avro.encode(city_message, schema_name: 'city', read_only: true) }.
+    it 'raises AvroTurf::SchemaNotFoundError when the schema does not exist on registry and register_schemas false' do
+      expect { avro.encode(city_message, schema_name: 'city', register_schemas: false) }.
         to raise_error(AvroTurf::SchemaNotFoundError, "Schema with structure: #{city_schema} not found on registry")
     end
 
-    it 'encodes with read_only true when the schema exists on the registry' do
-      data = avro.encode(message, schema_name: 'person', read_only: true)
+    it 'encodes with register_schemas false when the schema exists on the registry' do
+      data = avro.encode(message, schema_name: 'person', register_schemas: false)
       expect(avro.decode(data, schema_name: 'person')).to eq message
     end
 
