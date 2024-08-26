@@ -1,3 +1,7 @@
+on:
+  push:
+    branches:
+    - master
 jobs:
   push:
     name: Push gem to RubyGems.org
