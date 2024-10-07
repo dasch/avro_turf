@@ -101,6 +101,18 @@ class AvroTurf::ConfluentSchemaRegistry
     data.fetch('is_compatible', false) unless data.has_key?('error_code')
   end
 
+  # Check for specific schema compatibility issues
+  # Returns:
+  # - nil if the subject or version does not exist
+  # - a list of compatibility issues
+  # https://docs.confluent.io/platform/current/schema-registry/develop/api.html#sr-api-compatibility
+  def compatibility_issues(subject, schema, version = 'latest')
+    data = post("/compatibility/subjects/#{@schema_context_prefix}#{subject}/versions/#{version}",
+      expects: [200, 404], body: { schema: schema.to_s }.to_json, query: { verbose: true }, idempotent: true)
+
+    data.fetch('messages', []) unless data.has_key?('error_code')
+  end
+
   # Get global config
   def global_config
     get("/config", idempotent: true)
