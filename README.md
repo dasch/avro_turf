@@ -254,6 +254,9 @@ registry = AvroTurf::ConfluentSchemaRegistry.new("http://my-registry:8081/")
 
 # Returns true if the schema is compatible, nil if the subject or version is not registered, and false if incompatible.
 registry.compatible?("person", schema)
+
+# Returns an array of any breaking changes, nil if the subject or version is not registered
+registry.compatibility_issues("person", schema)
 ```
 
 The ConfluentSchemaRegistry client can also change the global compatibility level or the compatibility level for an individual subject using the [Config API](http://docs.confluent.io/3.1.2/schema-registry/docs/api.html#config):

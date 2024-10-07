@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add `compatibility_issues` method to `ConfluentSchemaRegistry` to debug compatibility issues between a schema versions for a given subject (#212)
+
 ## v1.17.0
 
 - Add `register_schemas` option to `encode` method [#210](https://github.com/dasch/avro_turf/pull/210)
