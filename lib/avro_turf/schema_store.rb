@@ -92,6 +92,6 @@ class AvroTurf::SchemaStore
 
   def build_schema_path(fullname)
     *namespace, schema_name = fullname.split(".")
-    schema_path = File.join(@path, *namespace, schema_name + ".avsc")
+    File.join(@path, *namespace, "#{schema_name}.avsc")
   end
 end
