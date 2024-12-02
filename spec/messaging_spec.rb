@@ -1,7 +1,5 @@
 require 'webmock/rspec'
 require 'avro_turf/messaging'
-require 'avro_turf/test/fake_confluent_schema_registry_server'
-require 'avro_turf/test/fake_prefixed_confluent_schema_registry_server'
 
 describe AvroTurf::Messaging do
   let(:registry_url) { "http://registry.example.com" }
@@ -61,8 +59,8 @@ describe AvroTurf::Messaging do
   end
 
   before do
-    stub_request(:any, /^#{registry_url}/).to_rack(FakeConfluentSchemaRegistryServer)
-    FakeConfluentSchemaRegistryServer.clear
+    stub_request(:any, /^#{registry_url}/).to_rack(AuthorizedFakeConfluentSchemaRegistryServer)
+    AuthorizedFakeConfluentSchemaRegistryServer.clear
   end
 
   before do
@@ -474,8 +472,8 @@ describe AvroTurf::Messaging do
     }
 
     before do
-      stub_request(:any, /^#{registry_url}/).to_rack(FakePrefixedConfluentSchemaRegistryServer)
-      FakePrefixedConfluentSchemaRegistryServer.clear
+      stub_request(:any, /^#{registry_url}/).to_rack(AuthorizedFakePrefixedConfluentSchemaRegistryServer)
+      AuthorizedFakePrefixedConfluentSchemaRegistryServer.clear
     end
 
     it_behaves_like "encoding and decoding with the schema from schema store"

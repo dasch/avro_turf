@@ -1,10 +1,9 @@
 require 'rack/test'
-require 'avro_turf/test/fake_confluent_schema_registry_server'
 
 describe FakeConfluentSchemaRegistryServer do
   include Rack::Test::Methods
 
-  def app; described_class; end
+  def app; AuthorizedFakeConfluentSchemaRegistryServer; end
 
   describe 'POST /subjects/:subject/versions' do
     it 'returns the same schema ID when invoked with same schema and same subject' do
