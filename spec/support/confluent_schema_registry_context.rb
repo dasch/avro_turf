@@ -26,9 +26,9 @@ shared_examples_for "a confluent schema registry client" do |schema_context: nil
   before do
     stub_request(:any, /^#{registry_url}/)
       .with(headers: headers)
-      .to_rack(FakeConfluentSchemaRegistryServer)
+      .to_rack(AuthorizedFakeConfluentSchemaRegistryServer)
 
-    FakeConfluentSchemaRegistryServer.clear
+    AuthorizedFakeConfluentSchemaRegistryServer.clear
   end
 
   describe "#register and #fetch" do

@@ -273,17 +273,23 @@ fake schema registry server depends on Sinatra but it is _not_ listed as a runti
 dependency for AvroTurf. Sinatra must be added to your Gemfile or gemspec in order
 to use the fake server.
 
+Given the recent update in `sinatra` to fix [CVE-2024-21510](https://github.com/advisories/GHSA-hxx2-7vcw-mqr3) that included a new `HostAuthorization` middleware, the `FakeConfluentSchemaRegistryServer` is provided as a base implementation that has to be inherited into a new class and configured by the user so requests are properly authorised to the test registry host.
+
 Example using RSpec:
 
 ```ruby
 require 'avro_turf/test/fake_confluent_schema_registry_server'
 require 'webmock/rspec'
 
+class AuthorizedFakeConfluentSchemaRegistryServer < FakeConfluentSchemaRegistryServer
+  set :host_authentication, permitted_hosts: ['registry.example.com']
+end
+
 # within an example
 let(:registry_url) { "http://registry.example.com" }
 before do
-  stub_request(:any, /^#{registry_url}/).to_rack(FakeConfluentSchemaRegistryServer)
-  FakeConfluentSchemaRegistryServer.clear
+  stub_request(:any, /^#{registry_url}/).to_rack(AuthorizedFakeConfluentSchemaRegistryServer)
+  AuthorizedFakeConfluentSchemaRegistryServer.clear
 end
 
 # Messaging objects created with the same registry_url will now use the fake server.
