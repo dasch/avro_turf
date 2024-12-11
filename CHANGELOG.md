@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v1.18.0
+
 - Add `compatibility_issues` method to `ConfluentSchemaRegistry` to debug compatibility issues between a schema versions for a given subject (#212)
 - Update tests to support `sinatra` version 4.1 that includes a new `host_authorization` parameter to permit only authorized requests
 
