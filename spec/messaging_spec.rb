@@ -377,6 +377,18 @@ describe AvroTurf::Messaging do
       it 'gets schema from registry' do
         expect(subject).to eq([schema, schema_id])
       end
+
+      context "with an incompatible schema type" do
+        let(:response) { {'id' => schema_id, 'schema' => 'blah', 'schemaType' => schema_type } }
+        let(:schema_type) { 'PROTOBUF' }
+
+        it 'raises IncompatibleSchemaError' do
+          expect { subject }.to raise_error(
+            AvroTurf::IncompatibleSchemaError,
+            "The #{schema_type} schema for #{subj} is incompatible."
+          )
+        end
+      end
     end
 
     context 'using fetch_schema_by_id' do

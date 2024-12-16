@@ -10,6 +10,7 @@ require 'avro_turf/schema_registry'
 require 'avro_turf/cached_schema_registry'
 
 class AvroTurf
+  class IncompatibleSchemaError < StandardError; end
 
   # Provides a way to encode and decode messages without having to embed schemas
   # in the encoded data. Confluent's Schema Registry[1] is used to register
@@ -221,6 +222,10 @@ class AvroTurf
     def fetch_schema(subject:, version: 'latest')
       schema_data = @registry.subject_version(subject, version)
       schema_id = schema_data.fetch('id')
+      schema_type = schema_data['schemaType']
+      if schema_type && schema_type != "AVRO"
+        raise IncompatibleSchemaError, "The #{schema_type} schema for #{subject} is incompatible."
+      end
       schema = Avro::Schema.parse(schema_data.fetch('schema'))
       [schema, schema_id]
     end
