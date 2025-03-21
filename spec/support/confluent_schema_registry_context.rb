@@ -18,7 +18,7 @@ shared_examples_for "a confluent schema registry client" do |schema_context: nil
     {
       'Accept'=>'*/*',
       'Content-Type'=> AvroTurf::ConfluentSchemaRegistry::CONTENT_TYPE,
-      'Host'=> "#{URI.parse(registry_url).host}:80",
+      'Host'=> "#{URI.parse(registry_url).host}",
       'User-Agent'=> "excon/#{Excon::VERSION}"
     }
   end
