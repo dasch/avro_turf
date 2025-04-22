@@ -28,8 +28,7 @@ class AvroTurf::ConfluentSchemaRegistry
       "Content-Type" => CONTENT_TYPE
     )
     headers[:proxy] = proxy unless proxy.nil?
-    @connection = Excon.new(
-      url,
+    params = {
       headers: headers,
       user: user,
       password: password,
@@ -39,8 +38,12 @@ class AvroTurf::ConfluentSchemaRegistry
       client_key_pass: client_key_pass,
       client_cert_data: client_cert_data,
       client_key_data: client_key_data,
-      connect_timeout: connect_timeout,
       resolv_resolver: resolv_resolver
+    }
+    params.merge!({ connect_timeout: connect_timeout }) if connect_timeout
+    @connection = Excon.new(
+      url,
+      params
     )
   end
 
