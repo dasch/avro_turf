@@ -78,7 +78,8 @@ class AvroTurf
       client_cert_data: nil,
       client_key_data: nil,
       connect_timeout: nil,
-      resolv_resolver: nil
+      resolv_resolver: nil,
+      retry_limit: nil
     )
       @logger = logger || Logger.new($stderr)
       @namespace = namespace
@@ -99,7 +100,8 @@ class AvroTurf
           client_key_data: client_key_data,
           path_prefix: registry_path_prefix,
           connect_timeout: connect_timeout,
-          resolv_resolver: resolv_resolver
+          resolv_resolver: resolv_resolver,
+          retry_limit: retry_limit
         )
       )
       @schemas_by_id = {}
