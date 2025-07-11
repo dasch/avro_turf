@@ -219,7 +219,7 @@ class AvroTurf
     end
 
     # Providing subject and version to determine the schema,
-    # which skips the auto registeration of schema on the schema registry.
+    # which skips the auto registration of schema on the schema registry.
     # Fetch the schema from registry with the provided subject name and version.
     def fetch_schema(subject:, version: 'latest')
       schema_data = @registry.subject_version(subject, version)
