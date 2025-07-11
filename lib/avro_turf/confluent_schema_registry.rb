@@ -28,11 +28,11 @@ class AvroTurf::ConfluentSchemaRegistry
     headers = Excon.defaults[:headers].merge(
       "Content-Type" => CONTENT_TYPE
     )
-    headers[:proxy] = proxy unless proxy.nil?
     params = {
       headers: headers,
       user: user,
       password: password,
+      proxy: proxy,
       ssl_ca_file: ssl_ca_file,
       client_cert: client_cert,
       client_key: client_key,

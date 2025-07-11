@@ -539,6 +539,30 @@ describe AvroTurf::Messaging do
     end
   end
 
+  context 'with a proxy' do
+    let(:proxy_url) { 'http://proxy.example.com' }
+    let(:avro) {
+      AvroTurf::Messaging.new(
+        registry_url: registry_url,
+        schemas_path: "spec/schemas",
+        logger: logger,
+        client_cert: client_cert,
+        client_key: client_key,
+        client_key_pass: client_key_pass,
+        proxy: proxy_url
+      )
+    }
+
+    it_behaves_like "encoding and decoding with the schema from schema store"
+    it_behaves_like 'encoding and decoding with the schema from registry'
+    it_behaves_like 'encoding and decoding with the schema_id from registry'
+
+    it 'passes the proxy setting to Excon' do
+      expect(Excon).to receive(:new).with(anything, hash_including(proxy: proxy_url)).and_call_original
+      avro
+    end
+  end
+
 
   context 'with a custom domain name resolver' do
     let(:resolv_resolver) { Resolv.new([Resolv::Hosts.new, Resolv::DNS.new(nameserver: ['127.0.0.1', '127.0.0.1'])]) }
