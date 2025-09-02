@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v1.19.0
+
+- Loosen excon dependency to allow 1.x (#220)
+
 ## v1.18.0
 
 - Add `compatibility_issues` method to `ConfluentSchemaRegistry` to debug compatibility issues between a schema versions for a given subject (#212)
