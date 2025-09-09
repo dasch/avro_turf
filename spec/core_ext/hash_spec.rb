@@ -5,6 +5,6 @@ describe Hash, "#as_avro" do
     x = double(as_avro: "x")
     y = double(as_avro: "y")
 
-    expect({ x => y }.as_avro).to eq({ "x" => "y" })
+    expect({x => y}.as_avro).to eq({"x" => "y"})
   end
 end

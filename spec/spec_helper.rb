@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require 'bundler/setup'
-require 'logger'
-require 'json_spec'
-require 'pp' # Require pp before fakefs to fix TypeError: superclass mismatch for class File
-require 'fakefs/spec_helpers'
-require 'avro_turf'
+require "bundler/setup"
+require "logger"
+require "json_spec"
+require "pp" # Require pp before fakefs to fix TypeError: superclass mismatch for class File
+require "fakefs/spec_helpers"
+require "avro_turf"
 
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 
@@ -14,9 +14,7 @@ module Helpers
     file = File.join("spec/schemas", path)
     dir = File.dirname(file)
     FileUtils.mkdir_p(dir)
-    File.open(file, "w") do |f|
-      f.write(content)
-    end
+    File.write(file, content)
   end
 
   def store_cache(path, hash)

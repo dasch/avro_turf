@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'webmock/rspec'
+require "webmock/rspec"
 
 # This spec verifies the monkey-patch that we have to apply until the avro
 # gem releases a fix for bug AVRO-1848:
@@ -15,16 +15,15 @@ describe Avro::Schema do
         ]
       }
     SCHEMA
-    
+
     expect(schema.to_avro).to eq({
-      'type' => 'record', 'name' => 'Record', 'namespace' => 'my.name.space',
-      'fields' => [
-        {'name' => 'is_usable', 'type' => 'boolean', 'default' => false}
+      "type" => "record", "name" => "Record", "namespace" => "my.name.space",
+      "fields" => [
+        {"name" => "is_usable", "type" => "boolean", "default" => false}
       ]
     })
   end
 end
-
 
 describe Avro::IO::DatumReader do
   let(:writer_schema) do
@@ -55,7 +54,7 @@ describe Avro::IO::DatumReader do
     stream = StringIO.new
     writer = Avro::IO::DatumWriter.new(writer_schema)
     encoder = Avro::IO::BinaryEncoder.new(stream)
-    writer.write({ 'one' => 'first' }, encoder)
+    writer.write({"one" => "first"}, encoder)
     encoded = stream.string
 
     stream = StringIO.new(encoded)

@@ -6,8 +6,8 @@
 
 $LOAD_PATH.unshift(File.expand_path("../lib", File.dirname(__FILE__)))
 
-require 'benchmark'
-require 'avro_turf'
+require "benchmark"
+require "avro_turf"
 
 # Number of iterations per run.
 N = 10_000

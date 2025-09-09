@@ -1,19 +1,19 @@
 # frozen_string_literal: true
 
-require 'webmock/rspec'
-require 'avro_turf/cached_confluent_schema_registry'
-require 'avro_turf/test/fake_confluent_schema_registry_server'
+require "webmock/rspec"
+require "avro_turf/cached_confluent_schema_registry"
+require "avro_turf/test/fake_confluent_schema_registry_server"
 
 describe AvroTurf::CachedConfluentSchemaRegistry do
   let(:upstream) { instance_double(AvroTurf::ConfluentSchemaRegistry) }
   let(:registry) { described_class.new(upstream) }
   let(:id) { rand(999) }
-  let(:subject_name) { 'a_subject' }
+  let(:subject_name) { "a_subject" }
   let(:schema) do
     {
       type: "record",
       name: "person",
-      fields: [{ name: "name", type: "string" }]
+      fields: [{name: "name", type: "string"}]
     }.to_json
   end
 
@@ -59,7 +59,7 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
     end
   end
 
-  describe '#subject_version' do
+  describe "#subject_version" do
     let(:version) { 1 }
     let(:schema_with_meta) do
       {
@@ -70,7 +70,7 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
       }
     end
 
-    it 'caches the result of subject_version' do
+    it "caches the result of subject_version" do
       allow(upstream).to receive(:subject_version).with(subject_name, version).and_return(schema_with_meta)
       registry.subject_version(subject_name, version)
       registry.subject_version(subject_name, version)

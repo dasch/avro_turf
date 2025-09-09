@@ -58,7 +58,7 @@ describe AvroTurf do
       end
     end
 
-    context 'when using nested schemas' do
+    context "when using nested schemas" do
       before do
         define_schema "post.avsc", <<-AVSC
           {
@@ -140,7 +140,6 @@ describe AvroTurf do
         expect(avro.decode(encoded_data)).to eq(data)
       end
     end
-
   end
 
   describe "#decode" do
@@ -181,22 +180,22 @@ describe AvroTurf do
         }
       AVSC
 
-      encoded_data = avro.encode({ "x" => 42, "y" => 13 }, schema_name: "point")
+      encoded_data = avro.encode({"x" => 42, "y" => 13}, schema_name: "point")
       reader_avro = AvroTurf.new(schemas_path: "spec/schemas/reader")
 
-      expect(reader_avro.decode(encoded_data, schema_name: "point")).to eq({ "x" => 42 })
+      expect(reader_avro.decode(encoded_data, schema_name: "point")).to eq({"x" => 42})
     end
   end
 
   describe "#decode_all" do
     context "when data contains multiple entries" do
-      let(:encoded_data) {  "Obj\u0001\u0004\u0014avro.codec\bnull\u0016avro.schema\xB6\u0004[{\"type\": \"record\", \"name\": \"address\", \"fields\": [{\"type\": \"string\", \"name\": \"street\"}, {\"type\": \"string\", \"name\": \"city\"}]}, {\"type\": \"record\", \"name\": \"person\", \"fields\": [{\"type\": \"string\", \"name\": \"name\"}, {\"type\": \"int\", \"name\": \"age\"}, {\"type\": \"address\", \"name\": \"address\"}]}]\u0000\xF9u\x84\xA1c\u0010\x82B\xE2\xCF\xF1\x98\xF7\xF1JH\u0004\x96\u0001\u0002\u0014Python🐍\x80\u0004\u0018Green Street\u001ASan Francisco\u0002\u0010Mojo🐍\u0002\u0016Blue Street\u0014Saturn🪐\xF9u\x84\xA1c\u0010\x82B\xE2\xCF\xF1\x98\xF7\xF1JH" } 
+      let(:encoded_data) { "Obj\u0001\u0004\u0014avro.codec\bnull\u0016avro.schema\xB6\u0004[{\"type\": \"record\", \"name\": \"address\", \"fields\": [{\"type\": \"string\", \"name\": \"street\"}, {\"type\": \"string\", \"name\": \"city\"}]}, {\"type\": \"record\", \"name\": \"person\", \"fields\": [{\"type\": \"string\", \"name\": \"name\"}, {\"type\": \"int\", \"name\": \"age\"}, {\"type\": \"address\", \"name\": \"address\"}]}]\u0000\xF9u\x84\xA1c\u0010\x82B\xE2\xCF\xF1\x98\xF7\xF1JH\u0004\x96\u0001\u0002\u0014Python🐍\x80\u0004\u0018Green Street\u001ASan Francisco\u0002\u0010Mojo🐍\u0002\u0016Blue Street\u0014Saturn🪐\xF9u\x84\xA1c\u0010\x82B\xE2\xCF\xF1\x98\xF7\xF1JH" }
 
       it "returns array of entries decoded using the inlined writer's schema " do
         expect(avro.decode_all(encoded_data).entries).to eq(
           [
-            {"name"=>"Python🐍", "age"=>256, "address"=>{"street"=>"Green Street", "city"=>"San Francisco"}},
-            {"name"=>"Mojo🐍", "age"=>1, "address"=>{"street"=>"Blue Street", "city"=>"Saturn🪐"}}
+            {"name" => "Python🐍", "age" => 256, "address" => {"street" => "Green Street", "city" => "San Francisco"}},
+            {"name" => "Mojo🐍", "age" => 1, "address" => {"street" => "Blue Street", "city" => "Saturn🪐"}}
           ]
         )
       end
@@ -221,8 +220,8 @@ describe AvroTurf do
                   .decode_all(encoded_data, schema_name: "person").entries
         ).to eq(
           [
-            {"name"=>"Python🐍", "age"=>256, "fav_color"=>"red🟥"},
-            {"name"=>"Mojo🐍", "age"=>1, "fav_color"=>"red🟥"}
+            {"name" => "Python🐍", "age" => 256, "fav_color" => "red🟥"},
+            {"name" => "Mojo🐍", "age" => 1, "fav_color" => "red🟥"}
           ]
         )
       end
@@ -251,7 +250,7 @@ describe AvroTurf do
       end
 
       context "with a valid message" do
-        let(:message) { { "full_name" => "John Doe" } }
+        let(:message) { {"full_name" => "John Doe"} }
 
         it "does not raise any error" do
           define_schema "message.avsc", <<-AVSC
@@ -269,7 +268,7 @@ describe AvroTurf do
       end
 
       context "when message has wrong type" do
-        let(:message) { { "full_name" => 123 } }
+        let(:message) { {"full_name" => 123} }
 
         it "raises Avro::SchemaValidator::ValidationError with a message about type mismatch" do
           define_schema "message.avsc", <<-AVSC
@@ -287,7 +286,7 @@ describe AvroTurf do
       end
 
       context "when message contains extra fields (typo in key)" do
-        let(:message) { { "fulll_name" => "John Doe" } }
+        let(:message) { {"fulll_name" => "John Doe"} }
 
         it "raises Avro::SchemaValidator::ValidationError with a message about extra field" do
           define_schema "message.avsc", <<-AVSC
@@ -305,13 +304,12 @@ describe AvroTurf do
       end
 
       context "when the `fail_on_extra_fields` validation option is disabled" do
-        let(:message) { { "full_name" => "John Doe", "first_name" => "John", "last_name" => "Doe" } }
+        let(:message) { {"full_name" => "John Doe", "first_name" => "John", "last_name" => "Doe"} }
         subject(:encode_to_stream) do
           stream = StringIO.new
           avro.encode_to_stream(message, stream: stream, schema_name: "message",
-                                validate: true,
-                                validate_options: { recursive: true, encoded: false, fail_on_extra_fields: false }
-          )
+            validate: true,
+            validate_options: {recursive: true, encoded: false, fail_on_extra_fields: false})
         end
 
         it "should not raise Avro::SchemaValidator::ValidationError with a message about extra field" do
@@ -354,8 +352,8 @@ describe AvroTurf do
 
       expect(avro.decode_all_from_stream(stream).entries).to eq(
         [
-          {"name"=>"Python🐍", "age"=>256, "address"=>{"street"=>"Green Street", "city"=>"San Francisco"}},
-          {"name"=>"Mojo🐍", "age"=>1, "address"=>{"street"=>"Blue Street", "city"=>"Saturn🪐"}}
+          {"name" => "Python🐍", "age" => 256, "address" => {"street" => "Green Street", "city" => "San Francisco"}},
+          {"name" => "Mojo🐍", "age" => 1, "address" => {"street" => "Blue Street", "city" => "Saturn🪐"}}
         ]
       )
     end
@@ -392,7 +390,7 @@ describe AvroTurf do
         }
       AVSC
 
-      datum = { message: "hello" }
+      datum = {message: "hello"}
       expect(avro.valid?(datum, schema_name: "postcard")).to eq true
     end
 
@@ -425,7 +423,7 @@ describe AvroTurf do
     end
 
     context "when message contains extra fields (typo in key)" do
-      let(:message) { { "fulll_name" => "John Doe" } }
+      let(:message) { {"fulll_name" => "John Doe"} }
 
       before do
         define_schema "message.avsc", <<-AVSC
@@ -440,16 +438,17 @@ describe AvroTurf do
       end
 
       it "is valid" do
-        datum = { "full_name" => "John Doe", "extra" => "extra" }
+        datum = {"full_name" => "John Doe", "extra" => "extra"}
         expect(avro.valid?(datum, schema_name: "message")).to eq true
       end
 
       it "is invalid when passing fail_on_extra_fields" do
-        datum = { "full_name" => "John Doe", "extra" => "extra" }
+        datum = {"full_name" => "John Doe", "extra" => "extra"}
         validate_options = {
           recursive: true,
           encoded: false,
-          fail_on_extra_fields: true }
+          fail_on_extra_fields: true
+        }
         valid = avro.valid?(datum, schema_name: "message", validate_options: validate_options)
         expect(valid).to eq false
       end

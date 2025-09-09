@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
-require 'avro_turf/confluent_schema_registry'
-require 'avro_turf/in_memory_cache'
-require 'avro_turf/disk_cache'
+require "avro_turf/confluent_schema_registry"
+require "avro_turf/in_memory_cache"
+require "avro_turf/disk_cache"
 
 # Caches registrations and lookups to the schema registry in memory.
 class AvroTurf::CachedConfluentSchemaRegistry
-
   # Instantiate a new CachedConfluentSchemaRegistry instance with the given configuration.
   # By default, uses a provided InMemoryCache to prevent repeated calls to the upstream registry.
   #
@@ -19,8 +18,8 @@ class AvroTurf::CachedConfluentSchemaRegistry
   end
 
   # Delegate the following methods to the upstream
-  %i(subjects subject_versions schema_subject_versions compatible?
-     global_config update_global_config subject_config update_subject_config).each do |name|
+  %i[subjects subject_versions schema_subject_versions compatible?
+    global_config update_global_config subject_config update_subject_config].each do |name|
     define_method(name) do |*args|
       instance_variable_get(:@upstream).send(name, *args)
     end
@@ -38,8 +37,8 @@ class AvroTurf::CachedConfluentSchemaRegistry
     @cache.lookup_by_schema(subject, schema) || @cache.store_by_schema(subject, schema, @upstream.register(subject, schema))
   end
 
-  def subject_version(subject, version = 'latest')
-    return @upstream.subject_version(subject, version) if version == 'latest'
+  def subject_version(subject, version = "latest")
+    return @upstream.subject_version(subject, version) if version == "latest"
 
     @cache.lookup_by_version(subject, version) ||
       @cache.store_by_version(subject, version, @upstream.subject_version(subject, version))

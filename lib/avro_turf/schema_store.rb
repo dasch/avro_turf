@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
 class AvroTurf::SchemaStore
-
   def initialize(path: nil)
     @path = path or raise "Please specify a schema path"
-    @schemas = Hash.new
+    @schemas = {}
     @mutex = Mutex.new
   end
 

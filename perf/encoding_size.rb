@@ -6,8 +6,8 @@
 
 $LOAD_PATH.unshift(File.expand_path("../lib", File.dirname(__FILE__)))
 
-require 'benchmark'
-require 'avro_turf'
+require "benchmark"
+require "avro_turf"
 
 sizes = [1, 10, 100, 1_000, 10_000]
 avro = AvroTurf.new(schemas_path: File.dirname(__FILE__))

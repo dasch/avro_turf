@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
-require 'logger'
-require 'avro_turf'
-require 'avro_turf/schema_store'
-require 'avro_turf/confluent_schema_registry'
-require 'avro_turf/cached_confluent_schema_registry'
+require "logger"
+require "avro_turf"
+require "avro_turf/schema_store"
+require "avro_turf/confluent_schema_registry"
+require "avro_turf/cached_confluent_schema_registry"
 
 # For back-compatibility require the aliases along with the Messaging API.
 # These names are deprecated and will be removed in a future release.
-require 'avro_turf/schema_registry'
-require 'avro_turf/cached_schema_registry'
+require "avro_turf/schema_registry"
+require "avro_turf/cached_schema_registry"
 
 class AvroTurf
   class IncompatibleSchemaError < StandardError; end
@@ -131,7 +131,7 @@ class AvroTurf
     #
     # Returns the encoded data as a String.
     def encode(message, schema_name: nil, namespace: @namespace, subject: nil, version: nil, schema_id: nil, validate: false,
-               register_schemas: true)
+      register_schemas: true)
       schema, schema_id = if schema_id
         fetch_schema_by_id(schema_id)
       elsif subject && version
@@ -141,7 +141,7 @@ class AvroTurf
       elsif schema_name
         register_schema(subject: subject, schema_name: schema_name, namespace: namespace)
       else
-        raise ArgumentError.new('Neither schema_name nor schema_id nor subject + version provided to determine the schema.')
+        raise ArgumentError.new("Neither schema_name nor schema_id nor subject + version provided to determine the schema.")
       end
 
       if validate
@@ -205,7 +205,7 @@ class AvroTurf
       end
 
       # The schema id is a 4-byte big-endian integer.
-      schema_id = decoder.read(4).unpack("N").first
+      schema_id = decoder.read(4).unpack1("N")
 
       writers_schema = @schemas_by_id.fetch(schema_id) do
         schema_json = @registry.fetch(schema_id)
@@ -223,14 +223,14 @@ class AvroTurf
     # Providing subject and version to determine the schema,
     # which skips the auto registration of schema on the schema registry.
     # Fetch the schema from registry with the provided subject name and version.
-    def fetch_schema(subject:, version: 'latest')
+    def fetch_schema(subject:, version: "latest")
       schema_data = @registry.subject_version(subject, version)
-      schema_id = schema_data.fetch('id')
-      schema_type = schema_data['schemaType']
+      schema_id = schema_data.fetch("id")
+      schema_type = schema_data["schemaType"]
       if schema_type && schema_type != "AVRO"
         raise IncompatibleSchemaError, "The #{schema_type} schema for #{subject} is incompatible."
       end
-      schema = Avro::Schema.parse(schema_data.fetch('schema'))
+      schema = Avro::Schema.parse(schema_data.fetch("schema"))
       [schema, schema_id]
     end
 
