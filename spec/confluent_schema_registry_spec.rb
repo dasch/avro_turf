@@ -29,6 +29,7 @@ describe AvroTurf::ConfluentSchemaRegistry do
       let(:registry) {
         described_class.new(
           registry_url,
+          logger: logger,
           user: user,
           password: password,
         )
@@ -41,6 +42,7 @@ describe AvroTurf::ConfluentSchemaRegistry do
       let(:registry) {
         described_class.new(
           registry_url,
+          logger: logger,
           user: user,
           password: password,
           connect_timeout: connect_timeout
@@ -54,6 +56,7 @@ describe AvroTurf::ConfluentSchemaRegistry do
       let(:registry) {
         described_class.new(
           registry_url,
+          logger: logger,
           schema_context: 'other',
           user: user,
           password: password,
