@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # A cache for the CachedConfluentSchemaRegistry.
 # Extends the InMemoryCache to provide a write-thru to disk for persistent cache.
 class AvroTurf::DiskCache

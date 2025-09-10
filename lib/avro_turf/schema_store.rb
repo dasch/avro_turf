@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AvroTurf::SchemaStore
 
   def initialize(path: nil)

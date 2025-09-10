@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe AvroTurf do
   let(:avro) { AvroTurf.new(schemas_path: "spec/schemas/") }
 

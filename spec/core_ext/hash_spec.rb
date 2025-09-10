@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe Hash, "#as_avro" do
   it "coerces the keys and values to Avro" do
     x = double(as_avro: "x")

@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 #
 # Measures the encoded size of messages of increasing size.
 

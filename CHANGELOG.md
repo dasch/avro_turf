@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Ensure the gem works with frozen strings.
+
 ## v1.19.0
 
 - Loosen excon dependency to allow 1.x (#220)

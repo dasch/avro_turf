@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'avro_turf/confluent_schema_registry'
 require 'avro_turf/in_memory_cache'
 require 'avro_turf/disk_cache'

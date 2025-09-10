@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'webmock/rspec'
 
 # This spec verifies the monkey-patch that we have to apply until the avro

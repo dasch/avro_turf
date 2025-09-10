@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe Time, "#as_avro" do
   it "returns an ISO8601 string describing the time" do
     time = Time.now

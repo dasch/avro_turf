@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'avro_turf/core_ext/string'
 require 'avro_turf/core_ext/numeric'
 require 'avro_turf/core_ext/enumerable'

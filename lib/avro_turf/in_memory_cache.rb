@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # A cache for the CachedConfluentSchemaRegistry.
 # Simply stores the schemas and ids in in-memory hashes.
 class AvroTurf::InMemoryCache

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This shared example expects a registry variable to be defined
 # with an instance of the registry class being tested.
 shared_examples_for "a confluent schema registry client" do |schema_context: nil|

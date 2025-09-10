@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Hash
   def as_avro
     hsh = Hash.new
