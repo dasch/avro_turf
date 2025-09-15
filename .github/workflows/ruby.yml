@@ -19,5 +19,6 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
     - name: Build and test with RSpec
-      run: |
-        bundle exec rspec
+    - env:
+        RUBYOPT: '--enable=frozen-string-literal --debug=frozen-string-literal'
+      run: bundle exec rspec

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'logger'
 require 'avro_turf'
 require 'avro_turf/schema_store'

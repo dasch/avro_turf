@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe Enumerable, "#as_avro" do
   it "returns an array" do
     expect(Set.new.as_avro).to eq []
