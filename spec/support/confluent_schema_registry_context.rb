@@ -12,16 +12,16 @@ shared_examples_for "a confluent schema registry client" do |schema_context: nil
       type: "record",
       name: "person",
       fields: [
-        { name: "name", type: "string" }
+        {name: "name", type: "string"}
       ]
     }.to_json
   end
   let(:headers) do
     {
-      'Accept'=>'*/*',
-      'Content-Type'=> AvroTurf::ConfluentSchemaRegistry::CONTENT_TYPE,
-      'Host'=> "#{URI.parse(registry_url).host}",
-      'User-Agent'=> "excon/#{Excon::VERSION}"
+      "Accept" => "*/*",
+      "Content-Type" => AvroTurf::ConfluentSchemaRegistry::CONTENT_TYPE,
+      "Host" => URI.parse(registry_url).host.to_s,
+      "User-Agent" => "excon/#{Excon::VERSION}"
     }
   end
 
@@ -83,21 +83,21 @@ shared_examples_for "a confluent schema registry client" do |schema_context: nil
 
   describe "#schema_subject_versions" do
     it "returns subject and version for a schema id" do
-      schema_id1 = registry.register(subject_name, { type: :record, name: "r1", fields: [] }.to_json)
-      registry.register(subject_name, { type: :record, name: "r2", fields: [] }.to_json)
+      schema_id1 = registry.register(subject_name, {type: :record, name: "r1", fields: []}.to_json)
+      registry.register(subject_name, {type: :record, name: "r2", fields: []}.to_json)
       other_subject_name = "other#{subject_name}"
-      schema_id2 = registry.register(other_subject_name, { type: :record, name: "r2", fields: [] }.to_json)
+      schema_id2 = registry.register(other_subject_name, {type: :record, name: "r2", fields: []}.to_json)
       expect(registry.schema_subject_versions(schema_id1)).to eq([
-        'subject' => expected_subject_name,
-        'version' => 1
+        "subject" => expected_subject_name,
+        "version" => 1
       ])
       expect(registry.schema_subject_versions(schema_id2)).to include({
-        'subject' => expected_subject_name,
-        'version' => 2
-      },{
-        'subject' => with_schema_context_if_applicable(schema_context, other_subject_name),
-        'version' => 1
-      } )
+        "subject" => expected_subject_name,
+        "version" => 2
+      }, {
+        "subject" => with_schema_context_if_applicable(schema_context, other_subject_name),
+        "version" => 1
+      })
     end
 
     context "when the schema does not exist" do
@@ -113,14 +113,14 @@ shared_examples_for "a confluent schema registry client" do |schema_context: nil
     it "lists all the versions for the subject" do
       2.times do |n|
         registry.register(subject_name,
-                          { type: :record, name: "r#{n}", fields: [] }.to_json)
+          {type: :record, name: "r#{n}", fields: []}.to_json)
       end
       expect(registry.subject_versions(subject_name))
         .to be_json_eql((1..2).to_a.to_json)
     end
 
     context "when the subject does not exist" do
-      let(:subject_name) { 'missing' }
+      let(:subject_name) { "missing" }
 
       it "raises an error" do
         expect do
@@ -132,10 +132,10 @@ shared_examples_for "a confluent schema registry client" do |schema_context: nil
 
   describe "#subject_version" do
     let!(:schema_id1) do
-      registry.register(subject_name, { type: :record, name: "r0", fields: [] }.to_json)
+      registry.register(subject_name, {type: :record, name: "r0", fields: []}.to_json)
     end
     let!(:schema_id2) do
-      registry.register(subject_name, { type: :record, name: "r1", fields: [] }.to_json)
+      registry.register(subject_name, {type: :record, name: "r1", fields: []}.to_json)
     end
 
     let(:expected) do
@@ -143,7 +143,7 @@ shared_examples_for "a confluent schema registry client" do |schema_context: nil
         subject: expected_subject_name,
         version: 1,
         id: schema_id1,
-        schema: { type: :record, name: "r0", fields: [] }.to_json
+        schema: {type: :record, name: "r0", fields: []}.to_json
       }.to_json
     end
 
@@ -158,7 +158,7 @@ shared_examples_for "a confluent schema registry client" do |schema_context: nil
           subject: expected_subject_name,
           version: 2,
           id: schema_id2,
-          schema: { type: :record, name: "r1", fields: [] }.to_json
+          schema: {type: :record, name: "r1", fields: []}.to_json
         }.to_json
       end
 
@@ -171,7 +171,7 @@ shared_examples_for "a confluent schema registry client" do |schema_context: nil
     context "when the subject does not exist" do
       it "raises an error" do
         expect do
-          registry.subject_version('missing')
+          registry.subject_version("missing")
         end.to raise_error(Excon::Errors::NotFound)
       end
     end
@@ -226,7 +226,7 @@ shared_examples_for "a confluent schema registry client" do |schema_context: nil
 
   describe "#global_config" do
     let(:expected) do
-      { compatibility: 'BACKWARD' }.to_json
+      {compatibility: "BACKWARD"}.to_json
     end
 
     it "returns the global configuration" do
@@ -236,7 +236,7 @@ shared_examples_for "a confluent schema registry client" do |schema_context: nil
 
   describe "#update_global_config" do
     let(:config) do
-      { compatibility: 'FORWARD' }
+      {compatibility: "FORWARD"}
     end
     let(:expected) { config.to_json }
 
@@ -248,7 +248,7 @@ shared_examples_for "a confluent schema registry client" do |schema_context: nil
 
   describe "#subject_config" do
     let(:expected) do
-      { compatibility: 'BACKWARD' }.to_json
+      {compatibility: "BACKWARD"}.to_json
     end
 
     context "when the subject config is not set" do
@@ -259,7 +259,7 @@ shared_examples_for "a confluent schema registry client" do |schema_context: nil
 
     context "when the subject config is set" do
       let(:config) do
-        { compatibility: 'FULL' }
+        {compatibility: "FULL"}
       end
       let(:expected) { config.to_json }
 
@@ -275,7 +275,7 @@ shared_examples_for "a confluent schema registry client" do |schema_context: nil
 
   describe "#update_subject_config" do
     let(:config) do
-      { compatibility: 'NONE' }
+      {compatibility: "NONE"}
     end
     let(:expected) { config.to_json }
 
@@ -289,8 +289,8 @@ shared_examples_for "a confluent schema registry client" do |schema_context: nil
   # active_support/core_ext.
   def break_to_json(avro_schema)
     def avro_schema.to_json(*args)
-      instance_variables.each_with_object(Hash.new) do |ivar, result|
-        result[ivar.to_s.sub('@', '')] = instance_variable_get(ivar)
+      instance_variables.each_with_object({}) do |ivar, result|
+        result[ivar.to_s.sub("@", "")] = instance_variable_get(ivar)
       end.to_json(*args)
     end
   end

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'webmock/rspec'
-require 'avro_turf/confluent_schema_registry'
-require 'avro_turf/test/fake_confluent_schema_registry_server'
+require "webmock/rspec"
+require "avro_turf/confluent_schema_registry"
+require "avro_turf/test/fake_confluent_schema_registry_server"
 
 describe AvroTurf::ConfluentSchemaRegistry do
   let(:user) { "abc" }
@@ -12,7 +12,7 @@ describe AvroTurf::ConfluentSchemaRegistry do
   let(:client_key_pass) { "test client key password" }
   let(:connect_timeout) { 10 }
 
-  context 'authenticated by cert' do
+  context "authenticated by cert" do
     it_behaves_like "a confluent schema registry client" do
       let(:registry) {
         described_class.new(
@@ -26,20 +26,20 @@ describe AvroTurf::ConfluentSchemaRegistry do
     end
   end
 
-  context 'authenticated by basic auth' do
+  context "authenticated by basic auth" do
     it_behaves_like "a confluent schema registry client" do
       let(:registry) {
         described_class.new(
           registry_url,
           logger: logger,
           user: user,
-          password: password,
+          password: password
         )
       }
     end
   end
 
-  context 'with connect_timeout' do
+  context "with connect_timeout" do
     it_behaves_like "a confluent schema registry client" do
       let(:registry) {
         described_class.new(
@@ -53,13 +53,13 @@ describe AvroTurf::ConfluentSchemaRegistry do
     end
   end
 
-  context 'with non default schema_context' do
-    it_behaves_like "a confluent schema registry client", schema_context: 'other' do
+  context "with non default schema_context" do
+    it_behaves_like "a confluent schema registry client", schema_context: "other" do
       let(:registry) {
         described_class.new(
           registry_url,
           logger: logger,
-          schema_context: 'other',
+          schema_context: "other",
           user: user,
           password: password,
           connect_timeout: connect_timeout

@@ -3,23 +3,22 @@
 # A cache for the CachedConfluentSchemaRegistry.
 # Extends the InMemoryCache to provide a write-thru to disk for persistent cache.
 class AvroTurf::DiskCache
-
   def initialize(disk_path, logger: Logger.new($stdout))
     @logger = logger
 
     # load the write-thru cache on startup, if it exists
-    @schemas_by_id_path = File.join(disk_path, 'schemas_by_id.json')
+    @schemas_by_id_path = File.join(disk_path, "schemas_by_id.json")
     hash = read_from_disk_cache(@schemas_by_id_path)
     @schemas_by_id = hash || {}
 
-    @ids_by_schema_path = File.join(disk_path, 'ids_by_schema.json')
+    @ids_by_schema_path = File.join(disk_path, "ids_by_schema.json")
     hash = read_from_disk_cache(@ids_by_schema_path)
     @ids_by_schema = hash || {}
 
-    @schemas_by_subject_version_path = File.join(disk_path, 'schemas_by_subject_version.json')
+    @schemas_by_subject_version_path = File.join(disk_path, "schemas_by_subject_version.json")
     @schemas_by_subject_version = {}
 
-    @data_by_schema_path = File.join(disk_path, 'data_by_schema.json')
+    @data_by_schema_path = File.join(disk_path, "data_by_schema.json")
     hash = read_from_disk_cache(@data_by_schema_path)
     @data_by_schema = hash || {}
   end
@@ -96,11 +95,11 @@ class AvroTurf::DiskCache
     key = "#{subject}#{version}"
     hash = read_from_disk_cache(@schemas_by_subject_version_path)
     hash = if hash
-             hash[key] = schema
-             hash
-           else
-             { key => schema }
-           end
+      hash[key] = schema
+      hash
+    else
+      {key => schema}
+    end
 
     write_to_disk_cache(@schemas_by_subject_version_path, hash)
 
@@ -112,7 +111,7 @@ class AvroTurf::DiskCache
   private def read_from_disk_cache(path)
     if File.exist?(path)
       if File.size(path) != 0
-        json_data = File.open(path, 'r') do |file|
+        json_data = File.open(path, "r") do |file|
           file.flock(File::LOCK_SH)
           file.read
         end
@@ -129,7 +128,7 @@ class AvroTurf::DiskCache
 
   private def write_to_disk_cache(path, hash)
     # don't use "w" because it truncates the file before lock
-    File.open(path, File::RDWR | File::CREAT, 0644) do |file|
+    File.open(path, File::RDWR | File::CREAT, 0o644) do |file|
       file.flock(File::LOCK_EX)
       file.write(JSON.pretty_generate(hash))
     end

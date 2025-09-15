@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'avro_turf/schema_store'
+require "avro_turf/schema_store"
 
 describe AvroTurf::SchemaStore do
   let(:store) { AvroTurf::SchemaStore.new(path: "spec/schemas") }
@@ -28,7 +28,7 @@ describe AvroTurf::SchemaStore do
       expect(schema.fullname).to eq "message"
     end
 
-    it 'searches for nested types with the correct namespace' do
+    it "searches for nested types with the correct namespace" do
       define_schema "foo/bar.avsc", <<-AVSC
         {
           "type": "record",
@@ -52,7 +52,7 @@ describe AvroTurf::SchemaStore do
         }
       AVSC
 
-      schema = store.find('foo.bar')
+      schema = store.find("foo.bar")
       expect(schema.fullname).to eq "foo.bar"
       expect(schema.fields.first.type.fullname).to eq "foo.another_schema"
     end
@@ -283,11 +283,11 @@ describe AvroTurf::SchemaStore do
         }
       AVSC
 
-      schema = store.find('person', 'test')
+      schema = store.find("person", "test")
       expect(schema.fullname).to eq "test.person"
 
-      expect { store.find('address', 'test') }.
-        to raise_error(AvroTurf::SchemaNotFoundError)
+      expect { store.find("address", "test") }
+        .to raise_error(AvroTurf::SchemaNotFoundError)
     end
 
     # This test would fail under avro_turf <= v0.11.0
@@ -337,21 +337,21 @@ describe AvroTurf::SchemaStore do
       AVSC
 
       company = nil
-      person = store.find('person', 'test')
+      person = store.find("person", "test")
 
       # This should *NOT* raise the error:
       # #<Avro::SchemaParseError: The name "test.location" is already in use.>
-      expect { company = store.find('company', 'test') }.not_to raise_error
+      expect { company = store.find("company", "test") }.not_to raise_error
 
-      person_location_field = person.fields_hash['location']
-      expect(person_location_field.type.name).to eq('location')
-      expect(person_location_field.type.fields_hash).to include('zipcode')
-      expect(person_location_field.type.fields_hash).not_to include('postcode')
+      person_location_field = person.fields_hash["location"]
+      expect(person_location_field.type.name).to eq("location")
+      expect(person_location_field.type.fields_hash).to include("zipcode")
+      expect(person_location_field.type.fields_hash).not_to include("postcode")
 
-      company_headquarters_field = company.fields_hash['headquarters']
-      expect(company_headquarters_field.type.name).to eq('location')
-      expect(company_headquarters_field.type.fields_hash).to include('postcode')
-      expect(company_headquarters_field.type.fields_hash).not_to include('zipcode')
+      company_headquarters_field = company.fields_hash["headquarters"]
+      expect(company_headquarters_field.type.name).to eq("location")
+      expect(company_headquarters_field.type.fields_hash).to include("postcode")
+      expect(company_headquarters_field.type.fields_hash).not_to include("zipcode")
     end
 
     it "is thread safe" do
@@ -366,10 +366,10 @@ describe AvroTurf::SchemaStore do
       # Set a Thread breakpoint right in the core place of race condition
       expect(Avro::Name)
         .to receive(:add_name)
-        .and_wrap_original { |m, *args|
-          Thread.stop
-          m.call(*args)
-        }
+          .and_wrap_original { |m, *args|
+              Thread.stop
+              m.call(*args)
+            }
 
       # Run two concurring threads which both will trigger the same schema loading
       threads = 2.times.map { Thread.new { store.find("address") } }
@@ -379,7 +379,7 @@ describe AvroTurf::SchemaStore do
       expect {
         # Resume the threads evaluation, one after one
         threads.each do |thread|
-          next unless thread.status == 'sleep'
+          next unless thread.status == "sleep"
 
           thread.run
           sleep 0.001 until thread.stop?

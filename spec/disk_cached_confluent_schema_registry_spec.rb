@@ -1,20 +1,20 @@
 # frozen_string_literal: true
 
-require 'webmock/rspec'
-require 'avro_turf/cached_confluent_schema_registry'
-require 'avro_turf/test/fake_confluent_schema_registry_server'
+require "webmock/rspec"
+require "avro_turf/cached_confluent_schema_registry"
+require "avro_turf/test/fake_confluent_schema_registry_server"
 
 describe AvroTurf::CachedConfluentSchemaRegistry do
   let(:upstream) { instance_double(AvroTurf::ConfluentSchemaRegistry) }
   let(:logger_io) { StringIO.new }
-  let(:cache)    { AvroTurf::DiskCache.new("spec/cache", logger: Logger.new(logger_io))}
+  let(:cache) { AvroTurf::DiskCache.new("spec/cache", logger: Logger.new(logger_io)) }
   let(:registry) { described_class.new(upstream, cache: cache) }
   let(:id) { rand(999) }
   let(:schema) do
     {
       type: "record",
       name: "person",
-      fields: [{ name: "name", type: "string" }]
+      fields: [{name: "name", type: "string"}]
     }.to_json
   end
 
@@ -23,21 +23,21 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
     {
       type: "record",
       name: "city",
-      fields: [{ name: "name", type: "string" }]
+      fields: [{name: "name", type: "string"}]
     }.to_json
   end
 
-  let(:subject) { 'subject' }
+  let(:subject) { "subject" }
   let(:version) { rand(999) }
   let(:subject_version_schema) do
     {
       subject: subject,
       version: version,
       id: id,
-      schema:  {
+      schema: {
         type: "record",
         name: "city",
-        fields: { name: "name", type: "string" }
+        fields: {name: "name", type: "string"}
       }
     }.to_json
   end
@@ -49,13 +49,13 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
   describe "#fetch" do
     let(:cache_before) do
       {
-        "#{id}" => "#{schema}"
+        id.to_s => schema.to_s
       }
     end
     let(:cache_after) do
       {
-        "#{id}" => "#{schema}",
-        "#{city_id}" => "#{city_schema}"
+        id.to_s => schema.to_s,
+        city_id.to_s => city_schema.to_s
       }
     end
 
@@ -86,13 +86,13 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
   describe "#fetch (zero length cache file)" do
     let(:cache_after) do
       {
-        "#{id}" => "#{schema}"
+        id.to_s => schema.to_s
       }
     end
 
     before do
       # setup the disk cache with a zero length file
-      File.write(File.join("spec/cache", "schemas_by_id.json"), '')
+      File.write(File.join("spec/cache", "schemas_by_id.json"), "")
     end
 
     it "skips zero length disk cache" do
@@ -109,11 +109,11 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
   describe "#fetch (corrupt cache file)" do
     before do
       # setup the disk cache with a corrupt file (i.e. not json)
-      File.write(File.join("spec/cache", "schemas_by_id.json"), 'NOTJSON')
+      File.write(File.join("spec/cache", "schemas_by_id.json"), "NOTJSON")
     end
 
     it "raises error on corrupt cache file" do
-      expect{registry.fetch(id)}.to raise_error(JSON::ParserError, /unexpected token/)
+      expect { registry.fetch(id) }.to raise_error(JSON::ParserError, /unexpected token/)
     end
   end
 
@@ -126,7 +126,7 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
     end
 
     let(:city_name) { "a_city" }
-    let(:cache_after) do 
+    let(:cache_after) do
       {
         "#{subject_name}#{schema}" => id,
         "#{city_name}#{city_schema}" => city_id
@@ -141,7 +141,7 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
     it "uses preloaded disk cache" do
       # multiple calls return same result, with zero upstream calls
       allow(upstream).to receive(:register).with(subject_name, schema).and_return(id)
-      expect(registry.register(subject_name, schema)).to eq(id) 
+      expect(registry.register(subject_name, schema)).to eq(id)
       expect(registry.register(subject_name, schema)).to eq(id)
       expect(upstream).to have_received(:register).exactly(0).times
       expect(load_cache("ids_by_schema.json")).to eq cache_before
@@ -167,7 +167,7 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
 
     before do
       # setup the disk cache with a zero length file
-      File.write(File.join("spec/cache", "ids_by_schema.json"), '')
+      File.write(File.join("spec/cache", "ids_by_schema.json"), "")
     end
 
     it "skips zero length disk cache" do
@@ -184,11 +184,11 @@ describe AvroTurf::CachedConfluentSchemaRegistry do
   describe "#register (corrupt cache file)" do
     before do
       # setup the disk cache with a corrupt file (i.e. not json)
-      File.write(File.join("spec/cache", "ids_by_schema.json"), 'NOTJSON')
+      File.write(File.join("spec/cache", "ids_by_schema.json"), "NOTJSON")
     end
 
     it "raises error on corrupt cache file" do
-      expect{registry.register(subject_name, schema)}.to raise_error(JSON::ParserError, /unexpected token/)
+      expect { registry.register(subject_name, schema) }.to raise_error(JSON::ParserError, /unexpected token/)
     end
   end
 

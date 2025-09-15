@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require 'excon'
+require "excon"
 
 class AvroTurf::ConfluentSchemaRegistry
-  CONTENT_TYPE = "application/vnd.schemaregistry.v1+json".freeze
+  CONTENT_TYPE = "application/vnd.schemaregistry.v1+json"
 
   def initialize(
     url,
@@ -24,7 +24,7 @@ class AvroTurf::ConfluentSchemaRegistry
     retry_limit: nil
   )
     @path_prefix = path_prefix
-    @schema_context_prefix = schema_context.nil? ? '' : ":.#{schema_context}:"
+    @schema_context_prefix = schema_context.nil? ? "" : ":.#{schema_context}:"
     @schema_context_options = schema_context.nil? ? {} : {query: {subject: @schema_context_prefix}}
     @logger = logger
     headers = Excon.defaults[:headers].merge(
@@ -55,12 +55,12 @@ class AvroTurf::ConfluentSchemaRegistry
 
   def fetch(id)
     @logger.info "Fetching schema with id #{id}"
-    data = get("/schemas/ids/#{id}", idempotent: true, **@schema_context_options, )
+    data = get("/schemas/ids/#{id}", idempotent: true, **@schema_context_options)
     data.fetch("schema")
   end
 
   def register(subject, schema)
-    data = post("/subjects/#{@schema_context_prefix}#{subject}/versions", body: { schema: schema.to_s }.to_json)
+    data = post("/subjects/#{@schema_context_prefix}#{subject}/versions", body: {schema: schema.to_s}.to_json)
 
     id = data.fetch("id")
 
@@ -71,7 +71,7 @@ class AvroTurf::ConfluentSchemaRegistry
 
   # List all subjects
   def subjects
-    get('/subjects', idempotent: true)
+    get("/subjects", idempotent: true)
   end
 
   # List all versions for a subject
@@ -80,7 +80,7 @@ class AvroTurf::ConfluentSchemaRegistry
   end
 
   # Get a specific version for a subject
-  def subject_version(subject, version = 'latest')
+  def subject_version(subject, version = "latest")
     get("/subjects/#{@schema_context_prefix}#{subject}/versions/#{version}", idempotent: true)
   end
 
@@ -92,9 +92,9 @@ class AvroTurf::ConfluentSchemaRegistry
   # Check if a schema exists. Returns nil if not found.
   def check(subject, schema)
     data = post("/subjects/#{@schema_context_prefix}#{subject}",
-                expects: [200, 404],
-                body: { schema: schema.to_s }.to_json,
-                idempotent: true)
+      expects: [200, 404],
+      body: {schema: schema.to_s}.to_json,
+      idempotent: true)
     data unless data.has_key?("error_code")
   end
 
@@ -104,10 +104,10 @@ class AvroTurf::ConfluentSchemaRegistry
   # - nil if the subject or version does not exist
   # - false if incompatible
   # http://docs.confluent.io/3.1.2/schema-registry/docs/api.html#compatibility
-  def compatible?(subject, schema, version = 'latest')
+  def compatible?(subject, schema, version = "latest")
     data = post("/compatibility/subjects/#{@schema_context_prefix}#{subject}/versions/#{version}",
-                expects: [200, 404], body: { schema: schema.to_s }.to_json, idempotent: true)
-    data.fetch('is_compatible', false) unless data.has_key?('error_code')
+      expects: [200, 404], body: {schema: schema.to_s}.to_json, idempotent: true)
+    data.fetch("is_compatible", false) unless data.has_key?("error_code")
   end
 
   # Check for specific schema compatibility issues
@@ -115,11 +115,11 @@ class AvroTurf::ConfluentSchemaRegistry
   # - nil if the subject or version does not exist
   # - a list of compatibility issues
   # https://docs.confluent.io/platform/current/schema-registry/develop/api.html#sr-api-compatibility
-  def compatibility_issues(subject, schema, version = 'latest')
+  def compatibility_issues(subject, schema, version = "latest")
     data = post("/compatibility/subjects/#{@schema_context_prefix}#{subject}/versions/#{version}",
-      expects: [200, 404], body: { schema: schema.to_s }.to_json, query: { verbose: true }, idempotent: true)
+      expects: [200, 404], body: {schema: schema.to_s}.to_json, query: {verbose: true}, idempotent: true)
 
-    data.fetch('messages', []) unless data.has_key?('error_code')
+    data.fetch("messages", []) unless data.has_key?("error_code")
   end
 
   # Get global config
@@ -157,7 +157,7 @@ class AvroTurf::ConfluentSchemaRegistry
   end
 
   def request(path, **options)
-    options = { expects: 200 }.merge!(options)
+    options = {expects: 200}.merge!(options)
     path = File.join(@path_prefix, path) unless @path_prefix.nil?
     response = @connection.request(path: path, **options)
     JSON.parse(response.body)

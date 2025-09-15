@@ -1,19 +1,19 @@
 # frozen_string_literal: true
 
 begin
-  require 'avro-patches'
+  require "avro-patches"
 rescue LoadError
   false
 end
-require 'avro_turf/version'
-require 'avro'
-require 'json'
-require 'avro_turf/schema_store'
-require 'avro_turf/core_ext'
+require "avro_turf/version"
+require "avro"
+require "json"
+require "avro_turf/schema_store"
+require "avro_turf/core_ext"
 
 # check for something that indicates Avro v1.9.0 or later
 unless defined?(::Avro::LogicalTypes)
-  require 'avro_turf/schema_to_avro_patch'
+  require "avro_turf/schema_to_avro_patch"
 end
 
 class AvroTurf
@@ -71,10 +71,10 @@ class AvroTurf
   #
   # Returns nothing.
   def encode_to_stream(data, schema_name: nil, stream: nil, namespace: @namespace,
-                       validate: false,
-                       validate_options: { recursive: true,
-                                           encoded: false,
-                                           fail_on_extra_fields: true })
+    validate: false,
+    validate_options: {recursive: true,
+                       encoded: false,
+                       fail_on_extra_fields: true})
     schema = @schema_store.find(schema_name, namespace)
     writer = Avro::IO::DatumWriter.new(schema)
 
@@ -100,7 +100,7 @@ class AvroTurf
     decode_stream(stream, schema_name: schema_name, namespace: namespace)
   end
 
-  alias decode decode_first
+  alias_method :decode, :decode_first
 
   # Returns all entries encoded in the data.
   def decode_all(encoded_data, schema_name: nil, namespace: @namespace)
@@ -121,7 +121,7 @@ class AvroTurf
     data.first
   end
 
-  alias decode_stream decode_first_from_stream
+  alias_method :decode_stream, :decode_first_from_stream
 
   # Returns all entries encoded in the stream.
   def decode_all_from_stream(stream, schema_name: nil, namespace: @namespace)
