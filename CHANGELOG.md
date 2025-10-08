@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Ensure the gem works with frozen strings.
+- Stop caching nested sub-schemas in MutableSchemaStore (#232)
 
 ## v1.19.0
 
