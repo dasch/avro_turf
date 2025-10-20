@@ -599,7 +599,7 @@ describe AvroTurf::Messaging do
         client_cert: client_cert,
         client_chain: client_chain,
         client_key: client_key,
-        client_key_pass: client_key_pass,
+        client_key_pass: client_key_pass
       )
     }
 
