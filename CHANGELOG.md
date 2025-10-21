@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## v1.20.0
+
+- Add support for client certificate chains via `client_chain` and `client_chain_data` parameters (#233)
 - Ensure the gem works with frozen strings.
 - Stop caching nested sub-schemas in MutableSchemaStore (#232)
 
