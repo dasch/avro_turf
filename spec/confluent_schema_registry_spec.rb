@@ -8,6 +8,7 @@ describe AvroTurf::ConfluentSchemaRegistry do
   let(:user) { "abc" }
   let(:password) { "xxyyzz" }
   let(:client_cert) { "test client cert" }
+  let(:client_chain) { "test client cert chain" }
   let(:client_key) { "test client key" }
   let(:client_key_pass) { "test client key password" }
   let(:connect_timeout) { 10 }
@@ -19,6 +20,21 @@ describe AvroTurf::ConfluentSchemaRegistry do
           registry_url,
           logger: logger,
           client_cert: client_cert,
+          client_key: client_key,
+          client_key_pass: client_key_pass
+        )
+      }
+    end
+  end
+
+  context "authenticated by cert with chain" do
+    it_behaves_like "a confluent schema registry client" do
+      let(:registry) {
+        described_class.new(
+          registry_url,
+          logger: logger,
+          client_cert: client_cert,
+          client_chain: client_chain,
           client_key: client_key,
           client_key_pass: client_key_pass
         )

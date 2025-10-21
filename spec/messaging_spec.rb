@@ -588,4 +588,28 @@ describe AvroTurf::Messaging do
       avro
     end
   end
+
+  context "with a cert chain" do
+    let(:client_chain) { "test client chain" }
+    let(:avro) {
+      AvroTurf::Messaging.new(
+        registry_url: registry_url,
+        schemas_path: "spec/schemas",
+        logger: logger,
+        client_cert: client_cert,
+        client_chain: client_chain,
+        client_key: client_key,
+        client_key_pass: client_key_pass
+      )
+    }
+
+    it_behaves_like "encoding and decoding with the schema from schema store"
+    it_behaves_like "encoding and decoding with the schema from registry"
+    it_behaves_like "encoding and decoding with the schema_id from registry"
+
+    it "passes the client chain to Excon" do
+      expect(Excon).to receive(:new).with(anything, hash_including(client_chain: client_chain)).and_call_original
+      avro
+    end
+  end
 end

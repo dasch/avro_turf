@@ -58,7 +58,9 @@ class AvroTurf
     # client_key           - Name of file containing client private key to go with client_cert (optional).
     # client_key_pass      - Password to go with client_key (optional).
     # client_cert_data     - In-memory client certificate (optional).
+    # client_chain         - Name of file containing client certificate chain (optional).
     # client_key_data      - In-memory client private key to go with client_cert_data (optional).
+    # client_chain_data    - In-memory client certificate chain (optional).
     # connect_timeout      - Timeout to use in the connection with the schema registry (optional).
     # resolv_resolver      - Custom domain name resolver (optional).
     def initialize(
@@ -75,9 +77,11 @@ class AvroTurf
       password: nil,
       ssl_ca_file: nil,
       client_cert: nil,
+      client_chain: nil,
       client_key: nil,
       client_key_pass: nil,
       client_cert_data: nil,
+      client_chain_data: nil,
       client_key_data: nil,
       connect_timeout: nil,
       resolv_resolver: nil,
@@ -96,9 +100,11 @@ class AvroTurf
           password: password,
           ssl_ca_file: ssl_ca_file,
           client_cert: client_cert,
+          client_chain: client_chain,
           client_key: client_key,
           client_key_pass: client_key_pass,
           client_cert_data: client_cert_data,
+          client_chain_data: client_chain_data,
           client_key_data: client_key_data,
           path_prefix: registry_path_prefix,
           connect_timeout: connect_timeout,
