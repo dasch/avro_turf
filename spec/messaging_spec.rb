@@ -380,6 +380,17 @@ describe AvroTurf::Messaging do
         expect(subject).to eq([schema, schema_id])
       end
 
+      it "memoizes parsed schema" do
+        expect(registry).to receive(:subject_version).with(subj, version).twice.and_return(response)
+        expect(Avro::Schema).to receive(:parse).with(schema_json).once.and_return(schema)
+
+        first_result = avro.fetch_schema(subject: subj, version: version)
+        second_result = avro.fetch_schema(subject: subj, version: version)
+
+        expect(first_result).to eq([schema, schema_id])
+        expect(second_result).to eq([schema, schema_id])
+      end
+
       context "with an incompatible schema type" do
         let(:response) { {"id" => schema_id, "schema" => "blah", "schemaType" => schema_type} }
         let(:schema_type) { "PROTOBUF" }
@@ -402,6 +413,16 @@ describe AvroTurf::Messaging do
 
       it "gets schema from registry" do
         expect(subject).to eq([schema, schema_id])
+      end
+
+      it "memoizes schema in @schemas_by_id after first call" do
+        expect(registry).to receive(:fetch).with(schema_id).once.and_return(schema_json)
+
+        first_result = avro.fetch_schema_by_id(schema_id)
+        second_result = avro.fetch_schema_by_id(schema_id)
+
+        expect(first_result).to eq([schema, schema_id])
+        expect(second_result).to eq([schema, schema_id])
       end
     end
 
