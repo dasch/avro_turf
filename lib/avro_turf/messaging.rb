@@ -236,13 +236,15 @@ class AvroTurf
       if schema_type && schema_type != "AVRO"
         raise IncompatibleSchemaError, "The #{schema_type} schema for #{subject} is incompatible."
       end
-      schema = Avro::Schema.parse(schema_data.fetch("schema"))
+
+      schema = @schemas_by_id[schema_id] ||= Avro::Schema.parse(schema_data.fetch("schema"))
+
       [schema, schema_id]
     end
 
     # Fetch the schema from registry with the provided schema_id.
     def fetch_schema_by_id(schema_id)
-      schema = @schemas_by_id.fetch(schema_id) do
+      schema = @schemas_by_id[schema_id] ||= begin
         schema_json = @registry.fetch(schema_id)
         Avro::Schema.parse(schema_json)
       end
