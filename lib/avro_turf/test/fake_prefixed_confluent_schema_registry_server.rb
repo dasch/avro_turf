@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "sinatra/base"
+require_relative "fake_confluent_schema_registry_server"
 
 class FakePrefixedConfluentSchemaRegistryServer < FakeConfluentSchemaRegistryServer
   DEFAULT_CONTEXT = "."
