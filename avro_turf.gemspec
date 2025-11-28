@@ -27,7 +27,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec", "~> 3.2"
   spec.add_development_dependency "fakefs", "~> 3"
   spec.add_development_dependency "webmock"
-  spec.add_development_dependency "sinatra"
   spec.add_development_dependency "json_spec"
   spec.add_development_dependency "rack-test"
   spec.add_development_dependency "resolv"

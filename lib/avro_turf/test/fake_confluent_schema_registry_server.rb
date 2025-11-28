@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
-require "sinatra/base"
+require_relative "fake_server"
 
-class FakeConfluentSchemaRegistryServer < Sinatra::Base
+class FakeConfluentSchemaRegistryServer
+  include AvroTurf::Test::FakeServer
+
   QUALIFIED_SUBJECT = /
       :(?<context>\.[^:]*)
       :(?<subject>.*)
@@ -22,22 +24,21 @@ class FakeConfluentSchemaRegistryServer < Sinatra::Base
     attr_reader :global_config
   end
 
-  helpers do
-    def parse_schema
-      request.body.rewind
-      JSON.parse(request.body.read).fetch("schema").tap do |schema|
-        Avro::Schema.parse(schema)
-      end
+  # Helper methods (previously in Sinatra helpers block)
+  def parse_schema
+    request.body.rewind
+    JSON.parse(request.body.read).fetch("schema").tap do |schema|
+      Avro::Schema.parse(schema)
     end
+  end
 
-    def parse_config
-      request.body.rewind
-      JSON.parse(request.body.read)
-    end
+  def parse_config
+    request.body.rewind
+    JSON.parse(request.body.read)
+  end
 
-    def global_config
-      self.class.global_config
-    end
+  def global_config
+    self.class.global_config
   end
 
   post "/subjects/:qualified_subject/versions" do
