@@ -4,6 +4,10 @@
 
 - Memoize parsed schemas to improve encoding performance when using `AvroTurf::Messaging` (#206)
 
+## v1.20.1
+
+- Remove `sinatra` as a development dependency (#237)
+
 ## v1.20.0
 
 - Add support for client certificate chains via `client_chain` and `client_chain_data` parameters (#233)
