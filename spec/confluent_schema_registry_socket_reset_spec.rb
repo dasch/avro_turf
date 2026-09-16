@@ -11,7 +11,7 @@ describe AvroTurf::ConfluentSchemaRegistry, "socket reset on interrupt" do
   let(:timeout_exception) { Class.new(Exception) } # rubocop:disable Lint/InheritException
 
   # These specs need an actual socket to the local test server
-  around do |example| 
+  around do |example|
     FakeFS.deactivate!
     WebMock.allow_net_connect! if defined?(WebMock)
 
@@ -30,8 +30,8 @@ describe AvroTurf::ConfluentSchemaRegistry, "socket reset on interrupt" do
           request_line = connection.gets
           path = request_line.split[1]
 
-          schema = {type: "string", path: path }.to_json
-          body = { schema: schema }.to_json
+          schema = {type: "string", path: path}.to_json
+          body = {schema: schema}.to_json
 
           connection.write(
             "HTTP/1.1 200 OK\r\n" \
