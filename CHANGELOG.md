@@ -2,11 +2,14 @@
 
 ## Unreleased
 
-- Memoize parsed schemas to improve encoding performance when using `AvroTurf::Messaging` (#206)
+## v1.20.2
+
+- Fix stale reads from `AvroTurf::ConfluentSchemaRegistry` after `Exceptions`
 
 ## v1.20.1
 
 - Remove `sinatra` as a development dependency (#237)
+- Memoize parsed schemas to improve encoding performance when using `AvroTurf::Messaging` (#206)
 
 ## v1.20.0
 

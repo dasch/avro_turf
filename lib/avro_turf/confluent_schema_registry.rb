@@ -163,7 +163,15 @@ class AvroTurf::ConfluentSchemaRegistry
   def request(path, **options)
     options = {expects: 200}.merge!(options)
     path = File.join(@path_prefix, path) unless @path_prefix.nil?
-    response = @connection.request(path: path, **options)
+    response = begin
+      @connection.request(path: path, **options)
+    rescue Exception # rubocop:disable Lint/RescueException
+      # Excon only resets the connection for StandardError, so an exception
+      # outside that hierarchy (e.g. Rack::Timeout::RequestTimeoutException)
+      # leaves the socket cached with unread bytes still on it.
+      @connection.reset
+      raise
+    end
     JSON.parse(response.body)
   end
 end
