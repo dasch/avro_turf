@@ -62,6 +62,7 @@ class AvroTurf
     # client_key_data      - In-memory client private key to go with client_cert_data (optional).
     # client_chain_data    - In-memory client certificate chain (optional).
     # connect_timeout      - Timeout to use in the connection with the schema registry (optional).
+    # timeout              - Maximum duration of each request to the schema registry, in seconds (optional).
     # resolv_resolver      - Custom domain name resolver (optional).
     def initialize(
       registry: nil,
@@ -84,6 +85,7 @@ class AvroTurf
       client_chain_data: nil,
       client_key_data: nil,
       connect_timeout: nil,
+      timeout: nil,
       resolv_resolver: nil,
       retry_limit: nil
     )
@@ -108,6 +110,7 @@ class AvroTurf
           client_key_data: client_key_data,
           path_prefix: registry_path_prefix,
           connect_timeout: connect_timeout,
+          timeout: timeout,
           resolv_resolver: resolv_resolver,
           retry_limit: retry_limit
         )

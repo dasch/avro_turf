@@ -69,6 +69,44 @@ describe AvroTurf::ConfluentSchemaRegistry do
     end
   end
 
+  context "with timeout" do
+    it_behaves_like "a confluent schema registry client" do
+      let(:registry) {
+        described_class.new(
+          registry_url,
+          logger: logger,
+          user: user,
+          password: password,
+          timeout: 10
+        )
+      }
+    end
+
+    context "when the schema registry does not respond" do
+      let(:server) { TCPServer.new("127.0.0.1", 0) }
+      let(:registry) {
+        described_class.new(
+          "http://127.0.0.1:#{server.addr[1]}",
+          logger: Logger.new(nil),
+          timeout: 0.1,
+          retry_limit: 1
+        )
+      }
+
+      around do |example|
+        WebMock.allow_net_connect!
+        example.run
+      ensure
+        WebMock.disable_net_connect!
+        server.close
+      end
+
+      it "gives up once the timeout is reached" do
+        expect { registry.fetch(1) }.to raise_error(Excon::Error::Timeout, "request timeout reached")
+      end
+    end
+  end
+
   context "with non default schema_context" do
     it_behaves_like "a confluent schema registry client", schema_context: "other" do
       let(:registry) {

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add `timeout` parameter to `AvroTurf::Messaging` and `AvroTurf::ConfluentSchemaRegistry` to set Excon's request timeout, a deadline for each request to the schema registry
+
 ## v1.20.2
 
 - Fix stale reads from `AvroTurf::ConfluentSchemaRegistry` after `Exceptions`
