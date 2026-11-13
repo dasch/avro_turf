@@ -539,6 +539,29 @@ describe AvroTurf::Messaging do
     end
   end
 
+  context "with a request timeout" do
+    let(:avro) {
+      AvroTurf::Messaging.new(
+        registry_url: registry_url,
+        schemas_path: "spec/schemas",
+        logger: logger,
+        client_cert: client_cert,
+        client_key: client_key,
+        client_key_pass: client_key_pass,
+        timeout: 10
+      )
+    }
+
+    it_behaves_like "encoding and decoding with the schema from schema store"
+    it_behaves_like "encoding and decoding with the schema from registry"
+    it_behaves_like "encoding and decoding with the schema_id from registry"
+
+    it "passes the request timeout setting to Excon" do
+      expect(Excon).to receive(:new).with(anything, hash_including(timeout: 10)).and_call_original
+      avro
+    end
+  end
+
   context "with a connect timeout" do
     let(:avro) {
       AvroTurf::Messaging.new(
