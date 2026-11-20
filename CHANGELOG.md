@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Add `timeout` parameter to `AvroTurf::Messaging` and `AvroTurf::ConfluentSchemaRegistry` to set Excon's request timeout, a deadline for each request to the schema registry
+- Add `logger` as a runtime dependency, as it is no longer a default gem in Ruby 4.0
 
 ## v1.20.2
 
