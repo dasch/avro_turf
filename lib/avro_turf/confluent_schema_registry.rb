@@ -22,6 +22,7 @@ class AvroTurf::ConfluentSchemaRegistry
     client_key_data: nil,
     path_prefix: nil,
     connect_timeout: nil,
+    timeout: nil,
     resolv_resolver: nil,
     retry_limit: nil
   )
@@ -47,6 +48,7 @@ class AvroTurf::ConfluentSchemaRegistry
       client_key_data: client_key_data,
       resolv_resolver: resolv_resolver,
       connect_timeout: connect_timeout,
+      timeout: timeout,
       retry_limit: retry_limit
     }
     # Remove nil params to allow Excon to use its default values

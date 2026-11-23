@@ -21,6 +21,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "avro", ">= 1.11.3", "< 1.13"
   spec.add_dependency "excon", ">= 0.104", "< 2"
+  spec.add_dependency "logger"
 
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "rspec", "~> 3.2"
